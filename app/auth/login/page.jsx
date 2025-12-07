@@ -5,7 +5,6 @@ export default function LoginPage() {
   const router = useRouter();
   const [user, setUser] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = (e) => {
@@ -24,14 +23,14 @@ export default function LoginPage() {
     localStorage.setItem("loginSession", JSON.stringify(userExists));
 
     alert("Login berhasil");
-    router.push("/");
+    router.push("/products");
   };
 
   useEffect(() => {
     try {
       const loginSession = localStorage.getItem("loginSession");
       if (loginSession) {
-        router.push("/");
+        window.location.href = "/";
       }
     } catch {
     } finally {
@@ -48,7 +47,7 @@ export default function LoginPage() {
             <p className="text-blue-400 text-3xl font-bold">Rulshop</p>
           </div>
 
-          <p className="text-blue-400 text-xl font-bold mt-4">Daftar</p>
+          <p className="text-blue-400 text-xl font-bold mt-4">Masuk</p>
           <form onSubmit={handleSubmit} className="flex flex-col gap-2 mt-4">
             <input
               type="email"
@@ -75,37 +74,17 @@ export default function LoginPage() {
               </button>
             </div>
 
-            <div className="relative">
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                placeholder="Konfirmasi Password"
-                className="p-2 border-2 border-blue-400 rounded-md w-full"
-                value={user.confirmPassword}
-                onChange={(e) =>
-                  setUser({ ...user, confirmPassword: e.target.value })
-                }
-              />
-
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-2 top-2 text-sm text-blue-500"
-              >
-                {showConfirmPassword ? "Hide" : "Show"}
-              </button>
-            </div>
-
             <button
               type="submit"
               className="p-2 bg-blue-400 text-white rounded-md cursor-pointer hover:bg-blue-500"
             >
-              Daftar
+              Masuk
             </button>
           </form>
           <p className="text-blue-400 text-sm mt-4">
             Belum punya akun?{" "}
             <a href="/auth/daftar" className="text-blue-500 cursor-pointer">
-              Masuk
+              Daftar
             </a>
           </p>
         </div>

@@ -50,6 +50,7 @@ export default function Daftar() {
       username: user.username,
       email: user.email,
       password: user.password,
+      foto: "",
     };
 
     const update = users ? [...users, newUser] : [newUser];
@@ -58,7 +59,7 @@ export default function Daftar() {
     alert("Selamat akun anda berhasil dibuat");
     setUser({ username: "", email: "", password: "", confirmPassword: "" });
     //console.log("alluser", allUser);
-    router.push("/");
+    router.push("/products");
   };
 
   useEffect(() => {
@@ -155,6 +156,7 @@ export default function Daftar() {
               Daftar
             </button>
           </form>
+
           <p className="text-blue-400 text-sm mt-4">
             Sudah punya akun?{" "}
             <a href="/auth/login" className="text-blue-500 cursor-pointer">

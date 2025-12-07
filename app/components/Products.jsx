@@ -2,20 +2,25 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import ShowProduk from "./produk";
-
+import kategoriList from "../../public/assets/kategoriProduk";
 export default function SearchProduk({ cari }) {
   const [warna, setWarna] = useState("");
   const [ukuran, setUkuran] = useState("");
   const [lokasi, setLokasi] = useState("");
+  const [kategori, setKategori] = useState("");
+  console.log("kategori", kategori);
   const [produkChosen, setProdukChosen] = useState("");
   const [produkList, setProdukList] = useState([]);
+  console.log("produklist", produkList);
   const [loading, setLoading] = useState(false);
   const filteredProduk = produkList.filter((p) => {
     const allWarna = p.produk.map((item) => item.warna.toLowerCase());
     const allUkuran = p.produk.flatMap((item) =>
       item.ukuran.map((u) => u.toLowerCase())
     );
-
+    const allKategori = p.kategori.toLowerCase();
+    console.log("allkategori", allKategori);
+    const matchKategori = kategori === "" || allKategori.includes(kategori);
     const matchWarna = warna === "" || allWarna.includes(warna);
     const matchUkuran = ukuran === "" || allUkuran.includes(ukuran);
     const matchLokasi =
@@ -24,7 +29,10 @@ export default function SearchProduk({ cari }) {
       cari === "" ||
       p.nama.toLowerCase().includes(cari.toLowerCase()) ||
       p.deskripsi.toLowerCase().includes(cari.toLowerCase());
-    return matchWarna && matchUkuran && matchLokasi && matchCari;
+
+    return (
+      matchWarna && matchUkuran && matchLokasi && matchCari && matchKategori
+    );
   });
 
   // 🔥 Load data dari localStorage
@@ -44,7 +52,7 @@ export default function SearchProduk({ cari }) {
   return (
     <>
       {/* Konten */}
-      <div className="flex m-0 w-full gap-2">
+      <div className="flex m-0 w-full gap-2 bg-[#F3F4F6]">
         <div className="p-2 space-y-2 w-full">
           {/* Filter Section */}
           <div className="flex flex-wrap gap-4">
@@ -55,11 +63,11 @@ export default function SearchProduk({ cari }) {
               onChange={(e) => setWarna(e.target.value)}
             >
               <option value="">Semua Warna</option>
-              <option value="Hitam">Hitam</option>
-              <option value="Putih">Putih</option>
-              <option value="Merah">Merah</option>
-              <option value="Biru">Biru</option>
-              <option value="Coklat">Coklat</option>
+              <option value="hitam">Hitam</option>
+              <option value="putih">Putih</option>
+              <option value="merah">Merah</option>
+              <option value="biru">Biru</option>
+              <option value="coklat">Coklat</option>
             </select>
 
             {/* Filter Ukuran */}
@@ -69,10 +77,10 @@ export default function SearchProduk({ cari }) {
               onChange={(e) => setUkuran(e.target.value)}
             >
               <option value="">Semua Ukuran</option>
-              <option value="S">S</option>
-              <option value="M">M</option>
-              <option value="L">L</option>
-              <option value="XL">XL</option>
+              <option value="s">S</option>
+              <option value="m">M</option>
+              <option value="l">L</option>
+              <option value="xl">XL</option>
             </select>
 
             {/* Filter Lokasi */}
@@ -82,10 +90,22 @@ export default function SearchProduk({ cari }) {
               onChange={(e) => setLokasi(e.target.value)}
             >
               <option value="">Semua Lokasi</option>
-              <option value="Jakarta">Jakarta</option>
-              <option value="Bandung">Bandung</option>
-              <option value="Surabaya">Surabaya</option>
-              <option value="Yogyakarta">Yogyakarta</option>
+              <option value="jakarta">Jakarta</option>
+              <option value="bandung">Bandung</option>
+              <option value="surabaya">Surabaya</option>
+              <option value="yogyakarta">Yogyakarta</option>
+            </select>
+            <select
+              className="border border-gray-300 rounded-xl px-1 py-2 text-center"
+              value={kategori}
+              onChange={(e) => setKategori(e.target.value)}
+            >
+              <option value="">Kategori</option>
+              {Object.keys(kategoriList).map((kategori) => (
+                <option key={kategori} value={kategori}>
+                  {kategori}
+                </option>
+              ))}
             </select>
           </div>
 

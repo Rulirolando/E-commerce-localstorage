@@ -126,9 +126,6 @@ export default function ShowProduk({ produkSelected }) {
               <Link href={`/produk/${produkSelected.id}`}>Lihat detail</Link>
             </button>
           </div>
-          <button className="bg-blue-900 text-white p-2 rounded-lg hover:bg-blue-700 transition-all duration-200 cursor-pointer">
-            Tambahkan ke keranjang
-          </button>
 
           <p className="mt-4 text-justify">
             {produkSelected.deskripsi} Lorem ipsum dolor sit amet consectetur
