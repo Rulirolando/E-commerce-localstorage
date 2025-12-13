@@ -1,38 +1,70 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import kategoriList from "../../public/assets/kategoriProduk";
 import { useRouter } from "next/navigation";
 import Navbar from "../components/navbar";
+import DragDropUploader from "../components/DragDropUploader";
+
 export default function JualPage() {
-  const [produkList, setProdukList] = useState([]);
-  console.log("produklist", produkList);
-  const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState(null);
   const router = useRouter();
-  const [form, setForm] = useState({
+  const [produkList, setProdukList] = useState([]);
+  console.log("produkList", produkList);
+  const [ready, setReady] = useState(false);
+  const [user, setUser] = useState(null);
+  console.log("user", user);
+
+  const [form, setForm] = useState(() => ({
     id: crypto.randomUUID(),
     nama: "",
     kategori: "",
     deskripsi: "",
     lokasi: "",
     comment: "",
-  });
+    createdAt: new Date().toISOString(),
+    loved: false,
+  }));
 
-  const [variasi, setVariasi] = useState({
+  const [variasi, setVariasi] = useState(() => ({
     id: crypto.randomUUID(),
     warna: "",
     harga: "",
     stok: "",
     ukuran: "",
     gambar: "",
-  });
+    terjual: 0,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  }));
 
   const [variasiList, setVariasiList] = useState([]);
 
-  // 🔥 Simpan otomatis ke localStorage setiap produkList berubah
+  // Load products + session once
+  useEffect(() => {
+    try {
+      const products = localStorage.getItem("produkDB");
+      if (products) setProdukList(JSON.parse(products));
+    } catch (err) {
+      console.error("fail load produkDB", err);
+      setProdukList([]);
+    } finally {
+    }
+
+    try {
+      const session = localStorage.getItem("loginSession");
+      if (session) setUser(JSON.parse(session));
+    } catch (err) {
+      console.error("fail load session", err);
+      setUser(null);
+    }
+
+    setReady(true);
+  }, []);
 
   const tambahVariasi = () => {
+    if (!user) return alert("User belum siap. Silakan login ulang jika perlu.");
+
     if (
       !variasi.warna ||
       !variasi.harga ||
@@ -42,88 +74,95 @@ export default function JualPage() {
     )
       return alert("Isi semua data variasi!");
 
-    setVariasiList([
-      ...variasiList,
-      {
-        id: crypto.randomUUID(),
-        ownerId: user.id,
-        warna: variasi.warna,
-        harga: parseInt(variasi.harga),
-        stok: parseInt(variasi.stok),
-        ukuran: variasi.ukuran.split(",").map((u) => u.trim()),
-        gambar: [variasi.gambar],
-      },
-    ]);
+    const newVar = {
+      id: crypto.randomUUID(),
+      ownerId: user.id,
+      warna: variasi.warna,
+      harga: parseInt(variasi.harga, 10),
+      stok: parseInt(variasi.stok, 10),
+      ukuran: variasi.ukuran.split(",").map((u) => u.trim()),
+      gambar: [variasi.gambar], // base64 or url
+      terjual: parseInt(variasi.terjual || 0, 10),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    setVariasiList((prev) => [...prev, newVar]);
 
     setVariasi({
+      id: crypto.randomUUID(),
       warna: "",
       harga: "",
       stok: "",
       ukuran: "",
       gambar: "",
+      terjual: 0,
     });
   };
 
+  const hapusVariasi = (id) => {
+    setVariasiList((prev) => prev.filter((v) => v.id !== id));
+  };
+
   const simpanProduk = () => {
-    const products = localStorage.getItem("produkDB");
+    if (!user) return alert("Anda harus login terlebih dahulu.");
+    if (!form.nama) return alert("Nama produk wajib diisi");
+    if (!form.kategori) return alert("Kategori wajib dipilih");
+    if (variasiList.length === 0) return alert("Tambahkan minimal 1 variasi");
 
     const newProduk = {
-      ...form,
+      id: form.id || crypto.randomUUID(),
+      nama: form.nama,
+      kategori: form.kategori,
+      deskripsi: form.deskripsi,
+      lokasi: form.lokasi,
+      comment: form.comment,
+      createdAt: form.createdAt || new Date().toISOString(),
       ownerId: user.id,
+      loved: false,
       produk: variasiList,
     };
 
-    const update = products
-      ? [...JSON.parse(products), newProduk]
-      : [newProduk];
+    const update = produkList ? [...produkList, newProduk] : [newProduk];
+
+    setProdukList(update);
 
     localStorage.setItem("produkDB", JSON.stringify(update));
-    setProdukList(update);
-    // reset form
+
+    // reset form & variasi
     setForm({
+      id: crypto.randomUUID(),
       nama: "",
       kategori: "",
       deskripsi: "",
       lokasi: "",
       comment: "",
+      loved: false,
+      createdAt: new Date().toISOString(),
     });
+
     setVariasiList([]);
+    setVariasi({
+      id: crypto.randomUUID(),
+      warna: "",
+      harga: "",
+      stok: "",
+      ukuran: "",
+      gambar: "",
+      terjual: 0,
+    });
+
     router.push("/");
   };
 
-  // 🔥 Load data dari localStorage
-  useEffect(() => {
-    try {
-      const data = localStorage.getItem("produkDB");
-      if (data) setProdukList(JSON.parse(data));
-    } catch {
-      setProdukList([]);
-    } finally {
-      setLoading(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    try {
-      const session = localStorage.getItem("loginSession");
-      if (session) setUser(JSON.parse(session));
-    } catch {
-      setUser(null);
-    } finally {
-      setLoading(true);
-    }
-  }, []);
-
-  if (!loading) return <h1>Loading...</h1>;
+  if (!ready) return <h1>Loading...</h1>;
   if (!user) return <h1>Anda belum login</h1>;
 
   return (
     <>
       <Navbar />
       <div className="p-6 max-w-3xl mx-auto">
-        <h1 className="text-2xl font-bold mb-4">
-          {`Jual produk kamu ${user.username}`}
-        </h1>
+        <h1 className="text-2xl font-bold mb-4">{`Jual produk kamu ${user.username}`}</h1>
 
         {/* FORM PRODUK */}
         <div className="space-y-3 bg-blue-100 p-4 rounded-xl">
@@ -224,19 +263,53 @@ export default function JualPage() {
             onChange={(e) => setVariasi({ ...variasi, ukuran: e.target.value })}
           />
 
-          <input
-            placeholder="Gambar URL"
-            className="p-2 w-full border rounded"
-            value={variasi.gambar}
-            onChange={(e) => setVariasi({ ...variasi, gambar: e.target.value })}
+          <DragDropUploader
+            onUpload={(file) => {
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                setVariasi((prev) => ({ ...prev, gambar: reader.result }));
+              };
+              reader.readAsDataURL(file);
+            }}
           />
 
-          <button
-            onClick={tambahVariasi}
-            className="bg-blue-700 text-white px-3 py-2 rounded"
-          >
-            + Tambah Variasi
-          </button>
+          {/* Preview gambar setelah upload */}
+          {variasi.gambar && (
+            // use native img tag for base64 to avoid Next/Image processing
+            <Image
+              src={variasi.gambar}
+              alt="Preview"
+              width={100}
+              height={100}
+              className="w-32 h-32 object-cover mt-2 rounded-lg border"
+            />
+          )}
+
+          <div className="flex gap-2">
+            <button
+              onClick={tambahVariasi}
+              className="bg-blue-700 text-white px-3 py-2 rounded"
+            >
+              + Tambah Variasi
+            </button>
+
+            <button
+              onClick={() => {
+                setVariasi({
+                  id: crypto.randomUUID(),
+                  warna: "",
+                  harga: "",
+                  stok: "",
+                  ukuran: "",
+                  gambar: "",
+                  terjual: 0,
+                });
+              }}
+              className="px-3 py-2 border rounded"
+            >
+              Reset Variasi
+            </button>
+          </div>
         </div>
 
         {/* LIST VARIASI */}
@@ -245,8 +318,25 @@ export default function JualPage() {
             <h3 className="font-bold">Variasi Ditambahkan:</h3>
             <ul className="list-disc ml-5">
               {variasiList.map((v) => (
-                <li key={v.id}>
-                  {v.warna} — Rp{v.harga.toLocaleString()} — stok {v.stok}
+                <li key={v.id} className="flex items-center gap-3">
+                  <div className="flex-1">
+                    {v.warna} — Rp{v.harga.toLocaleString()} — stok {v.stok}
+                  </div>
+                  {v.gambar?.[0] && (
+                    <Image
+                      src={v.gambar[0]}
+                      alt={v.warna}
+                      width={100}
+                      height={100}
+                      className="w-12 h-12 object-cover rounded"
+                    />
+                  )}
+                  <button
+                    className="text-sm text-red-600"
+                    onClick={() => hapusVariasi(v.id)}
+                  >
+                    Hapus
+                  </button>
                 </li>
               ))}
             </ul>
@@ -259,10 +349,11 @@ export default function JualPage() {
         >
           Simpan Produk
         </button>
+
         <button
           onClick={() => {
             localStorage.removeItem("produkDB");
-            setProdukList([]); // supaya UI langsung kosong
+            setProdukList([]);
           }}
         >
           Hapus Semua Produk
@@ -280,15 +371,25 @@ export default function JualPage() {
                 <p className="text-sm text-gray-600">{p.kategori}</p>
 
                 <div className="flex gap-2 mt-2 overflow-auto">
-                  {p.produk.map((v) => (
-                    <Image
+                  {p.produk?.map((v) => (
+                    <div
                       key={v.id}
-                      src={v.gambar[0]}
-                      alt={v.warna}
-                      width={80}
-                      height={80}
-                      className="w-20 h-20 rounded object-cover border"
-                    />
+                      className="w-20 h-20 rounded overflow-hidden border"
+                    >
+                      {v.gambar?.[0] ? (
+                        <Image
+                          src={v.gambar[0]}
+                          alt={v.warna}
+                          width={100}
+                          height={100}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          No Image
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
 

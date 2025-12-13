@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, use } from "react";
+import CardProduk from "../../components/CardProduk";
 import ProfileEditModal from "../../components/ProfileEditModal";
 import Image from "next/image";
 import Navbar from "../../components/navbar";
@@ -33,11 +34,25 @@ export default function ProfilePage({ params }) {
   const [notifEnabled, setNotifEnabled] = useState(false);
   const [mailEnabled, setMailEnabled] = useState(false);
 
+  function toggleLove(produkId) {
+    const update = produks.map((p) => {
+      if (p.id === produkId) {
+        return { ...p, loved: !p.loved };
+      }
+      return p;
+    });
+    console.log("update", update);
+    setProduks(update);
+    // Simpan ke localStorage
+    localStorage.setItem("produkDB", JSON.stringify(update));
+  }
+
   useEffect(() => {
     try {
       const allUsers = JSON.parse(localStorage.getItem("userDB")) || [];
       console.log("allUsers", allUsers);
-      const found = allUsers.find((u) => u.username === username);
+      const found = allUsers.filter((u) => u.username === username);
+      console.log("foundUser", found);
       if (found) setUser(found);
     } catch {
     } finally {
@@ -49,32 +64,35 @@ export default function ProfilePage({ params }) {
     try {
       const allProduk = JSON.parse(localStorage.getItem("produkDB")) || [];
       console.log("allProduk", allProduk);
-      const found = allProduk.find((u) => u.ownerId === user.id);
-      console.log("found", found);
+      const found = allProduk.filter((u) => u.ownerId === user[0].id);
+      console.log("foundProduk", found);
       if (found) setProduks(found);
     } catch {}
   }, [user]);
 
   if (!loading) return <div>Loading...</div>;
   if (!user) return <div>User tidak ditemukan</div>;
-
   return (
     <>
       <Navbar />
       <div className="w-full bg-blue-100 flex gap-4 h-auto ">
         {/* Kiri */}
         <div className="sticky top-2 mb-4   w-[250px] bg-blue-200 border-gray-100 ml-32 mt-14 rounded-2xl p-4 h-screen">
-          <div className="flex flex-col items-center">
-            <Image
-              src={user.foto}
-              alt="Profile"
-              width={50}
-              height={50}
-              className="w-16 h-16 rounded-full mb-4"
-            />
-            <h2 className="text-xl font-semibold">{user.username}</h2>
-            <p className="text-gray-600">{user.email}</p>
-          </div>
+          {user.map((u) => (
+            <div key={u.id} className="flex flex-col items-center">
+              {" "}
+              <Image
+                id={u.id}
+                src={u.foto}
+                alt="Profile"
+                width={50}
+                height={50}
+                className="w-16 h-16 rounded-full mb-4"
+              />
+              <h2 className="text-xl font-semibold">{u.username}</h2>
+              <p className="text-gray-600">{u.email}</p>
+            </div>
+          ))}
 
           <button
             onClick={() => setActiveMenu("profile")}
@@ -764,7 +782,7 @@ export default function ProfilePage({ params }) {
             <div className="w-[800px] h-full bg-blue-200 border-gray-100 ml-2 mt-14 rounded-2xl p-4 shadow-2xl">
               <div className="flex space-x-4 p-2">
                 <Image
-                  src={user.foto}
+                  src={user.foto || "/no-image.png"}
                   width={100}
                   height={100}
                   alt="logo"
@@ -781,204 +799,20 @@ export default function ProfilePage({ params }) {
               </div>
               <div className="font-bold text-xl p-2">Produk saya</div>
               <div className="flex flex-start flex-wrap w-full h-full">
-                <div className="flex-1 min-w-60 max-w-[300px] h-70 m-2 border border-gray-400 shadow-lg rounded-md flex flex-col p-2">
-                  {" "}
-                  <div className="relative w-full">
-                    <Image
-                      src="https://plus.unsplash.com/premium_photo-1678218594563-9fe0d16c6838?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmFqdSUyMHB1dGlofGVufDB8fDB8fHww"
-                      width={100}
-                      height={100}
-                      alt="foto barang"
-                      className="object-cover w-full h-35 rounded-md text-center"
-                    ></Image>
-                    <div className="absolute top-0 right-0 bg-white rounded-full p-1">
-                      <IoHeart size={20} className="text-red-500" />
-                    </div>
-                  </div>
-                  <h1>Baju Putih</h1>
-                  <p>★★★★★</p>
-                  <p className="font-light text-xs">Terjual: 10+</p>
-                  <p className="font-light text-sm">Rp. 100.000</p>
-                  <button className="text-center border-gray-100 bg-blue-500 rounded-lg p-2 mt-2 cursor-pointer">
-                    Edit
-                  </button>
-                </div>
-                <div className="flex-1 min-w-60 max-w-[300px] h-70 m-2 border border-gray-400 shadow-lg rounded-md flex flex-col p-2">
-                  {" "}
-                  <div className="relative w-full">
-                    <Image
-                      src="https://plus.unsplash.com/premium_photo-1678218594563-9fe0d16c6838?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmFqdSUyMHB1dGlofGVufDB8fDB8fHww"
-                      width={100}
-                      height={100}
-                      alt="foto barang"
-                      className="object-cover w-full h-35 rounded-md text-center"
-                    ></Image>
-                    <div className="absolute top-0 right-0 bg-white rounded-full p-1">
-                      <IoHeart size={20} className="text-red-500" />
-                    </div>
-                  </div>
-                  <h1>Baju Putih</h1>
-                  <p>★★★★★</p>
-                  <p className="font-light text-xs">Terjual: 10+</p>
-                  <p className="font-light text-sm">Rp. 100.000</p>
-                  <button className="text-center border-gray-100 bg-blue-500 rounded-lg p-2 mt-2 cursor-pointer">
-                    Edit
-                  </button>
-                </div>
-                <div className="flex-1 min-w-60 max-w-[300px] h-70 m-2 border border-gray-400 shadow-lg rounded-md flex flex-col p-2">
-                  {" "}
-                  <div className="relative w-full">
-                    <Image
-                      src="https://plus.unsplash.com/premium_photo-1678218594563-9fe0d16c6838?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmFqdSUyMHB1dGlofGVufDB8fDB8fHww"
-                      width={100}
-                      height={100}
-                      alt="foto barang"
-                      className="object-cover w-full h-35 rounded-md text-center"
-                    ></Image>
-                    <div className="absolute top-0 right-0 bg-white rounded-full p-1">
-                      <IoHeart size={20} className="text-red-500" />
-                    </div>
-                  </div>
-                  <h1>Baju Putih</h1>
-                  <p>★★★★★</p>
-                  <p className="font-light text-xs">Terjual: 10+</p>
-                  <p className="font-light text-sm">Rp. 100.000</p>
-                  <button className="text-center border-gray-100 bg-blue-500 rounded-lg p-2 mt-2 cursor-pointer">
-                    Edit
-                  </button>
-                </div>
-                <div className="flex-1 min-w-60 max-w-[300px] h-70 m-2 border border-gray-400 shadow-lg rounded-md flex flex-col p-2">
-                  {" "}
-                  <div className="relative w-full">
-                    <Image
-                      src="https://plus.unsplash.com/premium_photo-1678218594563-9fe0d16c6838?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmFqdSUyMHB1dGlofGVufDB8fDB8fHww"
-                      width={100}
-                      height={100}
-                      alt="foto barang"
-                      className="object-cover w-full h-35 rounded-md text-center"
-                    ></Image>
-                    <div className="absolute top-0 right-0 bg-white rounded-full p-1">
-                      <IoHeart size={20} className="text-red-500" />
-                    </div>
-                  </div>
-                  <h1>Baju Putih</h1>
-                  <p>★★★★★</p>
-                  <p className="font-light text-xs">Terjual: 10+</p>
-                  <p className="font-light text-sm">Rp. 100.000</p>
-                  <button className="text-center border-gray-100 bg-blue-500 rounded-lg p-2 mt-2 cursor-pointer">
-                    Edit
-                  </button>
-                </div>
-                <div className="flex-1 min-w-60 max-w-[300px] h-70 m-2 border border-gray-400 shadow-lg rounded-md flex flex-col p-2">
-                  {" "}
-                  <div className="relative w-full">
-                    <Image
-                      src="https://plus.unsplash.com/premium_photo-1678218594563-9fe0d16c6838?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmFqdSUyMHB1dGlofGVufDB8fDB8fHww"
-                      width={100}
-                      height={100}
-                      alt="foto barang"
-                      className="object-cover w-full h-35 rounded-md text-center"
-                    ></Image>
-                    <div className="absolute top-0 right-0 bg-white rounded-full p-1">
-                      <IoHeart size={20} className="text-red-500" />
-                    </div>
-                  </div>
-                  <h1>Baju Putih</h1>
-                  <p>★★★★★</p>
-                  <p className="font-light text-xs">Terjual: 10+</p>
-                  <p className="font-light text-sm">Rp. 100.000</p>
-                  <button className="text-center border-gray-100 bg-blue-500 rounded-lg p-2 mt-2 cursor-pointer">
-                    Edit
-                  </button>
-                </div>
-                <div className="flex-1 min-w-60 max-w-[300px] h-70 m-2 border border-gray-400 shadow-lg rounded-md flex flex-col p-2">
-                  {" "}
-                  <div className="relative w-full">
-                    <Image
-                      src="https://plus.unsplash.com/premium_photo-1678218594563-9fe0d16c6838?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmFqdSUyMHB1dGlofGVufDB8fDB8fHww"
-                      width={100}
-                      height={100}
-                      alt="foto barang"
-                      className="object-cover w-full h-35 rounded-md text-center"
-                    ></Image>
-                    <div className="absolute top-0 right-0 bg-white rounded-full p-1">
-                      <IoHeart size={20} className="text-red-500" />
-                    </div>
-                  </div>
-                  <h1>Baju Putih</h1>
-                  <p>★★★★★</p>
-                  <p className="font-light text-xs">Terjual: 10+</p>
-                  <p className="font-light text-sm">Rp. 100.000</p>
-                  <button className="text-center border-gray-100 bg-blue-500 rounded-lg p-2 mt-2 cursor-pointer">
-                    Edit
-                  </button>
-                </div>
-                <div className="flex-1 min-w-60 max-w-[300px] h-70 m-2 border border-gray-400 shadow-lg rounded-md flex flex-col p-2">
-                  {" "}
-                  <div className="relative w-full">
-                    <Image
-                      src="https://plus.unsplash.com/premium_photo-1678218594563-9fe0d16c6838?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmFqdSUyMHB1dGlofGVufDB8fDB8fHww"
-                      width={100}
-                      height={100}
-                      alt="foto barang"
-                      className="object-cover w-full h-35 rounded-md text-center"
-                    ></Image>
-                    <div className="absolute top-0 right-0 bg-white rounded-full p-1">
-                      <IoHeart size={20} className="text-red-500" />
-                    </div>
-                  </div>
-                  <h1>Baju Putih</h1>
-                  <p>★★★★★</p>
-                  <p className="font-light text-xs">Terjual: 10+</p>
-                  <p className="font-light text-sm">Rp. 100.000</p>
-                  <button className="text-center border-gray-100 bg-blue-500 rounded-lg p-2 mt-2 cursor-pointer">
-                    Edit
-                  </button>
-                </div>
-                <div className="flex-1 min-w-60 max-w-[300px] h-70 m-2 border border-gray-400 shadow-lg rounded-md flex flex-col p-2">
-                  {" "}
-                  <div className="relative w-full">
-                    <Image
-                      src="https://plus.unsplash.com/premium_photo-1678218594563-9fe0d16c6838?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmFqdSUyMHB1dGlofGVufDB8fDB8fHww"
-                      width={100}
-                      height={100}
-                      alt="foto barang"
-                      className="object-cover w-full h-35 rounded-md text-center"
-                    ></Image>
-                    <div className="absolute top-0 right-0 bg-white rounded-full p-1">
-                      <IoHeart size={20} className="text-red-500" />
-                    </div>
-                  </div>
-                  <h1>Baju Putih</h1>
-                  <p>★★★★★</p>
-                  <p className="font-light text-xs">Terjual: 10+</p>
-                  <p className="font-light text-sm">Rp. 100.000</p>
-                  <button className="text-center border-gray-100 bg-blue-500 rounded-lg p-2 mt-2 cursor-pointer">
-                    Edit
-                  </button>
-                </div>
-                <div className="flex-1 min-w-60 max-w-[300px] h-70 m-2 border border-gray-400 shadow-lg rounded-md flex flex-col p-2">
-                  {" "}
-                  <div className="relative w-full">
-                    <Image
-                      src="https://plus.unsplash.com/premium_photo-1678218594563-9fe0d16c6838?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmFqdSUyMHB1dGlofGVufDB8fDB8fHww"
-                      width={100}
-                      height={100}
-                      alt="foto barang"
-                      className="object-cover w-full h-35 rounded-md text-center"
-                    ></Image>
-                    <div className="absolute top-0 right-0 bg-white rounded-full p-1">
-                      <IoHeart size={20} className="text-red-500" />
-                    </div>
-                  </div>
-                  <h1>Baju Putih</h1>
-                  <p>★★★★★</p>
-                  <p className="font-light text-xs">Terjual: 10+</p>
-                  <p className="font-light text-sm">Rp. 100.000</p>
-                  <button className="text-center border-gray-100 bg-blue-500 rounded-lg p-2 mt-2 cursor-pointer">
-                    Edit
-                  </button>
-                </div>
+                {/* Card Produk */}
+                {produks.map((item) =>
+                  item.produk.map((p) => (
+                    <CardProduk
+                      key={p.id}
+                      nama={item.nama}
+                      harga={p.harga}
+                      gambar={p.gambar[0]}
+                      terjual={item.terjual}
+                      edit={true}
+                      loveProduk={true}
+                    />
+                  ))
+                )}
               </div>
             </div>
           </>
@@ -992,204 +826,23 @@ export default function ProfilePage({ params }) {
               </div>
 
               <div className="flex flex-start flex-wrap w-full h-full">
-                <div className="flex-1 min-w-60 max-w-[300px] h-70 m-2 border border-gray-400 shadow-lg rounded-md flex flex-col p-2">
-                  {" "}
-                  <div className="relative w-full">
-                    <Image
-                      src="https://plus.unsplash.com/premium_photo-1678218594563-9fe0d16c6838?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmFqdSUyMHB1dGlofGVufDB8fDB8fHww"
-                      width={100}
-                      height={100}
-                      alt="foto barang"
-                      className="object-cover w-full h-35 rounded-md text-center"
-                    ></Image>
-                    <div className="absolute top-0 right-0 bg-white rounded-full p-1">
-                      <IoHeart size={20} className="text-red-500" />
-                    </div>
-                  </div>
-                  <h1>Baju Putih</h1>
-                  <p>★★★★★</p>
-                  <p className="font-light text-xs">Terjual: 10+</p>
-                  <p className="font-light text-sm">Rp. 100.000</p>
-                  <button className="text-center border-gray-100 bg-blue-500 rounded-lg p-2 mt-2 cursor-pointer">
-                    Lihat detail
-                  </button>
-                </div>
-                <div className="flex-1 min-w-60 max-w-[300px] h-70 m-2 border border-gray-400 shadow-lg rounded-md flex flex-col p-2">
-                  {" "}
-                  <div className="relative w-full">
-                    <Image
-                      src="https://plus.unsplash.com/premium_photo-1678218594563-9fe0d16c6838?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmFqdSUyMHB1dGlofGVufDB8fDB8fHww"
-                      width={100}
-                      height={100}
-                      alt="foto barang"
-                      className="object-cover w-full h-35 rounded-md text-center"
-                    ></Image>
-                    <div className="absolute top-0 right-0 bg-white rounded-full p-1">
-                      <IoHeart size={20} className="text-red-500" />
-                    </div>
-                  </div>
-                  <h1>Baju Putih</h1>
-                  <p>★★★★★</p>
-                  <p className="font-light text-xs">Terjual: 10+</p>
-                  <p className="font-light text-sm">Rp. 100.000</p>
-                  <button className="text-center border-gray-100 bg-blue-500 rounded-lg p-2 mt-2 cursor-pointer">
-                    Lihat detail
-                  </button>
-                </div>
-                <div className="flex-1 min-w-60 max-w-[300px] h-70 m-2 border border-gray-400 shadow-lg rounded-md flex flex-col p-2">
-                  {" "}
-                  <div className="relative w-full">
-                    <Image
-                      src="https://plus.unsplash.com/premium_photo-1678218594563-9fe0d16c6838?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmFqdSUyMHB1dGlofGVufDB8fDB8fHww"
-                      width={100}
-                      height={100}
-                      alt="foto barang"
-                      className="object-cover w-full h-35 rounded-md text-center"
-                    ></Image>
-                    <div className="absolute top-0 right-0 bg-white rounded-full p-1">
-                      <IoHeart size={20} className="text-red-500" />
-                    </div>
-                  </div>
-                  <h1>Baju Putih</h1>
-                  <p>★★★★★</p>
-                  <p className="font-light text-xs">Terjual: 10+</p>
-                  <p className="font-light text-sm">Rp. 100.000</p>
-                  <button className="text-center border-gray-100 bg-blue-500 rounded-lg p-2 mt-2 cursor-pointer">
-                    Lihat detail
-                  </button>
-                </div>
-                <div className="flex-1 min-w-60 max-w-[300px] h-70 m-2 border border-gray-400 shadow-lg rounded-md flex flex-col p-2">
-                  {" "}
-                  <div className="relative w-full">
-                    <Image
-                      src="https://plus.unsplash.com/premium_photo-1678218594563-9fe0d16c6838?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmFqdSUyMHB1dGlofGVufDB8fDB8fHww"
-                      width={100}
-                      height={100}
-                      alt="foto barang"
-                      className="object-cover w-full h-35 rounded-md text-center"
-                    ></Image>
-                    <div className="absolute top-0 right-0 bg-white rounded-full p-1">
-                      <IoHeart size={20} className="text-red-500" />
-                    </div>
-                  </div>
-                  <h1>Baju Putih</h1>
-                  <p>★★★★★</p>
-                  <p className="font-light text-xs">Terjual: 10+</p>
-                  <p className="font-light text-sm">Rp. 100.000</p>
-                  <button className="text-center border-gray-100 bg-blue-500 rounded-lg p-2 mt-2 cursor-pointer">
-                    Lihat detail
-                  </button>
-                </div>
-                <div className="flex-1 min-w-60 max-w-[300px] h-70 m-2 border border-gray-400 shadow-lg rounded-md flex flex-col p-2">
-                  {" "}
-                  <div className="relative w-full">
-                    <Image
-                      src="https://plus.unsplash.com/premium_photo-1678218594563-9fe0d16c6838?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmFqdSUyMHB1dGlofGVufDB8fDB8fHww"
-                      width={100}
-                      height={100}
-                      alt="foto barang"
-                      className="object-cover w-full h-35 rounded-md text-center"
-                    ></Image>
-                    <div className="absolute top-0 right-0 bg-white rounded-full p-1">
-                      <IoHeart size={20} className="text-red-500" />
-                    </div>
-                  </div>
-                  <h1>Baju Putih</h1>
-                  <p>★★★★★</p>
-                  <p className="font-light text-xs">Terjual: 10+</p>
-                  <p className="font-light text-sm">Rp. 100.000</p>
-                  <button className="text-center border-gray-100 bg-blue-500 rounded-lg p-2 mt-2 cursor-pointer">
-                    Lihat detail
-                  </button>
-                </div>
-                <div className="flex-1 min-w-60 max-w-[300px] h-70 m-2 border border-gray-400 shadow-lg rounded-md flex flex-col p-2">
-                  {" "}
-                  <div className="relative w-full">
-                    <Image
-                      src="https://plus.unsplash.com/premium_photo-1678218594563-9fe0d16c6838?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmFqdSUyMHB1dGlofGVufDB8fDB8fHww"
-                      width={100}
-                      height={100}
-                      alt="foto barang"
-                      className="object-cover w-full h-35 rounded-md text-center"
-                    ></Image>
-                    <div className="absolute top-0 right-0 bg-white rounded-full p-1">
-                      <IoHeart size={20} className="text-red-500" />
-                    </div>
-                  </div>
-                  <h1>Baju Putih</h1>
-                  <p>★★★★★</p>
-                  <p className="font-light text-xs">Terjual: 10+</p>
-                  <p className="font-light text-sm">Rp. 100.000</p>
-                  <button className="text-center border-gray-100 bg-blue-500 rounded-lg p-2 mt-2 cursor-pointer">
-                    Lihat detail
-                  </button>
-                </div>
-                <div className="flex-1 min-w-60 max-w-[300px] h-70 m-2 border border-gray-400 shadow-lg rounded-md flex flex-col p-2">
-                  {" "}
-                  <div className="relative w-full">
-                    <Image
-                      src="https://plus.unsplash.com/premium_photo-1678218594563-9fe0d16c6838?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmFqdSUyMHB1dGlofGVufDB8fDB8fHww"
-                      width={100}
-                      height={100}
-                      alt="foto barang"
-                      className="object-cover w-full h-35 rounded-md text-center"
-                    ></Image>
-                    <div className="absolute top-0 right-0 bg-white rounded-full p-1">
-                      <IoHeart size={20} className="text-red-500" />
-                    </div>
-                  </div>
-                  <h1>Baju Putih</h1>
-                  <p>★★★★★</p>
-                  <p className="font-light text-xs">Terjual: 10+</p>
-                  <p className="font-light text-sm">Rp. 100.000</p>
-                  <button className="text-center border-gray-100 bg-blue-500 rounded-lg p-2 mt-2 cursor-pointer">
-                    Lihat detail
-                  </button>
-                </div>
-                <div className="flex-1 min-w-60 max-w-[300px] h-70 m-2 border border-gray-400 shadow-lg rounded-md flex flex-col p-2">
-                  {" "}
-                  <div className="relative w-full">
-                    <Image
-                      src="https://plus.unsplash.com/premium_photo-1678218594563-9fe0d16c6838?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmFqdSUyMHB1dGlofGVufDB8fDB8fHww"
-                      width={100}
-                      height={100}
-                      alt="foto barang"
-                      className="object-cover w-full h-35 rounded-md text-center"
-                    ></Image>
-                    <div className="absolute top-0 right-0 bg-white rounded-full p-1">
-                      <IoHeart size={20} className="text-red-500" />
-                    </div>
-                  </div>
-                  <h1>Baju Putih</h1>
-                  <p>★★★★★</p>
-                  <p className="font-light text-xs">Terjual: 10+</p>
-                  <p className="font-light text-sm">Rp. 100.000</p>
-                  <button className="text-center border-gray-100 bg-blue-500 rounded-lg p-2 mt-2 cursor-pointer">
-                    Lihat detail
-                  </button>
-                </div>
-                <div className="flex-1 min-w-60 max-w-[300px] h-70 m-2 border border-gray-400 shadow-lg rounded-md flex flex-col p-2">
-                  {" "}
-                  <div className="relative w-full">
-                    <Image
-                      src="https://plus.unsplash.com/premium_photo-1678218594563-9fe0d16c6838?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmFqdSUyMHB1dGlofGVufDB8fDB8fHww"
-                      width={100}
-                      height={100}
-                      alt="foto barang"
-                      className="object-cover w-full h-35 rounded-md text-center"
-                    ></Image>
-                    <div className="absolute top-0 right-0 bg-white rounded-full p-1">
-                      <IoHeart size={20} className="text-red-500" />
-                    </div>
-                  </div>
-                  <h1>Baju Putih</h1>
-                  <p>★★★★★</p>
-                  <p className="font-light text-xs">Terjual: 10+</p>
-                  <p className="font-light text-sm">Rp. 100.000</p>
-                  <button className="text-center border-gray-100 bg-blue-500 rounded-lg p-2 mt-2 cursor-pointer">
-                    Lihat detail
-                  </button>
-                </div>
+                {/* Card Produk */}
+                {produks
+                  .filter((p) => p.loved === true)
+                  .map((p) => (
+                    <CardProduk
+                      key={p.id}
+                      nama={p.nama}
+                      harga={
+                        "Rp " + p.produk?.[0]?.harga.toLocaleString("id-ID")
+                      }
+                      gambar={p.produk?.[0]?.gambar?.[0]}
+                      terjual={p.produk?.[0]?.terjual || 0}
+                      edit={false}
+                      isLoved={p.loved}
+                      onLove={() => toggleLove(p.id)}
+                    />
+                  ))}
               </div>
             </div>
           </>

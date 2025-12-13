@@ -5,16 +5,13 @@ import { useState } from "react";
 export default function DragDropUploader({ onUpload }) {
   const [dragging, setDragging] = useState(false);
 
-  const handleDrop = (e) => {
-    e.preventDefault();
-    setDragging(false);
+  const handleFile = (file) => {
+    if (!file || !(file instanceof Blob)) {
+      console.warn("File tidak valid:", file);
+      return;
+    }
 
-    const file = e.dataTransfer.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = () => onUpload(reader.result);
-    reader.readAsDataURL(file);
+    onUpload(file);
   };
 
   return (
@@ -24,9 +21,17 @@ export default function DragDropUploader({ onUpload }) {
         setDragging(true);
       }}
       onDragLeave={() => setDragging(false)}
-      onDrop={handleDrop}
+      onDrop={(e) => {
+        e.preventDefault();
+        setDragging(false);
+
+        const file = e.dataTransfer?.files?.[0];
+        if (!file) return;
+
+        handleFile(file);
+      }}
       className={`border-2 border-dashed w-full p-6 rounded-xl text-center cursor-pointer
-          ${dragging ? "bg-blue-100" : "bg-gray-100"}`}
+        ${dragging ? "bg-blue-100" : "bg-gray-100"}`}
     >
       <p className="text-gray-700">
         Drag & Drop untuk upload foto
@@ -36,13 +41,13 @@ export default function DragDropUploader({ onUpload }) {
 
       <input
         type="file"
+        accept="image/*"
         className="hidden"
         id="fileInput"
         onChange={(e) => {
-          const file = e.target.files[0];
-          const reader = new FileReader();
-          reader.onload = () => onUpload(reader.result);
-          reader.readAsDataURL(file);
+          const file = e.target.files?.[0];
+          if (!file) return;
+          handleFile(file);
         }}
       />
 

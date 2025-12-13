@@ -2,6 +2,7 @@
 import { useSearchParams } from "next/navigation";
 import SearchProduk from "../components/Products";
 import Navbar from "../components/navbar";
+import Footer from "../components/Footer";
 
 export default function Products() {
   const searchParams = useSearchParams();
@@ -11,6 +12,7 @@ export default function Products() {
     <>
       <Navbar />
       <SearchProduk cari={cari} />
+      <Footer />
     </>
   );
 }

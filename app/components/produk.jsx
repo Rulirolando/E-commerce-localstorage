@@ -6,9 +6,15 @@ export default function ShowProduk({ produkSelected }) {
   const [selectedImage, setSelectedImage] = useState("");
   const [mounted, setMounted] = useState(false);
   console.log("selectedimage", selectedImage);
+  console.log("produkselected", produkSelected);
   const allimg = produkSelected
     ? produkSelected.produk.flatMap((item) => item.gambar)
     : [];
+
+  function capitalizeFirst(text) {
+    if (!text) return "";
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  }
 
   useEffect(() => {
     try {
@@ -113,7 +119,9 @@ export default function ShowProduk({ produkSelected }) {
             </span>
           </div>
 
-          <h2 className="text-lg font-semibold mt-2">{produkSelected.nama}</h2>
+          <h2 className="text-lg font-semibold mt-2">
+            {capitalizeFirst(produkSelected.nama)}
+          </h2>
           <div className="flex justify-between w-full items-center mt-2 mb-4">
             {" "}
             <p className="text-blue-800 font-bold">

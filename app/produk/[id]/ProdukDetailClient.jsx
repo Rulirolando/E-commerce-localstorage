@@ -2,70 +2,89 @@
 import Image from "next/image";
 import { useState } from "react";
 import Navbar from "../../components/navbar";
+import Footer from "../../components/Footer";
 
 export default function ProdukDetail({ produkChose }) {
-  const [selectedImage, setSelectedImage] = useState("");
+  // ambil semua gambar dulu (pastikan ini ada sebelum useState)
+  const allImg = produkChose.produk.flatMap((p) => p.gambar);
+
+  const [selectedImage, setSelectedImage] = useState(allImg[0] || "");
   const [selectedProduk, setSelectedProduk] = useState({
     id: produkChose.id,
-    gambar: "",
-    harga: 0,
+    produkId: "",
+    gambar: allImg[0] || "",
+    harga: produkChose.produk[0]?.harga || 0,
     nama: produkChose.nama,
     warna: "",
     ukuran: "",
-    jumlah: 0,
+    stok: 0,
+    jumlah: 1, // default 1 supaya tidak disabled
   });
 
+  console.log("produkChose", produkChose);
   console.log("selectedproduk", selectedProduk);
 
-  const handlewarna = (warna, img, harga) => {
+  function capitalizeFirst(text) {
+    if (!text) return "";
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  }
+
+  const handlewarna = (warna, img, harga, idProdukVariasi) => {
+    const variasi = produkChose.produk.find((p) => p.id === idProdukVariasi);
+    // jika toggle off (klik warna yg sama), reset produkId & warna
     if (selectedProduk.warna === warna) {
       setSelectedProduk((prev) => ({
         ...prev,
-        gambar: img,
-        harga,
+        produkId: "",
         warna: "",
+        gambar: img || allImg[0] || "",
+        harga: harga || produkChose.produk[0]?.harga || 0,
+        stok: 0,
+        jumlah: 1,
       }));
-    } else {
-      setSelectedProduk((prev) => ({
-        id: produkChose.id,
-        ...prev,
-        harga,
-        gambar: img,
-        warna,
-      }));
+      setSelectedImage(img || allImg[0] || "");
+      return;
     }
+
+    // set pilihan variasi baru (letakkan ...prev dulu supaya tidak tertimpa)
+    setSelectedProduk((prev) => ({
+      ...prev,
+      id: produkChose.id,
+      produkId: idProdukVariasi,
+      warna,
+      gambar: img,
+      harga,
+      stok: variasi?.stok || 0,
+      jumlah: 1,
+      nama: produkChose.nama,
+    }));
+
+    setSelectedImage(img);
   };
+
   // pilih ukuran berdasarkan warna yang dipilih
   const produkDipilih = produkChose.produk.find(
     (p) => p.warna === selectedProduk.warna
   );
+
   // Ambil semua ukuran dari semua produk dan hapus duplikat
   const deleteSameUkuran = [
     ...new Set(produkChose.produk.flatMap((p) => p.ukuran)),
   ];
 
   const handleukuran = (ukuran) => {
-    if (selectedProduk.ukuran === ukuran) {
-      setSelectedProduk((prev) => ({
-        ...prev,
-        ukuran: "",
-      }));
-    } else {
-      setSelectedProduk((prev) => ({
-        ...prev,
-        ukuran,
-      }));
-    }
+    setSelectedProduk((prev) => ({
+      ...prev,
+      ukuran: prev.ukuran === ukuran ? "" : ukuran,
+    }));
   };
 
   const handlejumlah = (jumlah) => {
     setSelectedProduk((prev) => ({
       ...prev,
-      jumlah,
+      jumlah: Math.min(prev.stok, Math.max(1, jumlah)),
     }));
   };
-
-  const allImg = produkChose.produk.flatMap((p) => p.gambar);
 
   const produkIdChoose = produkChose.produk.find((p) =>
     p.gambar.includes(selectedImage)
@@ -82,32 +101,39 @@ export default function ProdukDetail({ produkChose }) {
       (item) =>
         item.id === produkBaru.id &&
         item.warna === produkBaru.warna &&
-        item.ukuran === produkBaru.ukuran
+        item.ukuran === produkBaru.ukuran &&
+        item.produkId === produkBaru.produkId
     );
 
     if (sudahAda) {
-      // Update jumlah jika produk sudah ada
-      sudahAda.jumlah += produkBaru.jumlah;
+      // Update jumlah jika produk sudah ada (copy immutable)
+      const updated = keranjangLama.map((it) =>
+        it === sudahAda ? { ...it, jumlah: it.jumlah + produkBaru.jumlah } : it
+      );
+      localStorage.setItem("keranjang", JSON.stringify(updated));
     } else {
-      keranjangLama.push(produkBaru);
+      localStorage.setItem(
+        "keranjang",
+        JSON.stringify([...keranjangLama, produkBaru])
+      );
     }
 
-    // Simpan kembali ke localStorage
-    localStorage.setItem("keranjang", JSON.stringify(keranjangLama));
-
+    // reset selectedProduk lengkap (termasuk gambar & harga)
     setSelectedProduk({
       id: produkChose.id,
+      produkId: "",
+      gambar: allImg[0] || "",
+      harga: produkChose.produk[0]?.harga || 0,
       nama: produkChose.nama,
       warna: "",
       ukuran: "",
-      jumlah: 0,
+      jumlah: 1,
     });
+    setSelectedImage(allImg[0] || "");
 
     alert("Produk berhasil ditambahkan ke keranjang!");
   };
 
-  console.log("produkidchoose", produkIdChoose);
-  console.log(produkChose);
   return (
     <>
       <Navbar />
@@ -119,8 +145,9 @@ export default function ProdukDetail({ produkChose }) {
                 src={selectedImage || allImg[0]}
                 alt={produkChose.nama}
                 fill
+                unoptimized
                 className="object-cover rounded-lg"
-              ></Image>
+              />
             </div>
 
             <div className="flex flex-row mt-2  gap-1">
@@ -128,16 +155,21 @@ export default function ProdukDetail({ produkChose }) {
                 <div key={index} className="w-16 h-1/2">
                   <Image
                     src={img}
-                    alt={produkChose.nama}
+                    alt={`${produkChose.nama}-${index}`}
                     width={50}
                     height={100}
+                    unoptimized
                     className={`object-cover rounded-lg w-16 h-16  border-2 cursor-pointer ${
                       selectedImage === img
                         ? "border-blue-500"
                         : "border-transparent"
                     }`}
-                    onClick={() => setSelectedImage(img)}
-                  ></Image>
+                    onClick={() => {
+                      setSelectedImage(img);
+                      // sync selectedProduk.gambar juga
+                      setSelectedProduk((prev) => ({ ...prev, gambar: img }));
+                    }}
+                  />
                 </div>
               ))}
             </div>
@@ -145,7 +177,7 @@ export default function ProdukDetail({ produkChose }) {
         </div>
         <div className="col-span-1 w-3/4">
           <div className="text-4xl font-light-semibold mt-8">
-            <p className="">{produkChose.nama}</p>
+            <p className="">{capitalizeFirst(produkChose.nama)}</p>
           </div>
           <div className="text-lg font-light-bold mt-4">
             <span className="font-light">
@@ -155,18 +187,20 @@ export default function ProdukDetail({ produkChose }) {
                 : produkChose.produk[0].harga}
             </span>
           </div>
-          <div className="text-sm font-light-bold mt-2 w-full flex gap-2 flex-wrap border justify-start items-center">
+          <div className="text-sm font-light-bold mt-2 w-full flex gap-2 flex-wrap justify-start items-center">
             <p>Warna:</p>
             {produkChose.produk.map((p, index) => (
               <button
                 key={p.id || index}
-                onMouseEnter={() => setSelectedImage(p.gambar[0])}
+                onMouseEnter={() => {
+                  setSelectedImage(p.gambar[0]);
+                }}
                 className={`px-2 py-1 border rounded-md  cursor-pointer transition-all duration-200 ${
                   selectedProduk.warna === p.warna
-                    ? "bg-gray-700"
-                    : "bg-gray-200"
+                    ? "bg-blue-700 text-white"
+                    : ""
                 }`}
-                onClick={() => handlewarna(p.warna, p.gambar[0], p.harga)}
+                onClick={() => handlewarna(p.warna, p.gambar[0], p.harga, p.id)}
               >
                 {p.warna}
               </button>
@@ -175,7 +209,7 @@ export default function ProdukDetail({ produkChose }) {
 
           {/*   ukuran */}
 
-          <div className="text-sm font-light-bold font-light-bold mt-2 w-full flex gap-2 flex-wrap border justify-start items-center">
+          <div className="text-sm font-light-bold font-light-bold mt-2 w-full flex gap-2 flex-wrap justify-start items-center">
             <p>Ukuran:</p>
             {deleteSameUkuran.map((ukuran, index) => {
               const isAvailable = selectedProduk.warna
@@ -186,10 +220,10 @@ export default function ProdukDetail({ produkChose }) {
                 <button
                   key={index}
                   disabled={!isAvailable}
-                  className={`px-2 py-1 border rounded-md cursor-pointer transition-all duration-200 ${
+                  className={`px-2 py-1 border rounded-lg cursor-pointer transition-all duration-200 ${
                     selectedProduk.ukuran === ukuran
-                      ? "bg-gray-700 text-white"
-                      : "bg-gray-200"
+                      ? "bg-blue-700 text-white"
+                      : ""
                   } ${!isAvailable ? "opacity-40 cursor-not-allowed" : ""}`}
                   onClick={() => handleukuran(ukuran)}
                 >
@@ -201,16 +235,38 @@ export default function ProdukDetail({ produkChose }) {
 
           {/* jumlah */}
 
-          <div className="mt-2">
-            <label className="mr-2 font-medium">Jumlah:</label>
-            <input
-              type="number"
-              min="1"
-              disabled={!selectedProduk.ukuran || !selectedProduk.warna}
-              className={`w-16 border rounded-md px-2 py-1`}
+          <div className="flex items-center gap-2">
+            {/* Tombol Minus */}
+            <button
               value={selectedProduk.jumlah ?? 0}
-              onChange={(e) => handlejumlah(Number(e.target.value))}
-            />
+              disabled={!selectedProduk.ukuran || !selectedProduk.warna}
+              onClick={() => handlejumlah(selectedProduk.jumlah - 1)}
+              className="px-3 py-2 bg-gray-200 rounded-lg text-xl font-bold hover:bg-gray-300"
+            >
+              -
+            </button>
+
+            {/* Angka */}
+            <div className="px-4 py-2 bg-white border rounded-lg text-lg font-semibold min-w-10 text-center">
+              {selectedProduk.jumlah}
+            </div>
+
+            {/* Tombol Plus */}
+            <button
+              value={selectedProduk.jumlah ?? 0}
+              disabled={
+                !selectedProduk.ukuran ||
+                !selectedProduk.warna ||
+                selectedProduk.jumlah >= selectedProduk.stok
+              }
+              onClick={() => handlejumlah(selectedProduk.jumlah + 1)}
+              className="px-3 py-2 bg-gray-200 rounded-lg text-xl font-bold hover:bg-gray-300"
+            >
+              +
+            </button>
+            <p className="text-sm mt-1">
+              Stok tersedia: <b>{selectedProduk.stok}</b>
+            </p>
           </div>
 
           {/* tombol beli */}
@@ -249,10 +305,10 @@ export default function ProdukDetail({ produkChose }) {
         <div className="m-4 bg-blue-100 shadow-lg rounded-md p-2">
           <p className="text-4xl font-semibold mt-3">Deskripsi Produk</p>
           <p className="text-lg font-light mt-2 text-justify leading-relaxed mx-2">
-            {produkChose.deskripsi} Lorem ipsum dolor sit amet, consectetur
-            adipisicing elit. Quidem obcaecati nobis earum aut, eum, dolores
-            soluta, assumenda qui nulla ipsum ex maxime amet doloremque odio
-            delectus dolorem minima illo nemo. Lorem ipsum dolor sit amet
+            {capitalizeFirst(produkChose.deskripsi)} Lorem ipsum dolor sit amet,
+            consectetur adipisicing elit. Quidem obcaecati nobis earum aut, eum,
+            dolores soluta, assumenda qui nulla ipsum ex maxime amet doloremque
+            odio delectus dolorem minima illo nemo. Lorem ipsum dolor sit amet
             consectetur adipisicing elit. Odio quasi, placeat ex, qui dolor
             officia recusandae rem totam, unde hic veniam quo suscipit. Deleniti
             voluptate non ducimus consectetur reprehenderit dignissimos! Earum
@@ -279,6 +335,7 @@ export default function ProdukDetail({ produkChose }) {
           <p className="text-lg font-light mt-2">{produkChose.comment}</p>
         </div>
       </div>
+      <Footer />
     </>
   );
 }

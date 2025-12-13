@@ -8,7 +8,6 @@ import { useRouter } from "next/navigation";
 export default function Navbar({ className = "" }) {
   const router = useRouter();
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState("");
 
   useEffect(() => {
@@ -17,11 +16,8 @@ export default function Navbar({ className = "" }) {
       if (loginSession) setUser(JSON.parse(loginSession));
     } catch {
     } finally {
-      setLoading(true);
     }
   }, []);
-
-  if (!loading) return <div>Loading...</div>;
 
   const handleSubmit = (e) => {
     e.preventDefault();

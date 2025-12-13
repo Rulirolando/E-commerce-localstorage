@@ -5,6 +5,8 @@ import Navbar from "../components/navbar";
 
 export default function KeranjangPage() {
   const [keranjang, setKeranjang] = useState([]);
+  const [products, setProducts] = useState([]);
+  console.log("products", products);
   const [mounted, setMounted] = useState(false);
   const [selectproduk, setSelectProduk] = useState([]);
   console.log("keranjang", keranjang);
@@ -14,6 +16,7 @@ export default function KeranjangPage() {
     try {
       const raw = localStorage.getItem("keranjang") || "[]";
       const data = JSON.parse(raw);
+      console.log(data);
       setKeranjang(Array.isArray(data) ? data : []);
     } catch {
       setKeranjang([]);
@@ -21,6 +24,22 @@ export default function KeranjangPage() {
       setMounted(true);
     }
   }, []);
+
+  useEffect(() => {
+    try {
+      const products = localStorage.getItem("produkDB") || "[]";
+      const data = JSON.parse(products);
+      setProducts(data);
+    } catch {
+      setProducts([]);
+    } finally {
+      setMounted(true);
+    }
+  }, []);
+
+  const HandleSameProduk = () => {
+    // products.filter((p) => )
+  };
 
   const handleSelect = (item, checked) => {
     console.log("checked", checked);
