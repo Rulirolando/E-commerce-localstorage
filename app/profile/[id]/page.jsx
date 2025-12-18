@@ -2,7 +2,6 @@
 
 import { useEffect, useState, use } from "react";
 import CardProduk from "../../components/CardProduk";
-import ProfileEditModal from "../../components/ProfileEditModal";
 import Image from "next/image";
 import Navbar from "../../components/navbar";
 import { MdAccountCircle } from "react-icons/md";
@@ -11,7 +10,6 @@ import { TbBrandProducthunt } from "react-icons/tb";
 import { FaHeart } from "react-icons/fa";
 import { FaLocationDot } from "react-icons/fa6";
 import { IoIosSettings } from "react-icons/io";
-import { IoHeart } from "react-icons/io5";
 import { CiLock } from "react-icons/ci";
 import { RiLogoutBoxRLine } from "react-icons/ri";
 import { MdOutlineVerifiedUser } from "react-icons/md";
@@ -19,58 +17,120 @@ import { IoIosNotificationsOutline } from "react-icons/io";
 import { MdOutlineMail } from "react-icons/md";
 import { IoHelpCircleOutline } from "react-icons/io5";
 import { PiNewspaperThin } from "react-icons/pi";
+import ProfileEditModal from "../../components/ProfileEditModal";
 import { LiaUserLockSolid } from "react-icons/lia";
+import AddAdressModal from "../../components/AddressAddModal";
+
 export default function ProfilePage({ params }) {
   const { id: username } = use(params);
-  const [user, setUser] = useState(null);
-  const [produks, setProduks] = useState(null);
-  console.log("produks", produks);
+  const [user, setUser] = useState({});
+  const [produkList, setProdukList] = useState(null);
   console.log("user", user);
-  const [openEdit, setOpenEdit] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [activeMenu, setActiveMenu] = useState("profile");
   const [activePesananMenu, setActivePesananMenu] = useState("semuapesanan");
-  const [gender, setGender] = useState("");
   const [notifEnabled, setNotifEnabled] = useState(false);
   const [mailEnabled, setMailEnabled] = useState(false);
+  const [currentUser, setCurrentUser] = useState({});
+  const [IsEditProfile, setIsEditProfile] = useState(false);
+  const [isAddAddress, setIsAddAddress] = useState(false);
+  const [isEditAddress, setIsEditAddress] = useState(null);
+  const [editAddress, setEditAddress] = useState(null);
+
+  const [addressList, setAddressList] = useState([]);
+  console.log("adresslist", addressList);
 
   function toggleLove(produkId) {
-    const update = produks.map((p) => {
-      if (p.id === produkId) {
-        return { ...p, loved: !p.loved };
-      }
-      return p;
+    if (!currentUser) {
+      alert("Silakan login terlebih dahulu untuk menyukai produk.");
+      return;
+    }
+    const updateProdukList = produkList.map((produk) => {
+      if (produkId !== produk.id) return produk;
+      const isLoved = produk.loved.some((l) => l.userId === currentUser.id);
+      return {
+        ...produk,
+        loved: isLoved
+          ? produk.loved.filter((f) => f.userId !== currentUser.id)
+          : [...produk.loved, { status: true, userId: currentUser.id }],
+      };
     });
-    console.log("update", update);
-    setProduks(update);
-    // Simpan ke localStorage
-    localStorage.setItem("produkDB", JSON.stringify(update));
+    setProdukList(updateProdukList);
+    localStorage.setItem("produkDB", JSON.stringify(updateProdukList));
+  }
+
+  function handleSubmitAddress(e, id) {
+    e.preventDefault();
+    if (!editAddress) return;
+
+    const updateAddressList = addressList.map((item) =>
+      item.id === id ? editAddress : item
+    );
+    setAddressList(updateAddressList);
+    localStorage.setItem("addressDB", JSON.stringify(updateAddressList));
+    setIsEditAddress(null);
+    setEditAddress(null);
+  }
+
+  function handleDeleteAddress(id) {
+    const updateAddressList = addressList.filter((item) => item.id !== id);
+    setAddressList(updateAddressList);
+    localStorage.setItem("addressDB", JSON.stringify(updateAddressList));
+  }
+  function toggleStatusAddress(id) {
+    const updateAddressList = addressList.map((item) => {
+      if (item.userId !== currentUser.id) return item;
+
+      // jika klik alamat utama lagi → nonaktifkan
+      if (item.id === id) {
+        return { ...item, status: !item.status };
+      }
+
+      // alamat lain otomatis nonaktif
+      return { ...item, status: false };
+    });
+    setAddressList(updateAddressList);
+    localStorage.setItem("addressDB", JSON.stringify(updateAddressList));
   }
 
   useEffect(() => {
     try {
+      const userAddress = JSON.parse(localStorage.getItem("addressDB")) || [];
+      setAddressList(userAddress);
+    } catch {
+      setAddressList([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
       const allUsers = JSON.parse(localStorage.getItem("userDB")) || [];
-      console.log("allUsers", allUsers);
-      const found = allUsers.filter((u) => u.username === username);
-      console.log("foundUser", found);
+
+      const found = allUsers.find((u) => u.username === username);
       if (found) setUser(found);
     } catch {
     } finally {
-      setLoading(true);
     }
   }, [username]);
 
   useEffect(() => {
     try {
       const allProduk = JSON.parse(localStorage.getItem("produkDB")) || [];
-      console.log("allProduk", allProduk);
-      const found = allProduk.filter((u) => u.ownerId === user[0].id);
-      console.log("foundProduk", found);
-      if (found) setProduks(found);
+      if (allProduk) setProdukList(allProduk);
     } catch {}
   }, [user]);
 
-  if (!loading) return <div>Loading...</div>;
+  useEffect(() => {
+    try {
+      const user = JSON.parse(localStorage.getItem("loginSessionDB"));
+
+      setCurrentUser(user);
+      console.log("currentUser", user);
+    } catch {
+      setCurrentUser(false);
+    } finally {
+    }
+  }, []);
+
   if (!user) return <div>User tidak ditemukan</div>;
   return (
     <>
@@ -78,21 +138,19 @@ export default function ProfilePage({ params }) {
       <div className="w-full bg-blue-100 flex gap-4 h-auto ">
         {/* Kiri */}
         <div className="sticky top-2 mb-4   w-[250px] bg-blue-200 border-gray-100 ml-32 mt-14 rounded-2xl p-4 h-screen">
-          {user.map((u) => (
-            <div key={u.id} className="flex flex-col items-center">
-              {" "}
-              <Image
-                id={u.id}
-                src={u.foto}
-                alt="Profile"
-                width={50}
-                height={50}
-                className="w-16 h-16 rounded-full mb-4"
-              />
-              <h2 className="text-xl font-semibold">{u.username}</h2>
-              <p className="text-gray-600">{u.email}</p>
-            </div>
-          ))}
+          <div className="flex flex-col items-center">
+            {" "}
+            <Image
+              id={user.id}
+              src={user.foto || "/default-avatar.png"}
+              alt="Profile"
+              width={50}
+              height={50}
+              className="w-16 h-16 rounded-full mb-4"
+            />
+            <h2 className="text-xl font-semibold">{user.nama}</h2>
+            <p className="text-gray-600">{user.email}</p>
+          </div>
 
           <button
             onClick={() => setActiveMenu("profile")}
@@ -186,60 +244,56 @@ export default function ProfilePage({ params }) {
             <div className="sticky top-2 w-[800px] h-full bg-blue-200 border-gray-100 ml-2 mt-14 rounded-2xl p-4 shadow-2xl">
               <div className="flex justify-between">
                 <h1 className="text-2xl font-semibold">Profile saya</h1>
-                <button className="font-semibold border border-blue-500 hover:bg-blue-300 hover:text-amber-950 hover:border-gray-100 p-2 rounded-lg">
+                <button
+                  onClick={() => setIsEditProfile(true)}
+                  className="font-semibold border border-blue-500 hover:bg-blue-300 hover:text-amber-950 hover:border-gray-100 p-2 rounded-lg"
+                >
                   Edit profile
                 </button>
               </div>
-              <form action="" className="w-full mt-10">
+              {IsEditProfile && (
+                <ProfileEditModal
+                  user={user}
+                  setUser={setUser}
+                  onClose={() => setIsEditProfile(false)}
+                />
+              )}
+
+              <div className="w-full mt-10">
                 <div className="flex w-full flex-wrap justify-start space-y-11">
                   {" "}
-                  <label htmlFor="nama" className="flex flex-col w-1/2">
+                  <div className="flex flex-col w-1/2">
                     <span>Nama Lengkap</span>
-                    <input
-                      type="text"
-                      name="nama"
-                      id="nama"
-                      className="focus:outline-none bg-blue-100 border border-gray-300 rounded-md px-2 py-1 w-[90%]"
-                    />
-                  </label>
-                  <label htmlFor="nama" className="flex flex-col w-1/2">
+                    <div className=" bg-blue-100 border border-gray-300 rounded-md px-2 py-1 w-[90%]">
+                      {user.nama}
+                    </div>
+                  </div>
+                  <div className="flex flex-col w-1/2">
                     <span>Email</span>
-                    <input
-                      type="email"
-                      name="nama"
-                      id="nama"
-                      className="focus:outline-none bg-blue-100 border border-gray-300 rounded-md px-2 py-1 w-[90%]"
-                    />
-                  </label>
-                  <label htmlFor="nama" className="flex flex-col w-1/2">
+                    <div className=" bg-blue-100 border border-gray-300 rounded-md px-2 py-1 w-[90%]">
+                      {user.email}
+                    </div>
+                  </div>
+                  <div className="flex flex-col w-1/2">
                     <span>Nomor Telepon</span>
-                    <input
-                      type="tel"
-                      name="nama"
-                      id="nama"
-                      className="focus:outline-none bg-blue-100 border border-gray-300 rounded-md px-2 py-1 w-[90%]"
-                    />
-                  </label>
-                  <label htmlFor="nama" className="flex flex-col w-1/2">
+                    <div className=" bg-blue-100 border border-gray-300 rounded-md px-2 py-1 w-[90%]">
+                      {user.telepon}
+                    </div>
+                  </div>
+                  <div className="flex flex-col w-1/2">
                     <span>Tanggal Lahir</span>
-                    <input
-                      type="date"
-                      name="nama"
-                      id="nama"
-                      className="focus:outline-none bg-blue-100 border border-gray-300 rounded-md px-2 py-1 w-[90%]"
-                    />
-                  </label>
-                  <select
-                    className="flex flex-col w-1/5 focus:outline-none rounded-md p-2 bg-blue-100 border"
-                    value={gender}
-                    onChange={(e) => setGender(e.target.value)}
-                  >
-                    <option value="">Jenis Kelamin</option>
-                    <option value="Pria">Laki-laki</option>
-                    <option value="wanita">Perempuan</option>
-                  </select>
+                    <div className="div bg-blue-100 border border-gray-300 rounded-md px-2 py-1 w-[90%]">
+                      {user.tanggalLahir}
+                    </div>
+                  </div>
+                  <div className="flex flex-col w-1/2">
+                    <span>Jenis Kelamin</span>
+                    <div className="div bg-blue-100 border border-gray-300 rounded-md px-2 py-1 w-[90%]">
+                      {user.gender}
+                    </div>
+                  </div>
                 </div>
-              </form>
+              </div>
             </div>
           </>
         )}
@@ -800,19 +854,21 @@ export default function ProfilePage({ params }) {
               <div className="font-bold text-xl p-2">Produk saya</div>
               <div className="flex flex-start flex-wrap w-full h-full">
                 {/* Card Produk */}
-                {produks.map((item) =>
-                  item.produk.map((p) => (
-                    <CardProduk
-                      key={p.id}
-                      nama={item.nama}
-                      harga={p.harga}
-                      gambar={p.gambar[0]}
-                      terjual={item.terjual}
-                      edit={true}
-                      loveProduk={true}
-                    />
-                  ))
-                )}
+                {produkList
+                  .filter((u) => u.ownerId === user.id)
+                  .map((item) =>
+                    item.produk.map((p) => (
+                      <CardProduk
+                        key={p.id}
+                        nama={item.nama}
+                        harga={p.harga}
+                        gambar={p.gambar[0]}
+                        terjual={item.terjual}
+                        edit={true}
+                        loveProduk={true}
+                      />
+                    ))
+                  )}
               </div>
             </div>
           </>
@@ -827,20 +883,26 @@ export default function ProfilePage({ params }) {
 
               <div className="flex flex-start flex-wrap w-full h-full">
                 {/* Card Produk */}
-                {produks
-                  .filter((p) => p.loved === true)
-                  .map((p) => (
+                {produkList
+                  .filter((u) =>
+                    u.loved.some((l) => l.userId === currentUser?.id)
+                  )
+                  .map((produk) => (
                     <CardProduk
-                      key={p.id}
-                      nama={p.nama}
+                      key={produk.id}
+                      nama={produk.nama}
                       harga={
-                        "Rp " + p.produk?.[0]?.harga.toLocaleString("id-ID")
+                        "Rp " +
+                        produk.produk?.[0]?.harga.toLocaleString("id-ID")
                       }
-                      gambar={p.produk?.[0]?.gambar?.[0]}
-                      terjual={p.produk?.[0]?.terjual || 0}
+                      gambar={produk.produk?.[0]?.gambar?.[0]}
+                      terjual={produk.produk?.[0]?.terjual || 0}
                       edit={false}
-                      isLoved={p.loved}
-                      onLove={() => toggleLove(p.id)}
+                      isLoved={produk.loved.some(
+                        (l) => l.userId === currentUser?.id && l.status === true
+                      )}
+                      onLove={() => toggleLove(produk.id)}
+                      showLove={produk.ownerId === currentUser?.id}
                     />
                   ))}
               </div>
@@ -852,66 +914,173 @@ export default function ProfilePage({ params }) {
             <div className="w-[800px] h-full bg-blue-200 border-gray-100 ml-2 mt-14 rounded-2xl p-4 shadow-2xl">
               <div className="flex justify-between mb-12 pt-2">
                 <h1 className="text-2xl font-semibold">Alamat</h1>
-                <button className="border border-blue-500 hover:bg-blue-300 hover:text-amber-950 hover:border-gray-100 p-2 rounded-lg">
-                  Tambah alamat
-                </button>
+                {currentUser.id && (
+                  <button
+                    onClick={() => setIsAddAddress(!isAddAddress)}
+                    className="border border-blue-500 hover:bg-blue-300 hover:text-amber-950 hover:border-gray-100 p-2 rounded-lg"
+                  >
+                    {isAddAddress ? "Batal" : "Tambahkan Alamat"}
+                  </button>
+                )}
               </div>
-              <div className="flex flex-col mt-3 w-full hover:border border-gray-400 shadow-lg rounded-md p-6 ">
-                <div className="flex justify-between w-ful">
-                  <div className="flex space-x-5 items-center">
-                    {" "}
-                    <h1>Rumah</h1>
-                    <p className="text-xs border rounded-sm bg-blue-300 p-1">
-                      Utama
-                    </p>
-                  </div>
 
-                  <div className="flex gap-2">
-                    <button className="border border-gray-100 hover:bg-blue-300 hover:text-amber-950 hover:border-gray-100 p-2 rounded-lg">
-                      Edit
-                    </button>
-                    <button className="border border-gray-100 hover:bg-blue-300 hover:text-amber-950 hover:border-gray-100 p-2 rounded-lg">
-                      Hapus
-                    </button>
-                  </div>
-                </div>
+              {/* Tambah alamat Baru */}
+              {isAddAddress && currentUser.id && (
+                <AddAdressModal
+                  currentUser={currentUser.id}
+                  onClose={() => setIsAddAddress(!isAddAddress)}
+                  onAddAddress={(newAddress) => {
+                    const updated = [...addressList, newAddress];
+                    setAddressList(updated);
+                    localStorage.setItem("addressDB", JSON.stringify(updated));
+                  }}
+                />
+              )}
 
-                <p className="font-normal text-sm">08123456789</p>
-                <p className="font-normal text-sm">
-                  Jl. Raya No. 123, RT 05/RW 02
-                </p>
-                <p className="font-normal text-sm">
-                  Palu, sulawesi tengah, indonesia
-                </p>
-              </div>
-              <div className="flex flex-col mt-3 w-full hover:border border-gray-400 shadow-lg rounded-md p-6 ">
-                <div className="flex justify-between w-ful">
-                  <div className="flex space-x-5 items-center">
-                    {" "}
-                    <h1>Rumah</h1>
-                    <p className="hidden text-xs border rounded-sm bg-blue-300 p-1">
-                      Utama
-                    </p>
-                  </div>
+              {[...addressList]
+                .filter((u) => u?.userId === currentUser?.id)
+                .sort((a, b) => b.status - a.status)
+                .map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex flex-col mt-3 w-full hover:border border-gray-400 shadow-lg rounded-md p-6 "
+                  >
+                    <form
+                      onSubmit={(e) => handleSubmitAddress(e, item?.id)}
+                      className=""
+                    >
+                      <div className="flex justify-between items-start w-full">
+                        <div className="flex flex-col gap-2 w-full max-w-md">
+                          {/* Input Nama & Status */}
+                          <div className="flex space-x-3 items-center">
+                            <input
+                              type="text"
+                              value={
+                                isEditAddress === item.id
+                                  ? editAddress.nama
+                                  : item.nama
+                              }
+                              className="font-bold text-lg border-b focus:outline-none focus:border-blue-500"
+                              placeholder="Nama"
+                              disabled={isEditAddress !== item.id}
+                              onChange={(e) =>
+                                setEditAddress({
+                                  ...editAddress,
+                                  nama: e.target.value,
+                                })
+                              }
+                            />
+                            <button
+                              type="button"
+                              onClick={() => toggleStatusAddress(item.id)}
+                              className={`px-2 py-1 rounded text-xs ${
+                                item.status
+                                  ? "bg-green-500 text-white"
+                                  : "bg-gray-200 hover:bg-gray-300"
+                              }`}
+                            >
+                              {" "}
+                              {item.status ? "Alamat Utama" : "Jadikan Utama"}
+                            </button>
+                          </div>
 
-                  <div className="flex gap-2">
-                    <button className="border border-gray-100 hover:bg-blue-300 hover:text-amber-950 hover:border-gray-100 p-2 rounded-lg">
-                      Edit
-                    </button>
-                    <button className="border border-gray-100 hover:bg-blue-300 hover:text-amber-950 hover:border-gray-100 p-2 rounded-lg">
-                      Hapus
-                    </button>
-                  </div>
-                </div>
+                          {/* Input Telepon */}
+                          <input
+                            type="text"
+                            name="telepon"
+                            value={
+                              isEditAddress === item.id
+                                ? editAddress.telepon
+                                : item.telepon
+                            }
+                            className="text-sm border-b focus:outline-none focus:border-blue-500 w-full"
+                            placeholder="Nomor Telepon"
+                            disabled={isEditAddress !== item.id}
+                            onChange={(e) =>
+                              setEditAddress({
+                                ...editAddress,
+                                telepon: e.target.value,
+                              })
+                            }
+                          />
 
-                <p className="font-normal text-sm">08123456789</p>
-                <p className="font-normal text-sm">
-                  Jl. Raya No. 123, RT 05/RW 02
-                </p>
-                <p className="font-normal text-sm">
-                  Palu, sulawesi tengah, indonesia
-                </p>
-              </div>
+                          {/* Input Alamat */}
+                          <textarea
+                            value={
+                              isEditAddress === item.id
+                                ? editAddress.alamat
+                                : item.alamat
+                            }
+                            className="text-sm border-b focus:outline-none focus:border-blue-500 w-full"
+                            placeholder="Alamat Lengkap"
+                            name="alamat"
+                            disabled={isEditAddress !== item.id}
+                            onChange={(e) =>
+                              setEditAddress({
+                                ...editAddress,
+                                alamat: e.target.value,
+                              })
+                            }
+                          />
+
+                          {/* Input Lokasi */}
+                          <input
+                            type="text"
+                            value={
+                              isEditAddress === item.id
+                                ? editAddress.lokasi
+                                : item.lokasi
+                            }
+                            className="text-sm border-b focus:outline-none focus:border-blue-500 w-full"
+                            placeholder="Koordinat/Lokasi"
+                            name="lokasi"
+                            disabled={isEditAddress !== item.id}
+                            onChange={(e) =>
+                              setEditAddress({
+                                ...editAddress,
+                                lokasi: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+                        <button
+                          type="submit"
+                          className={`bg-blue-500 ${
+                            isEditAddress !== item.id ? "hidden" : ""
+                          } text-white hover:bg-blue-600 px-4 py-2 rounded-lg text-sm transition`}
+                        >
+                          Ubah
+                        </button>
+
+                        {/* Tombol Aksi */}
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (item.id !== isEditAddress) {
+                                setIsEditAddress(item.id);
+                                setEditAddress(item);
+                              } else {
+                                setIsEditAddress(null);
+                                setEditAddress(null);
+                              }
+                            }}
+                            className="bg-blue-500 text-white hover:bg-blue-600 px-4 py-2 rounded-lg text-sm transition"
+                          >
+                            {isEditAddress === item.id ? "Batal" : "Edit"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteAddress(item.id)}
+                            className="border border-gray-300 hover:bg-gray-100 px-4 py-2 rounded-lg text-sm transition"
+                          >
+                            Hapus
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                ))}
             </div>
           </>
         )}

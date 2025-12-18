@@ -23,7 +23,6 @@ export default function JualPage() {
     lokasi: "",
     comment: "",
     createdAt: new Date().toISOString(),
-    loved: false,
   }));
 
   const [variasi, setVariasi] = useState(() => ({
@@ -52,7 +51,7 @@ export default function JualPage() {
     }
 
     try {
-      const session = localStorage.getItem("loginSession");
+      const session = localStorage.getItem("loginSessionDB");
       if (session) setUser(JSON.parse(session));
     } catch (err) {
       console.error("fail load session", err);
@@ -119,7 +118,7 @@ export default function JualPage() {
       comment: form.comment,
       createdAt: form.createdAt || new Date().toISOString(),
       ownerId: user.id,
-      loved: false,
+      loved: [],
       produk: variasiList,
     };
 
@@ -137,7 +136,7 @@ export default function JualPage() {
       deskripsi: "",
       lokasi: "",
       comment: "",
-      loved: false,
+      loved: [],
       createdAt: new Date().toISOString(),
     });
 

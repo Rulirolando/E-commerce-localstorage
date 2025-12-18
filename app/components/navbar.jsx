@@ -12,7 +12,7 @@ export default function Navbar({ className = "" }) {
 
   useEffect(() => {
     try {
-      const loginSession = localStorage.getItem("loginSession");
+      const loginSession = localStorage.getItem("loginSessionDB");
       if (loginSession) setUser(JSON.parse(loginSession));
     } catch {
     } finally {
@@ -73,8 +73,8 @@ export default function Navbar({ className = "" }) {
           <>
             <button
               onClick={() => {
-                localStorage.removeItem("loginSession");
-                window.location.reload();
+                localStorage.removeItem("loginSessionDB");
+                router.push("/");
               }}
               className="cursor-pointer text-red-300 hover:text-red-400"
             >

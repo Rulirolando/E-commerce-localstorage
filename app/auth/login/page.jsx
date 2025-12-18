@@ -20,15 +20,15 @@ export default function LoginPage() {
     if (userExists.password !== user.password) return alert("Password salah");
 
     // Login berhasil, simpan login session
-    localStorage.setItem("loginSession", JSON.stringify(userExists));
+    localStorage.setItem("loginSessionDB", JSON.stringify(userExists));
 
     alert("Login berhasil");
-    router.push("/products");
+    router.push("/");
   };
 
   useEffect(() => {
     try {
-      const loginSession = localStorage.getItem("loginSession");
+      const loginSession = localStorage.getItem("loginSessionDB");
       if (loginSession) {
         window.location.href = "/";
       }
@@ -36,7 +36,7 @@ export default function LoginPage() {
     } finally {
       setLoading(true);
     }
-  }, [router]);
+  }, []);
 
   if (!loading) return <p>Loading...</p>;
   return (

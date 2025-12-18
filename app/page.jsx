@@ -13,19 +13,27 @@ export default function Home() {
   const [produkList, setProdukList] = useState([]);
   console.log("produkList", produkList);
   const [recentProduk, setRecentProduk] = useState("terbaru");
+  const [currentUser, setCurrentUser] = useState({});
+  console.log("Current", currentUser);
 
   function toggleLove(produkId) {
-    const update = produkList.map((p) => {
-      if (p.id === produkId) {
-        return { ...p, loved: !p.loved };
-      }
-      return p;
+    if (!currentUser) {
+      alert("Silakan login terlebih dahulu untuk menyukai produk.");
+      return;
+    }
+    const updateProdukList = produkList.map((produk) => {
+      if (produkId !== produk.id) return produk;
+      const isLoved = produk.loved.some((l) => l.userId === currentUser?.id);
+      return {
+        ...produk,
+        loved: isLoved
+          ? produk.loved.filter((f) => f.userId !== currentUser?.id)
+          : [...produk.loved, { status: true, userId: currentUser?.id }],
+      };
     });
-    setProdukList(update);
-    // Simpan ke localStorage
-    localStorage.setItem("produkDB", JSON.stringify(update));
+    setProdukList(updateProdukList);
+    localStorage.setItem("produkDB", JSON.stringify(updateProdukList));
   }
-
   const kategoriArray = Object.keys(kategoriList)
     .map((key) => {
       const foto = kategoriList[key].foto;
@@ -62,9 +70,18 @@ export default function Home() {
     try {
       const products = localStorage.getItem("produkDB");
       setProdukList(products ? JSON.parse(products) : []);
-      console.log("products", products);
     } catch {
       setProdukList([]);
+    } finally {
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      const user = JSON.parse(localStorage.getItem("loginSessionDB"));
+      setCurrentUser(user);
+    } catch {
+      setCurrentUser(false);
     } finally {
     }
   }, []);
@@ -146,7 +163,7 @@ export default function Home() {
         </div>
         <div className="w-full flex gap-1 justify-center mt-7">
           {recentProduk === "terbaru"
-            ? [...produkList]
+            ? produkList
                 .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
                 .map((p) => (
                   <CardProduk
@@ -157,12 +174,15 @@ export default function Home() {
                     gambar={p.produk?.[0]?.gambar?.[0]}
                     terjual={p.produk?.[0]?.terjual || 0}
                     edit={false}
-                    isLoved={p.loved}
+                    isLoved={p.loved.some(
+                      (l) => l.userId === currentUser?.id && l.status === true
+                    )}
                     onLove={() => toggleLove(p.id)}
+                    showLove={p.ownerId === currentUser?.id}
                   />
                 ))
                 .slice(0, 6)
-            : [...produkList]
+            : produkList
                 .sort((a, b) => b.produk.terjual - a.produk.terjual)
                 .map((p) => (
                   <CardProduk
@@ -173,8 +193,11 @@ export default function Home() {
                     gambar={p.produk?.[0]?.gambar?.[0]}
                     terjual={p.produk?.[0]?.terjual || 0}
                     edit={false}
-                    isLoved={p.loved}
+                    isLoved={p.loved.some(
+                      (l) => l.userId === currentUser?.id && l.status === true
+                    )}
                     onLove={() => toggleLove(p.id)}
+                    showLove={p.ownerId === currentUser?.id}
                   />
                 ))
                 .slice(0, 6)}

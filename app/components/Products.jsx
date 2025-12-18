@@ -18,19 +18,26 @@ export default function SearchProduk({ cari }) {
   const [produkList, setProdukList] = useState([]);
   console.log("produklist", produkList);
   const [loading, setLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState({});
 
   function toggleLove(produkId) {
-    const update = produkList.map((p) => {
-      if (p.id === produkId) {
-        return { ...p, loved: !p.loved };
-      }
-      return p;
+    if (!currentUser) {
+      alert("Silakan login terlebih dahulu untuk menyukai produk.");
+      return;
+    }
+    const updateProdukList = produkList.map((produk) => {
+      if (produkId !== produk.id) return produk;
+      const isLoved = produk.loved.some((l) => l.userId === currentUser.id);
+      return {
+        ...produk,
+        loved: isLoved
+          ? produk.loved.filter((f) => f.userId !== currentUser.id)
+          : [...produk.loved, { status: true, userId: currentUser.id }],
+      };
     });
-    setProdukList(update);
-    // Simpan ke localStorage
-    localStorage.setItem("produkDB", JSON.stringify(update));
+    setProdukList(updateProdukList);
+    localStorage.setItem("produkDB", JSON.stringify(updateProdukList));
   }
-
   const filteredProduk = produkList.filter((p) => {
     const allWarna = p.produk.map((item) => item.warna.toLowerCase());
     const allUkuran = p.produk.flatMap((item) =>
@@ -71,6 +78,10 @@ export default function SearchProduk({ cari }) {
     } finally {
       setLoading(true);
     }
+  }, []);
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("loginSessionDB"));
+    if (user) setCurrentUser(user);
   }, []);
 
   if (!loading) return <p>Memuat...</p>;
@@ -166,8 +177,11 @@ export default function SearchProduk({ cari }) {
                     gambar={p.produk?.[0]?.gambar?.[0]}
                     terjual={p.produk?.[0]?.terjual || 0}
                     edit={false}
-                    isLoved={p.loved}
+                    isLoved={p.loved.some(
+                      (l) => l.userId === currentUser?.id && l.status === true
+                    )}
                     onLove={() => toggleLove(p.id)}
+                    showLove={p.ownerId === currentUser?.id}
                   />
                 ))
               ) : (

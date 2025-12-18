@@ -30,7 +30,7 @@ export default function DragDropUploader({ onUpload }) {
 
         handleFile(file);
       }}
-      className={`border-2 border-dashed w-full p-6 rounded-xl text-center cursor-pointer
+      className={`border-2 border-dashed w-full h-1/4 flex flex-col justify-center items-center rounded-xl text-center cursor-pointer
         ${dragging ? "bg-blue-100" : "bg-gray-100"}`}
     >
       <p className="text-gray-700">

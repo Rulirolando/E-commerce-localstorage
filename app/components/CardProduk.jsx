@@ -11,6 +11,7 @@ export default function CardProduk({
   onLove,
   onClick,
   loveProduk = false,
+  showLove = false,
 }) {
   function capitalizeFirst(text) {
     if (!text) return "";
@@ -20,7 +21,7 @@ export default function CardProduk({
     <>
       <div
         onClick={onClick}
-        className="cursor-pointer flex-1 min-w-52 max-w-[200px] h-70 m-2 border border-gray-400 shadow-lg rounded-lg flex flex-col p-2"
+        className="cursor-pointer flex-1 min-w-52 max-w-[200px]  m-2 border border-gray-400 shadow-lg rounded-lg flex flex-col p-2"
       >
         {" "}
         <div className="relative w-full">
@@ -38,9 +39,9 @@ export default function CardProduk({
                 onLove();
               }}
               size={20}
-              className={`${isLoved ? "text-red-500" : "text-white"} ${
+              className={` ${isLoved ? "text-red-500" : "text-white"} ${
                 loveProduk ? "hidden" : ""
-              } cursor-pointer m-2 drop-shadow-lg`}
+              } ${showLove ? "hidden" : ""} cursor-pointer m-2 drop-shadow-lg`}
             />
           </div>
         </div>
