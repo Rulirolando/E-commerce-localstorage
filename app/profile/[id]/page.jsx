@@ -20,12 +20,18 @@ import { PiNewspaperThin } from "react-icons/pi";
 import ProfileEditModal from "../../components/ProfileEditModal";
 import { LiaUserLockSolid } from "react-icons/lia";
 import AddAdressModal from "../../components/AddressAddModal";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function ProfilePage({ params }) {
   const { id: username } = use(params);
   const [user, setUser] = useState({});
   const [produkList, setProdukList] = useState(null);
-  console.log("user", user);
+  const [users, setUsers] = useState([]);
+  const [produk, setProduk] = useState([]);
+  console.log("produk", produk);
+  console.log("userCurrent", user);
+  console.log("users", users);
   const [activeMenu, setActiveMenu] = useState("profile");
   const [activePesananMenu, setActivePesananMenu] = useState("semuapesanan");
   const [notifEnabled, setNotifEnabled] = useState(false);
@@ -35,6 +41,9 @@ export default function ProfilePage({ params }) {
   const [isAddAddress, setIsAddAddress] = useState(false);
   const [isEditAddress, setIsEditAddress] = useState(null);
   const [editAddress, setEditAddress] = useState(null);
+  const [produkBeli, setProdukBeli] = useState([]);
+  console.log("produkBeli", produkBeli);
+  const router = useRouter();
 
   const [addressList, setAddressList] = useState([]);
   console.log("adresslist", addressList);
@@ -80,12 +89,10 @@ export default function ProfilePage({ params }) {
     const updateAddressList = addressList.map((item) => {
       if (item.userId !== currentUser.id) return item;
 
-      // jika klik alamat utama lagi → nonaktifkan
       if (item.id === id) {
         return { ...item, status: !item.status };
       }
 
-      // alamat lain otomatis nonaktif
       return { ...item, status: false };
     });
     setAddressList(updateAddressList);
@@ -127,6 +134,35 @@ export default function ProfilePage({ params }) {
       console.log("currentUser", user);
     } catch {
       setCurrentUser(false);
+    } finally {
+    }
+  }, [user]);
+
+  useEffect(() => {
+    try {
+      const allProduk = JSON.parse(localStorage.getItem("beliDB")) || [];
+      if (allProduk) setProdukBeli(allProduk);
+    } catch {
+      setProdukBeli([]);
+    } finally {
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      const users = JSON.parse(localStorage.getItem("userDB")) || [];
+      setUsers(users);
+    } catch {
+      setUsers([]);
+    } finally {
+    }
+  }, [currentUser]);
+  useEffect(() => {
+    try {
+      const users = JSON.parse(localStorage.getItem("produkDB")) || [];
+      setProduk(users);
+    } catch {
+      setProduk([]);
     } finally {
     }
   }, []);
@@ -224,8 +260,15 @@ export default function ProfilePage({ params }) {
             <IoIosSettings size={30} />
             <p className="ml-4 font-bold text-amber-950">Pengaturan</p>
           </button>
+
           <button
-            onClick={() => setActiveMenu("keluar")}
+            onClick={() => {
+              setActiveMenu("keluar");
+              const confirmLogout = confirm("Apakah Anda yakin ingin keluar?");
+              if (!confirmLogout) return;
+              localStorage.removeItem("loginSessionDB");
+              router.push("/");
+            }}
             className={`flex items-center  mt-2 cursor-pointer ${
               activeMenu === "keluar"
                 ? "bg-blue-300 text-amber-950 border-gray-100"
@@ -255,6 +298,8 @@ export default function ProfilePage({ params }) {
                 <ProfileEditModal
                   user={user}
                   setUser={setUser}
+                  currentUser={currentUser}
+                  setCurrentUser={setCurrentUser}
                   onClose={() => setIsEditProfile(false)}
                 />
               )}
@@ -346,260 +391,73 @@ export default function ProfilePage({ params }) {
               {activePesananMenu === "semuapesanan" && (
                 <>
                   {" "}
-                  <div className="w-full h-full bg-blue-200 border-gray-100 ml-2 mt-5 rounded-2xl p-4 shadow-2xs">
-                    <div className="w-full mt-4">
-                      <div className="flex justify-between items-center">
-                        <div className="w-full flex flex-row">
-                          {" "}
-                          <IoBasket size={30} />{" "}
-                          <div className="flex flex-col ml-3">
-                            <h1>ID: sleioje2847729</h1>
-                            <p className="font-light text-sm">
-                              Tanggal: 12-12-2022
-                            </p>
-                          </div>
-                        </div>
-
-                        <p className="border-gray-100 rounded-lg px-2 text-[12px] text-light py-0.5 bg-blue-400">
-                          Selesai
-                        </p>
-                      </div>
-                      <hr className="mt-5" />
-                      <div className="flex justify-between w-full mt-5 items-center">
-                        <div className="flex items-center">
-                          <Image
-                            src="https://plus.unsplash.com/premium_photo-1678218594563-9fe0d16c6838?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmFqdSUyMHB1dGlofGVufDB8fDB8fHww"
-                            width={100}
-                            height={100}
-                            alt="foto barang"
-                            className="object-cover w-30 h-30 rounded-md"
-                          />
-                          <div className="flex flex-col ml-3">
-                            <h1 className="font-normal text-sm">Baju Putih</h1>
-                            <div className="flex items-center space-x-3 ">
-                              <p className="font-normal text-sm">Rp. 100.000</p>
-                              <p className="font-light text-light text-sm">
-                                2 x
+                  <div className="w-full h-full  ">
+                    {produkBeli.map((produk, index) => (
+                      <div
+                        key={index}
+                        className="w-full  bg-blue-200 ml-2 mt-5 rounded-2xl p-4 shadow-2xs"
+                      >
+                        <div className="flex w-full justify-between items-center">
+                          <div className="w-1/2 flex flex-row">
+                            {" "}
+                            <IoBasket size={30} />{" "}
+                            <div className="flex flex-col ml-3">
+                              <h1>ID: {produk.produkId}</h1>
+                              <p className="font-light text-sm">
+                                Tanggal: 12-12-2022
                               </p>
                             </div>
                           </div>
-                        </div>
-                        <div className="flex flex-col">
-                          <h1>Total belanja</h1>
-                          <p className="font-light text-sm">Rp. 200.000</p>
 
-                          <div className="flex mt-7">
-                            <button className="border-gray-100 bg-blue-500 rounded-lg p-2">
-                              Lihat detail
-                            </button>
-                          </div>
+                          <p className="border-gray-100 rounded-lg px-2 text-[12px] text-light py-0.5 bg-blue-400 ">
+                            {produk.status}
+                          </p>
                         </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="w-full h-full bg-blue-200 border-gray-100 ml-2 mt-5 rounded-2xl p-4 shadow-2xs">
-                    <div className="w-full mt-4">
-                      <div className="flex justify-between items-center">
-                        <div className="w-full flex flex-row">
-                          {" "}
-                          <IoBasket size={30} />{" "}
-                          <div className="flex flex-col ml-3">
-                            <h1>ID: sleioje2847729</h1>
+                        <hr className="mt-5" />
+                        <div className="flex justify-between w-full mt-5 items-center">
+                          <div className="flex items-center">
+                            <Image
+                              src={produk.gambar}
+                              width={100}
+                              height={100}
+                              alt="foto barang"
+                              className="object-cover w-30 h-30 rounded-md"
+                            />
+                            <div className="flex flex-col ml-3">
+                              <h1 className="font-normal text-sm">
+                                {produk.nama}
+                              </h1>
+                              <div className="flex items-center space-x-3 ">
+                                <p className="font-normal text-sm">
+                                  Rp.{produk.harga.toLocaleString("id-ID")}
+                                </p>
+                                <p className="font-light text-light text-sm">
+                                  {produk.jumlah} x
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex flex-col">
+                            <h1>Total belanja</h1>
                             <p className="font-light text-sm">
-                              Tanggal: 12-12-2022
+                              Rp.
+                              {(produk.jumlah * produk.harga).toLocaleString(
+                                "id-ID"
+                              )}
                             </p>
-                          </div>
-                        </div>
 
-                        <p className="border-gray-100 rounded-lg px-2 text-[12px] text-light py-0.5 bg-blue-400">
-                          Selesai
-                        </p>
-                      </div>
-                      <hr className="mt-5" />
-                      <div className="flex justify-between w-full mt-5 items-center">
-                        <div className="flex items-center">
-                          <Image
-                            src="https://plus.unsplash.com/premium_photo-1678218594563-9fe0d16c6838?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmFqdSUyMHB1dGlofGVufDB8fDB8fHww"
-                            width={100}
-                            height={100}
-                            alt="foto barang"
-                            className="object-cover w-30 h-30 rounded-md"
-                          />
-                          <div className="flex flex-col ml-3">
-                            <h1 className="font-normal text-sm">Baju Putih</h1>
-                            <div className="flex items-center space-x-3 ">
-                              <p className="font-normal text-sm">Rp. 100.000</p>
-                              <p className="font-light text-light text-sm">
-                                2 x
-                              </p>
+                            <div className="flex mt-7">
+                              <button className="border-gray-100 bg-blue-500 rounded-lg p-2">
+                                <Link href={`/produk/${produk.id}`}>
+                                  {" "}
+                                  Lihat detail
+                                </Link>
+                              </button>
                             </div>
                           </div>
                         </div>
-                        <div className="flex flex-col">
-                          <h1>Total belanja</h1>
-                          <p className="font-light text-sm">Rp. 200.000</p>
-
-                          <div className="flex mt-7">
-                            <button className="border-gray-100 bg-blue-500 rounded-lg p-2">
-                              Lihat detail
-                            </button>
-                          </div>
-                        </div>
                       </div>
-                    </div>
-                  </div>
-                  <div className="w-full h-full bg-blue-200 border-gray-100 ml-2 mt-5 rounded-2xl p-4 shadow-2xs">
-                    <div className="w-full mt-4">
-                      <div className="flex justify-between items-center">
-                        <div className="w-full flex flex-row">
-                          {" "}
-                          <IoBasket size={30} />{" "}
-                          <div className="flex flex-col ml-3">
-                            <h1>ID: sleioje2847729</h1>
-                            <p className="font-light text-sm">
-                              Tanggal: 12-12-2022
-                            </p>
-                          </div>
-                        </div>
-
-                        <p className="border-gray-100 rounded-lg px-2 text-[12px] text-light py-0.5 bg-blue-400">
-                          Selesai
-                        </p>
-                      </div>
-                      <hr className="mt-5" />
-                      <div className="flex justify-between w-full mt-5 items-center">
-                        <div className="flex items-center">
-                          <Image
-                            src="https://plus.unsplash.com/premium_photo-1678218594563-9fe0d16c6838?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmFqdSUyMHB1dGlofGVufDB8fDB8fHww"
-                            width={100}
-                            height={100}
-                            alt="foto barang"
-                            className="object-cover w-30 h-30 rounded-md"
-                          />
-                          <div className="flex flex-col ml-3">
-                            <h1 className="font-normal text-sm">Baju Putih</h1>
-                            <div className="flex items-center space-x-3 ">
-                              <p className="font-normal text-sm">Rp. 100.000</p>
-                              <p className="font-light text-light text-sm">
-                                2 x
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex flex-col">
-                          <h1>Total belanja</h1>
-                          <p className="font-light text-sm">Rp. 200.000</p>
-
-                          <div className="flex mt-7">
-                            <button className="border-gray-100 bg-blue-500 rounded-lg p-2">
-                              Lihat detail
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="w-full h-full bg-blue-200 border-gray-100 ml-2 mt-5 rounded-2xl p-4 shadow-2xs">
-                    <div className="w-full mt-4">
-                      <div className="flex justify-between items-center">
-                        <div className="w-full flex flex-row">
-                          {" "}
-                          <IoBasket size={30} />{" "}
-                          <div className="flex flex-col ml-3">
-                            <h1>ID: sleioje2847729</h1>
-                            <p className="font-light text-sm">
-                              Tanggal: 12-12-2022
-                            </p>
-                          </div>
-                        </div>
-
-                        <p className="border-gray-100 rounded-lg px-2 text-[12px] text-light py-0.5 bg-blue-400">
-                          Selesai
-                        </p>
-                      </div>
-                      <hr className="mt-5" />
-                      <div className="flex justify-between w-full mt-5 items-center">
-                        <div className="flex items-center">
-                          <Image
-                            src="https://plus.unsplash.com/premium_photo-1678218594563-9fe0d16c6838?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmFqdSUyMHB1dGlofGVufDB8fDB8fHww"
-                            width={100}
-                            height={100}
-                            alt="foto barang"
-                            className="object-cover w-30 h-30 rounded-md"
-                          />
-                          <div className="flex flex-col ml-3">
-                            <h1 className="font-normal text-sm">Baju Putih</h1>
-                            <div className="flex items-center space-x-3 ">
-                              <p className="font-normal text-sm">Rp. 100.000</p>
-                              <p className="font-light text-light text-sm">
-                                2 x
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex flex-col">
-                          <h1>Total belanja</h1>
-                          <p className="font-light text-sm">Rp. 200.000</p>
-
-                          <div className="flex mt-7">
-                            <button className="border-gray-100 bg-blue-500 rounded-lg p-2">
-                              Lihat detail
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="w-full h-full bg-blue-200 border-gray-100 ml-2 mt-5 rounded-2xl p-4 shadow-2xs">
-                    <div className="w-full mt-4">
-                      <div className="flex justify-between items-center">
-                        <div className="w-full flex flex-row">
-                          {" "}
-                          <IoBasket size={30} />{" "}
-                          <div className="flex flex-col ml-3">
-                            <h1>ID: sleioje2847729</h1>
-                            <p className="font-light text-sm">
-                              Tanggal: 12-12-2022
-                            </p>
-                          </div>
-                        </div>
-
-                        <p className="border-gray-100 rounded-lg px-2 text-[12px] text-light py-0.5 bg-blue-400">
-                          Belum dibayar
-                        </p>
-                      </div>
-                      <hr className="mt-5" />
-                      <div className="flex justify-between w-full mt-5 items-center">
-                        <div className="flex items-center">
-                          <Image
-                            src="https://plus.unsplash.com/premium_photo-1678218594563-9fe0d16c6838?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmFqdSUyMHB1dGlofGVufDB8fDB8fHww"
-                            width={100}
-                            height={100}
-                            alt="foto barang"
-                            className="object-cover w-30 h-30 rounded-md"
-                          />
-                          <div className="flex flex-col ml-3">
-                            <h1 className="font-normal text-sm">Baju Putih</h1>
-                            <div className="flex items-center space-x-3 ">
-                              <p className="font-normal text-sm">Rp. 100.000</p>
-                              <p className="font-light text-light text-sm">
-                                2 x
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex flex-col">
-                          <h1>Total belanja</h1>
-                          <p className="font-light text-sm">Rp. 200.000</p>
-
-                          <div className="flex mt-7">
-                            <button className="border-gray-100 bg-blue-500 rounded-lg p-2">
-                              Lihat detail
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 </>
               )}
@@ -607,56 +465,76 @@ export default function ProfilePage({ params }) {
               {/* Belum dibayar pesanan */}
               {activePesananMenu === "belumdibayarpesanan" && (
                 <>
-                  <div className="w-full h-full bg-blue-200 border-gray-100 ml-2 mt-5 rounded-2xl p-4 shadow-2xs">
-                    <div className="w-full mt-4">
-                      <div className="flex justify-between items-center">
-                        <div className="w-full flex flex-row">
-                          {" "}
-                          <IoBasket size={30} />{" "}
-                          <div className="flex flex-col ml-3">
-                            <h1>ID: sleioje2847729</h1>
-                            <p className="font-light text-sm">
-                              Tanggal: 12-12-2022
+                  {" "}
+                  <div className="w-full h-full  ">
+                    {produkBeli
+                      .filter((produk) => produk.status === "Belum dibayar")
+                      .map((produk, index) => (
+                        <div
+                          key={index}
+                          className="w-full  bg-blue-200 ml-2 mt-5 rounded-2xl p-4 shadow-2xs"
+                        >
+                          <div className="flex w-full justify-between items-center">
+                            <div className="w-1/2 flex flex-row">
+                              {" "}
+                              <IoBasket size={30} />{" "}
+                              <div className="flex flex-col ml-3">
+                                <h1>ID: {produk.produkId}</h1>
+                                <p className="font-light text-sm">
+                                  Tanggal: 12-12-2022
+                                </p>
+                              </div>
+                            </div>
+
+                            <p className="border-gray-100 rounded-lg px-2 text-[12px] text-light py-0.5 bg-blue-400 ">
+                              {produk.status}
                             </p>
                           </div>
-                        </div>
-
-                        <p className="border-gray-100 rounded-lg px-2 text-[12px] text-light py-0.5 bg-blue-400 w-27 text-center">
-                          Belum dibayar
-                        </p>
-                      </div>
-                      <hr className="mt-5" />
-                      <div className="flex justify-between w-full mt-5 items-center">
-                        <div className="flex items-center">
-                          <Image
-                            src="https://plus.unsplash.com/premium_photo-1678218594563-9fe0d16c6838?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmFqdSUyMHB1dGlofGVufDB8fDB8fHww"
-                            width={100}
-                            height={100}
-                            alt="foto barang"
-                            className="object-cover w-30 h-30 rounded-md"
-                          />
-                          <div className="flex flex-col ml-3">
-                            <h1 className="font-normal text-sm">Baju Putih</h1>
-                            <div className="flex items-center space-x-3 ">
-                              <p className="font-normal text-sm">Rp. 100.000</p>
-                              <p className="font-light text-light text-sm">
-                                2 x
+                          <hr className="mt-5" />
+                          <div className="flex justify-between w-full mt-5 items-center">
+                            <div className="flex items-center">
+                              <Image
+                                src={produk.gambar}
+                                width={100}
+                                height={100}
+                                alt="foto barang"
+                                className="object-cover w-30 h-30 rounded-md"
+                              />
+                              <div className="flex flex-col ml-3">
+                                <h1 className="font-normal text-sm">
+                                  {produk.nama}
+                                </h1>
+                                <div className="flex items-center space-x-3 ">
+                                  <p className="font-normal text-sm">
+                                    Rp.{produk.harga.toLocaleString("id-ID")}
+                                  </p>
+                                  <p className="font-light text-light text-sm">
+                                    {produk.jumlah} x
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex flex-col">
+                              <h1>Total belanja</h1>
+                              <p className="font-light text-sm">
+                                Rp.
+                                {(produk.jumlah * produk.harga).toLocaleString(
+                                  "id-ID"
+                                )}
                               </p>
+
+                              <div className="flex mt-7">
+                                <button className="border-gray-100 bg-blue-500 rounded-lg p-2">
+                                  <Link href={`/produk/${produk.id}`}>
+                                    {" "}
+                                    Lihat detail
+                                  </Link>
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>
-                        <div className="flex flex-col">
-                          <h1>Total belanja</h1>
-                          <p className="font-light text-sm">Rp. 200.000</p>
-
-                          <div className="flex mt-7">
-                            <button className="border-gray-100 bg-blue-500 rounded-lg p-2">
-                              Lihat detail
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                      ))}
                   </div>
                 </>
               )}
@@ -707,7 +585,10 @@ export default function ProfilePage({ params }) {
 
                           <div className="flex mt-7">
                             <button className="border-gray-100 bg-blue-500 rounded-lg p-2">
-                              Lihat detail
+                              <Link href={`product/${produk.id}`}>
+                                {" "}
+                                Lihat detail
+                              </Link>
                             </button>
                           </div>
                         </div>
@@ -854,21 +735,28 @@ export default function ProfilePage({ params }) {
               <div className="font-bold text-xl p-2">Produk saya</div>
               <div className="flex flex-start flex-wrap w-full h-full">
                 {/* Card Produk */}
-                {produkList
-                  .filter((u) => u.ownerId === user.id)
-                  .map((item) =>
-                    item.produk.map((p) => (
-                      <CardProduk
-                        key={p.id}
-                        nama={item.nama}
-                        harga={p.harga}
-                        gambar={p.gambar[0]}
-                        terjual={item.terjual}
-                        edit={true}
-                        loveProduk={true}
-                      />
-                    ))
-                  )}
+                {produkList.filter((u) => u.ownerId === user.id).length > 0 ? (
+                  produkList
+                    .filter((u) => u.ownerId === user.id)
+                    .map((item) =>
+                      item.produk.map((p) => (
+                        <CardProduk
+                          key={p.id}
+                          nama={item.nama}
+                          harga={p.harga}
+                          gambar={p.gambar[0]}
+                          terjual={item.terjual}
+                          edit={true}
+                          loveProduk={true}
+                        />
+                      ))
+                    )
+                ) : (
+                  <>
+                    <p>Belum ada produk</p>
+                    <h1>Silahakan tambahkan produk anda</h1>
+                  </>
+                )}
               </div>
             </div>
           </>
@@ -883,28 +771,35 @@ export default function ProfilePage({ params }) {
 
               <div className="flex flex-start flex-wrap w-full h-full">
                 {/* Card Produk */}
-                {produkList
-                  .filter((u) =>
-                    u.loved.some((l) => l.userId === currentUser?.id)
-                  )
-                  .map((produk) => (
-                    <CardProduk
-                      key={produk.id}
-                      nama={produk.nama}
-                      harga={
-                        "Rp " +
-                        produk.produk?.[0]?.harga.toLocaleString("id-ID")
-                      }
-                      gambar={produk.produk?.[0]?.gambar?.[0]}
-                      terjual={produk.produk?.[0]?.terjual || 0}
-                      edit={false}
-                      isLoved={produk.loved.some(
-                        (l) => l.userId === currentUser?.id && l.status === true
-                      )}
-                      onLove={() => toggleLove(produk.id)}
-                      showLove={produk.ownerId === currentUser?.id}
-                    />
-                  ))}
+                {produkList.filter((u) =>
+                  u.loved.some((l) => l.userId === currentUser?.id)
+                ).length > 0 ? (
+                  produkList
+                    .filter((u) =>
+                      u.loved.some((l) => l.userId === currentUser?.id)
+                    )
+                    .map((produk) => (
+                      <CardProduk
+                        key={produk.id}
+                        nama={produk.nama}
+                        harga={
+                          "Rp " +
+                          produk.produk?.[0]?.harga.toLocaleString("id-ID")
+                        }
+                        gambar={produk.produk?.[0]?.gambar?.[0]}
+                        terjual={produk.produk?.[0]?.terjual || 0}
+                        edit={false}
+                        isLoved={produk.loved.some(
+                          (l) =>
+                            l.userId === currentUser?.id && l.status === true
+                        )}
+                        onLove={() => toggleLove(produk.id)}
+                        showLove={produk.ownerId === currentUser?.id}
+                      />
+                    ))
+                ) : (
+                  <p>Belum ada produk favorit</p>
+                )}
               </div>
             </div>
           </>
@@ -917,7 +812,7 @@ export default function ProfilePage({ params }) {
                 {currentUser.id && (
                   <button
                     onClick={() => setIsAddAddress(!isAddAddress)}
-                    className="border border-blue-500 hover:bg-blue-300 hover:text-amber-950 hover:border-gray-100 p-2 rounded-lg"
+                    className="border border-blue-500 hover:bg-blue-300 hover:text-amber-950 hover:border-gray-100 p-2 rounded-lg cursor-pointer"
                   >
                     {isAddAddress ? "Batal" : "Tambahkan Alamat"}
                   </button>
@@ -937,150 +832,160 @@ export default function ProfilePage({ params }) {
                 />
               )}
 
-              {[...addressList]
-                .filter((u) => u?.userId === currentUser?.id)
-                .sort((a, b) => b.status - a.status)
-                .map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex flex-col mt-3 w-full hover:border border-gray-400 shadow-lg rounded-md p-6 "
-                  >
-                    <form
-                      onSubmit={(e) => handleSubmitAddress(e, item?.id)}
-                      className=""
+              {[...addressList].filter((u) => u?.userId === currentUser?.id)
+                .length > 0 ? (
+                [...addressList]
+                  .filter((u) => u?.userId === currentUser?.id)
+                  .sort((a, b) => b.status - a.status)
+                  .map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex flex-col mt-3 w-full hover:border border-gray-400 shadow-lg rounded-md p-6 "
                     >
-                      <div className="flex justify-between items-start w-full">
-                        <div className="flex flex-col gap-2 w-full max-w-md">
-                          {/* Input Nama & Status */}
-                          <div className="flex space-x-3 items-center">
+                      <form
+                        onSubmit={(e) => handleSubmitAddress(e, item?.id)}
+                        className=""
+                      >
+                        <div className="flex justify-between items-start w-full">
+                          <div className="flex flex-col gap-2 w-full max-w-md">
+                            {/* Input Nama & Status */}
+                            <div className="flex space-x-3 items-center">
+                              <input
+                                type="text"
+                                value={
+                                  isEditAddress === item.id
+                                    ? editAddress.nama
+                                    : item.nama
+                                }
+                                className="font-bold text-lg border-b focus:outline-none focus:border-blue-500"
+                                placeholder="Nama"
+                                disabled={isEditAddress !== item.id}
+                                onChange={(e) =>
+                                  setEditAddress({
+                                    ...editAddress,
+                                    nama: e.target.value,
+                                  })
+                                }
+                              />
+                              <button
+                                type="button"
+                                onClick={() => toggleStatusAddress(item.id)}
+                                className={`px-2 py-1 rounded text-xs cursor-pointer ${
+                                  item.status
+                                    ? "bg-green-500 text-white"
+                                    : "bg-gray-200 hover:bg-gray-300"
+                                }`}
+                              >
+                                {" "}
+                                {item.status ? "Alamat Utama" : "Jadikan Utama"}
+                              </button>
+                            </div>
+
+                            {/* Input Telepon */}
                             <input
                               type="text"
+                              inputMode="numeric"
+                              pattern="[0-9]*"
                               value={
                                 isEditAddress === item.id
-                                  ? editAddress.nama
-                                  : item.nama
+                                  ? editAddress.telepon
+                                  : item.telepon
                               }
-                              className="font-bold text-lg border-b focus:outline-none focus:border-blue-500"
-                              placeholder="Nama"
+                              className="text-sm border-b focus:outline-none focus:border-blue-500 w-full"
+                              placeholder="Nomor Telepon"
+                              disabled={isEditAddress !== item.id}
+                              onChange={(e) => {
+                                const onlyNumber = e.target.value.replace(
+                                  /\D/g,
+                                  ""
+                                );
+                                setEditAddress({
+                                  ...editAddress,
+                                  telepon: onlyNumber,
+                                });
+                              }}
+                            />
+
+                            {/* Input Alamat */}
+                            <textarea
+                              value={
+                                isEditAddress === item.id
+                                  ? editAddress.alamat
+                                  : item.alamat
+                              }
+                              className="text-sm border-b focus:outline-none focus:border-blue-500 w-full"
+                              placeholder="Alamat Lengkap"
+                              name="alamat"
                               disabled={isEditAddress !== item.id}
                               onChange={(e) =>
                                 setEditAddress({
                                   ...editAddress,
-                                  nama: e.target.value,
+                                  alamat: e.target.value,
                                 })
                               }
                             />
+
+                            {/* Input Lokasi */}
+                            <input
+                              type="text"
+                              value={
+                                isEditAddress === item.id
+                                  ? editAddress.lokasi
+                                  : item.lokasi
+                              }
+                              className="text-sm border-b focus:outline-none focus:border-blue-500 w-full"
+                              placeholder="Koordinat/Lokasi"
+                              name="lokasi"
+                              disabled={isEditAddress !== item.id}
+                              onChange={(e) =>
+                                setEditAddress({
+                                  ...editAddress,
+                                  lokasi: e.target.value,
+                                })
+                              }
+                            />
+                          </div>
+                          <button
+                            type="submit"
+                            className={`bg-blue-500 ${
+                              isEditAddress !== item.id ? "hidden" : ""
+                            } text-white hover:bg-blue-600 px-4 py-2 rounded-lg text-sm transition cursor-pointer`}
+                          >
+                            Ubah
+                          </button>
+
+                          {/* Tombol Aksi */}
+                          <div className="flex gap-2">
                             <button
                               type="button"
-                              onClick={() => toggleStatusAddress(item.id)}
-                              className={`px-2 py-1 rounded text-xs ${
-                                item.status
-                                  ? "bg-green-500 text-white"
-                                  : "bg-gray-200 hover:bg-gray-300"
-                              }`}
+                              onClick={() => {
+                                if (item.id !== isEditAddress) {
+                                  setIsEditAddress(item.id);
+                                  setEditAddress(item);
+                                } else {
+                                  setIsEditAddress(null);
+                                  setEditAddress(null);
+                                }
+                              }}
+                              className="bg-blue-500 text-white hover:bg-blue-600 px-4 py-2 rounded-lg text-sm transition cursor-pointer"
                             >
-                              {" "}
-                              {item.status ? "Alamat Utama" : "Jadikan Utama"}
+                              {isEditAddress === item.id ? "Batal" : "Edit"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteAddress(item.id)}
+                              className="border border-gray-300 hover:bg-gray-100 px-4 py-2 rounded-lg text-sm cursor-pointer"
+                            >
+                              Hapus
                             </button>
                           </div>
-
-                          {/* Input Telepon */}
-                          <input
-                            type="text"
-                            name="telepon"
-                            value={
-                              isEditAddress === item.id
-                                ? editAddress.telepon
-                                : item.telepon
-                            }
-                            className="text-sm border-b focus:outline-none focus:border-blue-500 w-full"
-                            placeholder="Nomor Telepon"
-                            disabled={isEditAddress !== item.id}
-                            onChange={(e) =>
-                              setEditAddress({
-                                ...editAddress,
-                                telepon: e.target.value,
-                              })
-                            }
-                          />
-
-                          {/* Input Alamat */}
-                          <textarea
-                            value={
-                              isEditAddress === item.id
-                                ? editAddress.alamat
-                                : item.alamat
-                            }
-                            className="text-sm border-b focus:outline-none focus:border-blue-500 w-full"
-                            placeholder="Alamat Lengkap"
-                            name="alamat"
-                            disabled={isEditAddress !== item.id}
-                            onChange={(e) =>
-                              setEditAddress({
-                                ...editAddress,
-                                alamat: e.target.value,
-                              })
-                            }
-                          />
-
-                          {/* Input Lokasi */}
-                          <input
-                            type="text"
-                            value={
-                              isEditAddress === item.id
-                                ? editAddress.lokasi
-                                : item.lokasi
-                            }
-                            className="text-sm border-b focus:outline-none focus:border-blue-500 w-full"
-                            placeholder="Koordinat/Lokasi"
-                            name="lokasi"
-                            disabled={isEditAddress !== item.id}
-                            onChange={(e) =>
-                              setEditAddress({
-                                ...editAddress,
-                                lokasi: e.target.value,
-                              })
-                            }
-                          />
                         </div>
-                        <button
-                          type="submit"
-                          className={`bg-blue-500 ${
-                            isEditAddress !== item.id ? "hidden" : ""
-                          } text-white hover:bg-blue-600 px-4 py-2 rounded-lg text-sm transition`}
-                        >
-                          Ubah
-                        </button>
-
-                        {/* Tombol Aksi */}
-                        <div className="flex gap-2">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (item.id !== isEditAddress) {
-                                setIsEditAddress(item.id);
-                                setEditAddress(item);
-                              } else {
-                                setIsEditAddress(null);
-                                setEditAddress(null);
-                              }
-                            }}
-                            className="bg-blue-500 text-white hover:bg-blue-600 px-4 py-2 rounded-lg text-sm transition"
-                          >
-                            {isEditAddress === item.id ? "Batal" : "Edit"}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteAddress(item.id)}
-                            className="border border-gray-300 hover:bg-gray-100 px-4 py-2 rounded-lg text-sm transition"
-                          >
-                            Hapus
-                          </button>
-                        </div>
-                      </div>
-                    </form>
-                  </div>
-                ))}
+                      </form>
+                    </div>
+                  ))
+              ) : (
+                <p>Belum ada alamat</p>
+              )}
             </div>
           </>
         )}

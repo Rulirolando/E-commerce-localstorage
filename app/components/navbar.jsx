@@ -21,15 +21,22 @@ export default function Navbar({ className = "" }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const query = e.target[0].value.trim();
+    const q = query.trim();
 
-    if (!query) {
-      router.push("/products"); // kalau input kosong → tdk buat ?q=
+    if (!q) {
+      router.push("/products"); // tampilkan semua
+      setQuery("");
       return;
     }
 
-    router.push(`/products?q=${query}`); // pindah ke home + kirim query
+    router.push(`/products?q=${encodeURIComponent(q)}`);
+    setQuery("");
   };
+
+  function capitalizeFirst(text) {
+    if (!text) return "";
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  }
 
   return (
     <div
@@ -71,18 +78,9 @@ export default function Navbar({ className = "" }) {
       <div className="flex gap-6 text-sm">
         {user ? (
           <>
-            <button
-              onClick={() => {
-                localStorage.removeItem("loginSessionDB");
-                router.push("/");
-              }}
-              className="cursor-pointer text-red-300 hover:text-red-400"
-            >
-              Logout
-            </button>
             <Link href={`/profile/${user.username}`}>
               {" "}
-              <p>{user.username}</p>
+              <p>{capitalizeFirst(user.nama)}</p>
             </Link>
           </>
         ) : (

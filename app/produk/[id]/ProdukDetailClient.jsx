@@ -1,14 +1,17 @@
 "use client";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "../../components/navbar";
 import Footer from "../../components/Footer";
 
 export default function ProdukDetail({ produkChose }) {
+  console.log("produkChose", produkChose);
   // ambil semua gambar dulu (pastikan ini ada sebelum useState)
   const allImg = produkChose.produk.flatMap((p) => p.gambar);
-
   const [selectedImage, setSelectedImage] = useState(allImg[0] || "");
+  const [currentUser, setCurrentUser] = useState({});
+  console.log("currentuser", currentUser);
+
   const [selectedProduk, setSelectedProduk] = useState({
     id: produkChose.id,
     produkId: "",
@@ -89,6 +92,34 @@ export default function ProdukDetail({ produkChose }) {
   const produkIdChoose = produkChose.produk.find((p) =>
     p.gambar.includes(selectedImage)
   );
+  function handleBeli() {
+    const produkBeli = selectedProduk;
+    const BeliLama = JSON.parse(localStorage.getItem("beliDB")) || [];
+    const confirmation = confirm("Apakah Anda yakin ingin membeli produk ini?");
+    const update = {
+      ...produkBeli,
+      status: "Belum dibayar",
+      ownerId: produkChose.ownerId,
+      buyerId: currentUser.id,
+      date: new Date().toISOString(),
+    };
+    if (!confirmation) {
+      return;
+    }
+    localStorage.setItem("beliDB", JSON.stringify([...BeliLama, update]));
+
+    setSelectedProduk({
+      id: produkChose.id,
+      produkId: "",
+      gambar: allImg[0] || "",
+      harga: produkChose.produk[0]?.harga || 0,
+      nama: produkChose.nama,
+      warna: "",
+      ukuran: "",
+      jumlah: 1,
+    });
+    setSelectedImage(allImg[0] || "");
+  }
 
   const handleAddToCart = () => {
     const produkBaru = selectedProduk;
@@ -133,6 +164,17 @@ export default function ProdukDetail({ produkChose }) {
 
     alert("Produk berhasil ditambahkan ke keranjang!");
   };
+
+  useEffect(() => {
+    try {
+      const currentUser = JSON.parse(localStorage.getItem("loginSessionDB"));
+
+      setCurrentUser(currentUser);
+    } catch {
+      setCurrentUser({});
+    } finally {
+    }
+  }, []);
 
   return (
     <>
@@ -183,8 +225,8 @@ export default function ProdukDetail({ produkChose }) {
             <span className="font-light">
               Rp.
               {produkIdChoose
-                ? produkIdChoose.harga
-                : produkChose.produk[0].harga}
+                ? produkIdChoose.harga.toLocaleString("id-ID")
+                : produkChose.produk[0].harga.toLocaleString("id-ID")}
             </span>
           </div>
           <div className="text-sm font-light-bold mt-2 w-full flex gap-2 flex-wrap justify-start items-center">
@@ -272,7 +314,15 @@ export default function ProdukDetail({ produkChose }) {
           {/* tombol beli */}
 
           <div className="flex">
-            <button className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-200">
+            <button
+              onClick={handleBeli}
+              disabled={
+                !selectedProduk.warna ||
+                !selectedProduk.ukuran ||
+                !selectedProduk.jumlah
+              }
+              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-200"
+            >
               Beli Sekarang
             </button>
             <button

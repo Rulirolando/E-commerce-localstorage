@@ -156,12 +156,18 @@ export default function JualPage() {
 
   if (!ready) return <h1>Loading...</h1>;
   if (!user) return <h1>Anda belum login</h1>;
+  function capitalizeFirst(text) {
+    if (!text) return "";
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  }
 
   return (
     <>
       <Navbar />
       <div className="p-6 max-w-3xl mx-auto">
-        <h1 className="text-2xl font-bold mb-4">{`Jual produk kamu ${user.username}`}</h1>
+        <h1 className="text-2xl font-bold mb-4">{`Jual produk kamu ${capitalizeFirst(
+          user.nama
+        )}`}</h1>
 
         {/* FORM PRODUK */}
         <div className="space-y-3 bg-blue-100 p-4 rounded-xl">
@@ -218,13 +224,6 @@ export default function JualPage() {
             className="p-2 w-full border rounded"
             value={form.lokasi}
             onChange={(e) => setForm({ ...form, lokasi: e.target.value })}
-          />
-
-          <input
-            placeholder="Komentar"
-            className="p-2 w-full border rounded"
-            value={form.comment}
-            onChange={(e) => setForm({ ...form, comment: e.target.value })}
           />
         </div>
 

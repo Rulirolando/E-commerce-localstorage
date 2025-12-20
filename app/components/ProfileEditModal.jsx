@@ -3,7 +3,13 @@
 import DragDropUploader from "./DragDropUploader";
 import { useState } from "react";
 
-export default function ProfileEditModal({ user, setUser, onClose }) {
+export default function ProfileEditModal({
+  user,
+  setUser,
+  onClose,
+  currentUser,
+  setCurrentUser,
+}) {
   console.log("onclose", onClose);
 
   const [nama, setNama] = useState(user?.nama || "");
@@ -11,6 +17,8 @@ export default function ProfileEditModal({ user, setUser, onClose }) {
   const [telepon, setTelepon] = useState(user?.telepon || "");
   const [tanggalLahir, setTanggalLahir] = useState(user?.tanggalLahir || "");
   const [gender, setGender] = useState(user?.gender || "Laki-laki");
+  const [foto, setFoto] = useState(user?.foto || "");
+  const [password, setPassword] = useState(user?.password || "");
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -43,10 +51,26 @@ export default function ProfileEditModal({ user, setUser, onClose }) {
     );
 
     localStorage.setItem("userDB", JSON.stringify(updatedUsers));
-
     const updatedUser = updatedUsers.find((u) => u.username === user.username);
 
     setUser(updatedUser);
+
+    const updateLoginSession =
+      currentUser.username === user.username
+        ? {
+            ...currentUser,
+            foto: setFoto(foto),
+            nama,
+            email,
+            telepon,
+            tanggalLahir,
+            gender,
+            password: setPassword(password),
+          }
+        : currentUser;
+    localStorage.setItem("loginSessionDB", JSON.stringify(updateLoginSession));
+    setCurrentUser(updateLoginSession);
+
     setError("");
     setSuccess("Profil berhasil diperbarui!");
 
@@ -133,9 +157,14 @@ export default function ProfileEditModal({ user, setUser, onClose }) {
             <input
               className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               placeholder="08xxxxxxxxxx"
-              type="tel"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={telepon}
-              onChange={(e) => setTelepon(e.target.value)}
+              onChange={(e) => {
+                const onlyNumber = e.target.value.replace(/\D/g, "");
+                setTelepon(onlyNumber);
+              }}
             />
           </div>
 

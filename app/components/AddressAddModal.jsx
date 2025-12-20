@@ -52,12 +52,14 @@ export default function AddAdressModal({ currentUser, onClose, onAddAddress }) {
           <label htmlFor="telepon" className="flex flex-col w-1/3">
             Telepon
             <input
-              type="number"
-              id="telepon"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={address.telepon}
-              onChange={(e) =>
-                setAddress({ ...address, telepon: e.target.value })
-              }
+              onChange={(e) => {
+                const onlyNumber = e.target.value.replace(/\D/g, "");
+                setAddress({ ...address, telepon: onlyNumber });
+              }}
               placeholder="Contoh: 0822xxx"
               className="p-2 border border-black rounded-md focus:outline-none   hover:border-blue-400"
             />

@@ -5,10 +5,10 @@ import ShowProduk from "./produk";
 import { useSearchParams } from "next/navigation";
 import kategoriList from "../../public/assets/kategoriProduk";
 import CardProduk from "./CardProduk";
-export default function SearchProduk({ cari }) {
+export default function SearchProduk() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const kategoriURL = searchParams.get("q") || "";
+  const kategoriURL = (searchParams.get("q") || "").toLowerCase().trim();
   const [kategori, setKategori] = useState(kategoriURL || "");
   const [warna, setWarna] = useState("");
   const [ukuran, setUkuran] = useState("");
@@ -46,7 +46,7 @@ export default function SearchProduk({ cari }) {
 
     const matchKategori =
       kategori === "" ||
-      p.kategori.toLowerCase().trim() === kategori.toLowerCase().trim();
+      p.kategori.toLowerCase().includes(kategori.toLowerCase());
 
     const matchWarna = warna === "" || allWarna.includes(warna.toLowerCase());
     const matchUkuran =
@@ -55,7 +55,7 @@ export default function SearchProduk({ cari }) {
     const matchLokasi =
       lokasi === "" || p.lokasi.toLowerCase().includes(lokasi.toLowerCase());
 
-    const keyword = cari.toLowerCase().trim();
+    const keyword = (searchParams.get("q") || "").toLowerCase().trim();
 
     const matchCari =
       keyword === "" ||
@@ -83,6 +83,10 @@ export default function SearchProduk({ cari }) {
     const user = JSON.parse(localStorage.getItem("loginSessionDB"));
     if (user) setCurrentUser(user);
   }, []);
+
+  useEffect(() => {
+    setKategori(""); // reset kategori saat search
+  }, [searchParams]);
 
   if (!loading) return <p>Memuat...</p>;
 

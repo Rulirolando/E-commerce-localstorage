@@ -3,6 +3,8 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 export default function ShowProduk({ produkSelected }) {
+  const [currentUser, setCurrentUser] = useState({});
+  console.log("currentuser", currentUser);
   const [selectedImage, setSelectedImage] = useState("");
   const [mounted, setMounted] = useState(false);
   console.log("selectedimage", selectedImage);
@@ -16,6 +18,13 @@ export default function ShowProduk({ produkSelected }) {
     return text.charAt(0).toUpperCase() + text.slice(1);
   }
 
+  function handleOwner() {
+    if (currentUser.id === produkSelected.ownerId) {
+      alert("Anda adalah pemilik produk ini.");
+      return;
+    }
+  }
+
   useEffect(() => {
     try {
       if (produkSelected && produkSelected.produk.length > 0) {
@@ -27,6 +36,16 @@ export default function ShowProduk({ produkSelected }) {
       setMounted(true);
     }
   }, [produkSelected]);
+
+  useEffect(() => {
+    try {
+      const user = JSON.parse(localStorage.getItem("loginSessionDB"));
+      setCurrentUser(user);
+    } catch {
+      setCurrentUser({});
+    } finally {
+    }
+  }, []);
 
   if (!mounted) {
     // tampilkan skeleton / loading yang sama di server & client sehingga tidak ada mismatch
@@ -130,7 +149,10 @@ export default function ShowProduk({ produkSelected }) {
                 ? idImg.harga.toLocaleString("id-ID")
                 : produkSelected.produk[0].harga.toLocaleString("id-ID")}
             </p>
-            <button className="bg-blue-900 text-white p-2 rounded-lg hover:bg-blue-700 transition-all duration-200 cursor-pointer">
+            <button
+              onClick={handleOwner}
+              className="bg-blue-900 text-white p-2 rounded-lg hover:bg-blue-700 transition-all duration-200 cursor-pointer"
+            >
               <Link href={`/produk/${produkSelected.id}`}>Lihat detail</Link>
             </button>
           </div>
