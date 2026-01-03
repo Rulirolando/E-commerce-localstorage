@@ -15,6 +15,7 @@ export default function ProdukDetail({ produkChose }) {
   const [selectedProduk, setSelectedProduk] = useState({
     id: produkChose.id,
     produkId: "",
+    ownerId: produkChose.ownerId,
     gambar: allImg[0] || "",
     harga: produkChose.produk[0]?.harga || 0,
     nama: produkChose.nama,
@@ -99,7 +100,6 @@ export default function ProdukDetail({ produkChose }) {
     const update = {
       ...produkBeli,
       status: "Belum dibayar",
-      ownerId: produkChose.ownerId,
       buyerId: currentUser.id,
       date: new Date().toISOString(),
     };
@@ -154,6 +154,7 @@ export default function ProdukDetail({ produkChose }) {
       id: produkChose.id,
       produkId: "",
       gambar: allImg[0] || "",
+      ownerId: produkChose.ownerId,
       harga: produkChose.produk[0]?.harga || 0,
       nama: produkChose.nama,
       warna: "",

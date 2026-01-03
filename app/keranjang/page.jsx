@@ -6,9 +6,14 @@ import Navbar from "../components/navbar";
 export default function KeranjangPage() {
   const [keranjang, setKeranjang] = useState([]);
   const [products, setProducts] = useState([]);
-  console.log("products", products);
+  const [currentUser, setCurrentUser] = useState({});
   const [mounted, setMounted] = useState(false);
   const [selectproduk, setSelectProduk] = useState([]);
+  console.log("selectproduk", selectproduk);
+  const [beli, setBeli] = useState([]);
+  const [users, setUsers] = useState([]);
+  console.log("users", users);
+  console.log("beli", beli);
   console.log("keranjang", keranjang);
 
   useEffect(() => {
@@ -27,6 +32,24 @@ export default function KeranjangPage() {
 
   useEffect(() => {
     try {
+      const users = JSON.parse(localStorage.getItem("userDB"));
+      setUsers(users);
+    } catch {
+      setUsers([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      const session = JSON.parse(localStorage.getItem("loginSessionDB"));
+      setCurrentUser(session);
+    } catch {
+      setCurrentUser({});
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
       const products = localStorage.getItem("produkDB") || "[]";
       const data = JSON.parse(products);
       setProducts(data);
@@ -37,9 +60,14 @@ export default function KeranjangPage() {
     }
   }, []);
 
-  const HandleSameProduk = () => {
-    // products.filter((p) => )
-  };
+  useEffect(() => {
+    try {
+      const beli = JSON.parse(localStorage.getItem("beliDB"));
+      setBeli(beli);
+    } catch {
+      setBeli([]);
+    }
+  }, []);
 
   const handleSelect = (item, checked) => {
     console.log("checked", checked);
@@ -60,6 +88,11 @@ export default function KeranjangPage() {
       console.log("selectprodukdihapus", selectproduk);
     }
   };
+
+  function capitalizeFirst(text) {
+    if (!text) return "";
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  }
 
   if (!mounted) {
     // tampilkan skeleton / loading yang sama di server & client sehingga tidak ada mismatch
@@ -83,7 +116,6 @@ export default function KeranjangPage() {
   const allSelected =
     selectproduk.length === keranjang.length && keranjang.length > 0;
 
-  console.log("allselected", allSelected);
   const handleSelectAll = (checked) => {
     if (checked) {
       setSelectProduk(keranjang);
@@ -91,6 +123,28 @@ export default function KeranjangPage() {
       setSelectProduk([]);
     }
   };
+
+  function handleCheckout() {
+    if (selectproduk.length === 0) {
+      alert("Anda belum memilih produk.");
+      return;
+    }
+    const produkBeli = selectproduk.map((produk) => ({
+      ...produk,
+      status: "Belum dibayar",
+      buyerId: currentUser.id,
+      date: new Date().toISOString(),
+    }));
+    const beliLama = JSON.parse(localStorage.getItem("beliDB")) || [];
+    const confirmation = confirm("Apakah Anda yakin ingin membeli produk ini?");
+    if (!confirmation) {
+      return;
+    }
+    localStorage.setItem(
+      "beliDB",
+      JSON.stringify([...beliLama, ...produkBeli])
+    );
+  }
 
   return (
     <>
@@ -148,8 +202,7 @@ export default function KeranjangPage() {
                         WebkitBoxOrient: "vertical",
                       }}
                     >
-                      {item.nama} kljfjldsjfsjf
-                      dlkjsldfjsldjflksjfkjslkdjflksdjfkjdjdkdkdk
+                      {capitalizeFirst(item.nama)}
                     </p>
                   </div>
                 </div>
@@ -206,7 +259,10 @@ export default function KeranjangPage() {
                   .reduce((total, item) => total + item.harga * item.jumlah, 0)
                   .toLocaleString("id-ID")}
               </p>
-              <button className="ml-2 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm transition-all">
+              <button
+                onClick={handleCheckout}
+                className="ml-2 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm transition-all"
+              >
                 Checkout
               </button>
             </div>

@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 export default function Navbar({ className = "" }) {
   const router = useRouter();
   const [user, setUser] = useState(null);
+
   const [query, setQuery] = useState("");
 
   useEffect(() => {
@@ -78,9 +79,10 @@ export default function Navbar({ className = "" }) {
       <div className="flex gap-6 text-sm">
         {user ? (
           <>
+            <Link href={`/order/${user.id}`}>Kelola pesanan</Link>
             <Link href={`/profile/${user.username}`}>
               {" "}
-              <p>{capitalizeFirst(user.nama)}</p>
+              <p>{capitalizeFirst(user.username)}</p>
             </Link>
           </>
         ) : (

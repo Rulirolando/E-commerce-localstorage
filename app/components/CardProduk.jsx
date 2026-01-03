@@ -7,9 +7,11 @@ export default function CardProduk({
   gambar,
   terjual,
   edit,
+  onEdit,
   isLoved,
   onLove,
   onClick,
+  onHapus,
   loveProduk = false,
   showLove = false,
 }) {
@@ -49,13 +51,25 @@ export default function CardProduk({
         <p>★★★★★</p>
         <p className="font-light text-xs">Terjual: {terjual}</p>
         <p className="font-light text-sm">{harga}</p>
-        <button
-          className={`${
-            edit === false ? "hidden" : ""
-          } text-center border-gray-100 bg-blue-500 rounded-lg p-2 mt-2 cursor-pointer`}
-        >
-          Edit
-        </button>
+        <div className="flex justify-between w-full gap-1">
+          {" "}
+          <button
+            onClick={onEdit}
+            className={`${
+              edit === false ? "hidden" : ""
+            } text-center border-gray-100 bg-blue-500 rounded-lg p-2 mt-2 cursor-pointer w-1/2 `}
+          >
+            Edit
+          </button>
+          <button
+            onClick={onHapus}
+            className={`${
+              edit === false ? "hidden" : ""
+            } text-center border-gray-100 bg-blue-500 rounded-lg p-2 mt-2 cursor-pointer w-1/2`}
+          >
+            Hapus
+          </button>
+        </div>
       </div>
     </>
   );

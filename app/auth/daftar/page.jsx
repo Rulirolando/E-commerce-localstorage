@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { v4 as uuidv4 } from "uuid";
 
 export default function Daftar() {
   const router = useRouter();
@@ -46,7 +47,7 @@ export default function Daftar() {
       return;
     }
     const newUser = {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       username: user.username,
       email: user.email,
       password: user.password,

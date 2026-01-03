@@ -1,8 +1,8 @@
 import { useState } from "react";
-
+import { v4 as uuidv4 } from "uuid";
 export default function AddAdressModal({ currentUser, onClose, onAddAddress }) {
   const [address, setAddress] = useState({
-    id: crypto.randomUUID(),
+    id: uuidv4(),
     userId: currentUser,
     status: false,
     nama: "",

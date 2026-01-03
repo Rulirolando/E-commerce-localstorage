@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 
 export default function SimpanProduk() {
   const [namaProduk, setNamaProduk] = useState("");
@@ -8,7 +9,7 @@ export default function SimpanProduk() {
     const produkList = localStorage.getItem("nama");
 
     const dataBaru = {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       nama: namaProduk,
     };
 

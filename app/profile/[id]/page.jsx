@@ -22,16 +22,13 @@ import { LiaUserLockSolid } from "react-icons/lia";
 import AddAdressModal from "../../components/AddressAddModal";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import EditProdukModal from "../../components/EditProduk";
 
 export default function ProfilePage({ params }) {
   const { id: username } = use(params);
   const [user, setUser] = useState({});
   const [produkList, setProdukList] = useState(null);
-  const [users, setUsers] = useState([]);
-  const [produk, setProduk] = useState([]);
-  console.log("produk", produk);
-  console.log("userCurrent", user);
-  console.log("users", users);
+  console.log("produklist", produkList);
   const [activeMenu, setActiveMenu] = useState("profile");
   const [activePesananMenu, setActivePesananMenu] = useState("semuapesanan");
   const [notifEnabled, setNotifEnabled] = useState(false);
@@ -42,6 +39,10 @@ export default function ProfilePage({ params }) {
   const [isEditAddress, setIsEditAddress] = useState(null);
   const [editAddress, setEditAddress] = useState(null);
   const [produkBeli, setProdukBeli] = useState([]);
+  const [isEdit, setIsEdit] = useState(false);
+  console.log("isedit", isEdit);
+  const [onEdit, setOnEdit] = useState({});
+  const [myProduks, setMyProduks] = useState([]);
   console.log("produkBeli", produkBeli);
   const router = useRouter();
 
@@ -98,6 +99,19 @@ export default function ProfilePage({ params }) {
     setAddressList(updateAddressList);
     localStorage.setItem("addressDB", JSON.stringify(updateAddressList));
   }
+  function handleHapusProduk(postId, produkId) {
+    const confirm = window.confirm("Yakin ingin menghapus produk ini?");
+    if (!confirm) return;
+    const updateProdukList = produkList.map((produk) => {
+      if (produk.id !== postId) return produk;
+      return {
+        ...produk,
+        produk: produk.produk.filter((p) => p.id !== produkId),
+      };
+    });
+    setProdukList(updateProdukList);
+    localStorage.setItem("produkDB", JSON.stringify(updateProdukList));
+  }
 
   useEffect(() => {
     try {
@@ -123,6 +137,9 @@ export default function ProfilePage({ params }) {
     try {
       const allProduk = JSON.parse(localStorage.getItem("produkDB")) || [];
       if (allProduk) setProdukList(allProduk);
+      //Produk Yang saya jual
+      const myProduk = allProduk.filter((p) => p.ownerId === user.id);
+      setMyProduks(myProduk);
     } catch {}
   }, [user]);
 
@@ -144,25 +161,6 @@ export default function ProfilePage({ params }) {
       if (allProduk) setProdukBeli(allProduk);
     } catch {
       setProdukBeli([]);
-    } finally {
-    }
-  }, []);
-
-  useEffect(() => {
-    try {
-      const users = JSON.parse(localStorage.getItem("userDB")) || [];
-      setUsers(users);
-    } catch {
-      setUsers([]);
-    } finally {
-    }
-  }, [currentUser]);
-  useEffect(() => {
-    try {
-      const users = JSON.parse(localStorage.getItem("produkDB")) || [];
-      setProduk(users);
-    } catch {
-      setProduk([]);
     } finally {
     }
   }, []);
@@ -392,72 +390,75 @@ export default function ProfilePage({ params }) {
                 <>
                   {" "}
                   <div className="w-full h-full  ">
-                    {produkBeli.map((produk, index) => (
-                      <div
-                        key={index}
-                        className="w-full  bg-blue-200 ml-2 mt-5 rounded-2xl p-4 shadow-2xs"
-                      >
-                        <div className="flex w-full justify-between items-center">
-                          <div className="w-1/2 flex flex-row">
-                            {" "}
-                            <IoBasket size={30} />{" "}
-                            <div className="flex flex-col ml-3">
-                              <h1>ID: {produk.produkId}</h1>
-                              <p className="font-light text-sm">
-                                Tanggal: 12-12-2022
-                              </p>
-                            </div>
-                          </div>
-
-                          <p className="border-gray-100 rounded-lg px-2 text-[12px] text-light py-0.5 bg-blue-400 ">
-                            {produk.status}
-                          </p>
-                        </div>
-                        <hr className="mt-5" />
-                        <div className="flex justify-between w-full mt-5 items-center">
-                          <div className="flex items-center">
-                            <Image
-                              src={produk.gambar}
-                              width={100}
-                              height={100}
-                              alt="foto barang"
-                              className="object-cover w-30 h-30 rounded-md"
-                            />
-                            <div className="flex flex-col ml-3">
-                              <h1 className="font-normal text-sm">
-                                {produk.nama}
-                              </h1>
-                              <div className="flex items-center space-x-3 ">
-                                <p className="font-normal text-sm">
-                                  Rp.{produk.harga.toLocaleString("id-ID")}
-                                </p>
-                                <p className="font-light text-light text-sm">
-                                  {produk.jumlah} x
+                    {produkBeli
+                      .filter((produk) => produk.buyerId === currentUser.id)
+                      .map((produk, index) => (
+                        <div
+                          key={index}
+                          className="w-full  bg-blue-200 ml-2 mt-5 rounded-2xl p-4 shadow-2xs"
+                        >
+                          <div className="flex w-full justify-between items-center">
+                            <div className="w-1/2 flex flex-row">
+                              {" "}
+                              <IoBasket size={30} />{" "}
+                              <div className="flex flex-col ml-3">
+                                <h1>ID: {produk.produkId}</h1>
+                                <p className="font-light text-sm">
+                                  Tanggal:{" "}
+                                  {new Date(produk.date).toLocaleString()}
                                 </p>
                               </div>
                             </div>
-                          </div>
-                          <div className="flex flex-col">
-                            <h1>Total belanja</h1>
-                            <p className="font-light text-sm">
-                              Rp.
-                              {(produk.jumlah * produk.harga).toLocaleString(
-                                "id-ID"
-                              )}
-                            </p>
 
-                            <div className="flex mt-7">
-                              <button className="border-gray-100 bg-blue-500 rounded-lg p-2">
-                                <Link href={`/produk/${produk.id}`}>
-                                  {" "}
-                                  Lihat detail
-                                </Link>
-                              </button>
+                            <p className="border-gray-100 rounded-lg px-2 text-[12px] text-light py-0.5 bg-blue-400 ">
+                              {produk.status}
+                            </p>
+                          </div>
+                          <hr className="mt-5" />
+                          <div className="flex justify-between w-full mt-5 items-center">
+                            <div className="flex items-center">
+                              <Image
+                                src={produk.gambar}
+                                width={100}
+                                height={100}
+                                alt="foto barang"
+                                className="object-cover w-30 h-30 rounded-md"
+                              />
+                              <div className="flex flex-col ml-3">
+                                <h1 className="font-normal text-sm">
+                                  {produk.nama}
+                                </h1>
+                                <div className="flex items-center space-x-3 ">
+                                  <p className="font-normal text-sm">
+                                    Rp.{produk.harga.toLocaleString("id-ID")}
+                                  </p>
+                                  <p className="font-light text-light text-sm">
+                                    {produk.jumlah} x
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex flex-col">
+                              <h1>Total belanja</h1>
+                              <p className="font-light text-sm">
+                                Rp.
+                                {(produk.jumlah * produk.harga).toLocaleString(
+                                  "id-ID"
+                                )}
+                              </p>
+
+                              <div className="flex mt-7">
+                                <button className="border-gray-100 bg-blue-500 rounded-lg p-2">
+                                  <Link href={`/produk/${produk.id}`}>
+                                    {" "}
+                                    Lihat detail
+                                  </Link>
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 </>
               )}
@@ -468,7 +469,11 @@ export default function ProfilePage({ params }) {
                   {" "}
                   <div className="w-full h-full  ">
                     {produkBeli
-                      .filter((produk) => produk.status === "Belum dibayar")
+                      .filter(
+                        (produk) =>
+                          produk.status === "Belum dibayar" &&
+                          produk.buyerId === currentUser.id
+                      )
                       .map((produk, index) => (
                         <div
                           key={index}
@@ -541,171 +546,240 @@ export default function ProfilePage({ params }) {
               {/* Dikemas pesanan */}
               {activePesananMenu === "dikemaspesanan" && (
                 <>
-                  <div className="w-full h-full bg-blue-200 border-gray-100 ml-2 mt-5 rounded-2xl p-4 shadow-2xs">
-                    <div className="w-full mt-4">
-                      <div className="flex justify-between items-center">
-                        <div className="w-full flex flex-row">
-                          {" "}
-                          <IoBasket size={30} />{" "}
-                          <div className="flex flex-col ml-3">
-                            <h1>ID: sleioje2847729</h1>
-                            <p className="font-light text-sm">
-                              Tanggal: 12-12-2022
+                  {" "}
+                  <div className="w-full h-full  ">
+                    {produkBeli
+                      .filter(
+                        (produk) =>
+                          produk.status === "Dikemas" &&
+                          produk.buyerId === currentUser.id
+                      )
+                      .map((produk, index) => (
+                        <div
+                          key={index}
+                          className="w-full  bg-blue-200 ml-2 mt-5 rounded-2xl p-4 shadow-2xs"
+                        >
+                          <div className="flex w-full justify-between items-center">
+                            <div className="w-1/2 flex flex-row">
+                              {" "}
+                              <IoBasket size={30} />{" "}
+                              <div className="flex flex-col ml-3">
+                                <h1>ID: {produk.produkId}</h1>
+                                <p className="font-light text-sm">
+                                  Tanggal: 12-12-2022
+                                </p>
+                              </div>
+                            </div>
+
+                            <p className="border-gray-100 rounded-lg px-2 text-[12px] text-light py-0.5 bg-blue-400 ">
+                              {produk.status}
                             </p>
                           </div>
-                        </div>
-
-                        <p className="border-gray-100 rounded-lg px-2 text-[12px] text-light py-0.5 bg-blue-400 w-27 text-center">
-                          Dikemas
-                        </p>
-                      </div>
-                      <hr className="mt-5" />
-                      <div className="flex justify-between w-full mt-5 items-center">
-                        <div className="flex items-center">
-                          <Image
-                            src="https://plus.unsplash.com/premium_photo-1678218594563-9fe0d16c6838?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmFqdSUyMHB1dGlofGVufDB8fDB8fHww"
-                            width={100}
-                            height={100}
-                            alt="foto barang"
-                            className="object-cover w-30 h-30 rounded-md"
-                          />
-                          <div className="flex flex-col ml-3">
-                            <h1 className="font-normal text-sm">Baju Putih</h1>
-                            <div className="flex items-center space-x-3 ">
-                              <p className="font-normal text-sm">Rp. 100.000</p>
-                              <p className="font-light text-light text-sm">
-                                2 x
+                          <hr className="mt-5" />
+                          <div className="flex justify-between w-full mt-5 items-center">
+                            <div className="flex items-center">
+                              <Image
+                                src={produk.gambar}
+                                width={100}
+                                height={100}
+                                alt="foto barang"
+                                className="object-cover w-30 h-30 rounded-md"
+                              />
+                              <div className="flex flex-col ml-3">
+                                <h1 className="font-normal text-sm">
+                                  {produk.nama}
+                                </h1>
+                                <div className="flex items-center space-x-3 ">
+                                  <p className="font-normal text-sm">
+                                    Rp.{produk.harga.toLocaleString("id-ID")}
+                                  </p>
+                                  <p className="font-light text-light text-sm">
+                                    {produk.jumlah} x
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex flex-col">
+                              <h1>Total belanja</h1>
+                              <p className="font-light text-sm">
+                                Rp.
+                                {(produk.jumlah * produk.harga).toLocaleString(
+                                  "id-ID"
+                                )}
                               </p>
+
+                              <div className="flex mt-7">
+                                <button className="border-gray-100 bg-blue-500 rounded-lg p-2">
+                                  <Link href={`/produk/${produk.id}`}>
+                                    {" "}
+                                    Lihat detail
+                                  </Link>
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>
-                        <div className="flex flex-col">
-                          <h1>Total belanja</h1>
-                          <p className="font-light text-sm">Rp. 200.000</p>
-
-                          <div className="flex mt-7">
-                            <button className="border-gray-100 bg-blue-500 rounded-lg p-2">
-                              <Link href={`product/${produk.id}`}>
-                                {" "}
-                                Lihat detail
-                              </Link>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                      ))}
                   </div>
                 </>
               )}
               {/* Dikirim pesanan */}
               {activePesananMenu === "dikirimpesanan" && (
                 <>
-                  <div className="w-full h-full bg-blue-200 border-gray-100 ml-2 mt-5 rounded-2xl p-4 shadow-2xs">
-                    <div className="w-full mt-4">
-                      <div className="flex justify-between items-center">
-                        <div className="w-full flex flex-row">
-                          {" "}
-                          <IoBasket size={30} />{" "}
-                          <div className="flex flex-col ml-3">
-                            <h1>ID: sleioje2847729</h1>
-                            <p className="font-light text-sm">
-                              Tanggal: 12-12-2022
+                  {" "}
+                  <div className="w-full h-full  ">
+                    {produkBeli
+                      .filter(
+                        (produk) =>
+                          produk.status === "Dikirim" &&
+                          produk.buyerId === currentUser.id
+                      )
+                      .map((produk, index) => (
+                        <div
+                          key={index}
+                          className="w-full  bg-blue-200 ml-2 mt-5 rounded-2xl p-4 shadow-2xs"
+                        >
+                          <div className="flex w-full justify-between items-center">
+                            <div className="w-1/2 flex flex-row">
+                              {" "}
+                              <IoBasket size={30} />{" "}
+                              <div className="flex flex-col ml-3">
+                                <h1>ID: {produk.produkId}</h1>
+                                <p className="font-light text-sm">
+                                  Tanggal: 12-12-2022
+                                </p>
+                              </div>
+                            </div>
+
+                            <p className="border-gray-100 rounded-lg px-2 text-[12px] text-light py-0.5 bg-blue-400 ">
+                              {produk.status}
                             </p>
                           </div>
-                        </div>
-
-                        <p className="border-gray-100 rounded-lg px-2 text-[12px] text-light py-0.5 bg-blue-400 w-27 text-center">
-                          Dikirim
-                        </p>
-                      </div>
-                      <hr className="mt-5" />
-                      <div className="flex justify-between w-full mt-5 items-center">
-                        <div className="flex items-center">
-                          <Image
-                            src="https://plus.unsplash.com/premium_photo-1678218594563-9fe0d16c6838?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmFqdSUyMHB1dGlofGVufDB8fDB8fHww"
-                            width={100}
-                            height={100}
-                            alt="foto barang"
-                            className="object-cover w-30 h-30 rounded-md"
-                          />
-                          <div className="flex flex-col ml-3">
-                            <h1 className="font-normal text-sm">Baju Putih</h1>
-                            <div className="flex items-center space-x-3 ">
-                              <p className="font-normal text-sm">Rp. 100.000</p>
-                              <p className="font-light text-light text-sm">
-                                2 x
+                          <hr className="mt-5" />
+                          <div className="flex justify-between w-full mt-5 items-center">
+                            <div className="flex items-center">
+                              <Image
+                                src={produk.gambar}
+                                width={100}
+                                height={100}
+                                alt="foto barang"
+                                className="object-cover w-30 h-30 rounded-md"
+                              />
+                              <div className="flex flex-col ml-3">
+                                <h1 className="font-normal text-sm">
+                                  {produk.nama}
+                                </h1>
+                                <div className="flex items-center space-x-3 ">
+                                  <p className="font-normal text-sm">
+                                    Rp.{produk.harga.toLocaleString("id-ID")}
+                                  </p>
+                                  <p className="font-light text-light text-sm">
+                                    {produk.jumlah} x
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex flex-col">
+                              <h1>Total belanja</h1>
+                              <p className="font-light text-sm">
+                                Rp.
+                                {(produk.jumlah * produk.harga).toLocaleString(
+                                  "id-ID"
+                                )}
                               </p>
+
+                              <div className="flex mt-7">
+                                <button className="border-gray-100 bg-blue-500 rounded-lg p-2">
+                                  <Link href={`/produk/${produk.id}`}>
+                                    {" "}
+                                    Lihat detail
+                                  </Link>
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>
-                        <div className="flex flex-col">
-                          <h1>Total belanja</h1>
-                          <p className="font-light text-sm">Rp. 200.000</p>
-
-                          <div className="flex mt-7">
-                            <button className="border-gray-100 bg-blue-500 rounded-lg p-2">
-                              Lihat detail
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                      ))}
                   </div>
                 </>
               )}
               {/* Selesai Pesanan */}
               {activePesananMenu === "selesaipesanan" && (
                 <>
-                  <div className="w-full h-full bg-blue-200 border-gray-100 ml-2 mt-5 rounded-2xl p-4 shadow-2xs">
-                    <div className="w-full mt-4">
-                      <div className="flex justify-between items-center">
-                        <div className="w-full flex flex-row">
-                          {" "}
-                          <IoBasket size={30} />{" "}
-                          <div className="flex flex-col ml-3">
-                            <h1>ID: sleioje2847729</h1>
-                            <p className="font-light text-sm">
-                              Tanggal: 12-12-2022
+                  {" "}
+                  <div className="w-full h-full  ">
+                    {produkBeli
+                      .filter(
+                        (produk) =>
+                          produk.status === "Selesai" &&
+                          produk.buyerId === currentUser.id
+                      )
+                      .map((produk, index) => (
+                        <div
+                          key={index}
+                          className="w-full  bg-blue-200 ml-2 mt-5 rounded-2xl p-4 shadow-2xs"
+                        >
+                          <div className="flex w-full justify-between items-center">
+                            <div className="w-1/2 flex flex-row">
+                              {" "}
+                              <IoBasket size={30} />{" "}
+                              <div className="flex flex-col ml-3">
+                                <h1>ID: {produk.produkId}</h1>
+                                <p className="font-light text-sm">
+                                  Tanggal: 12-12-2022
+                                </p>
+                              </div>
+                            </div>
+
+                            <p className="border-gray-100 rounded-lg px-2 text-[12px] text-light py-0.5 bg-blue-400 ">
+                              {produk.status}
                             </p>
                           </div>
-                        </div>
-
-                        <p className="border-gray-100 rounded-lg px-2 text-[12px] text-light py-0.5 bg-blue-400 w-27 text-center">
-                          Selesai
-                        </p>
-                      </div>
-                      <hr className="mt-5" />
-                      <div className="flex justify-between w-full mt-5 items-center">
-                        <div className="flex items-center">
-                          <Image
-                            src="https://plus.unsplash.com/premium_photo-1678218594563-9fe0d16c6838?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmFqdSUyMHB1dGlofGVufDB8fDB8fHww"
-                            width={100}
-                            height={100}
-                            alt="foto barang"
-                            className="object-cover w-30 h-30 rounded-md"
-                          />
-                          <div className="flex flex-col ml-3">
-                            <h1 className="font-normal text-sm">Baju Putih</h1>
-                            <div className="flex items-center space-x-3 ">
-                              <p className="font-normal text-sm">Rp. 100.000</p>
-                              <p className="font-light text-light text-sm">
-                                2 x
+                          <hr className="mt-5" />
+                          <div className="flex justify-between w-full mt-5 items-center">
+                            <div className="flex items-center">
+                              <Image
+                                src={produk.gambar}
+                                width={100}
+                                height={100}
+                                alt="foto barang"
+                                className="object-cover w-30 h-30 rounded-md"
+                              />
+                              <div className="flex flex-col ml-3">
+                                <h1 className="font-normal text-sm">
+                                  {produk.nama}
+                                </h1>
+                                <div className="flex items-center space-x-3 ">
+                                  <p className="font-normal text-sm">
+                                    Rp.{produk.harga.toLocaleString("id-ID")}
+                                  </p>
+                                  <p className="font-light text-light text-sm">
+                                    {produk.jumlah} x
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex flex-col">
+                              <h1>Total belanja</h1>
+                              <p className="font-light text-sm">
+                                Rp.
+                                {(produk.jumlah * produk.harga).toLocaleString(
+                                  "id-ID"
+                                )}
                               </p>
+
+                              <div className="flex mt-7">
+                                <button className="border-gray-100 bg-blue-500 rounded-lg p-2">
+                                  <Link href={`/produk/${produk.id}`}>
+                                    {" "}
+                                    Lihat detail
+                                  </Link>
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>
-                        <div className="flex flex-col">
-                          <h1>Total belanja</h1>
-                          <p className="font-light text-sm">Rp. 200.000</p>
-
-                          <div className="flex mt-7">
-                            <button className="border-gray-100 bg-blue-500 rounded-lg p-2">
-                              Lihat detail
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                      ))}
                   </div>
                 </>
               )}
@@ -735,22 +809,37 @@ export default function ProfilePage({ params }) {
               <div className="font-bold text-xl p-2">Produk saya</div>
               <div className="flex flex-start flex-wrap w-full h-full">
                 {/* Card Produk */}
-                {produkList.filter((u) => u.ownerId === user.id).length > 0 ? (
-                  produkList
-                    .filter((u) => u.ownerId === user.id)
-                    .map((item) =>
-                      item.produk.map((p) => (
-                        <CardProduk
-                          key={p.id}
-                          nama={item.nama}
-                          harga={p.harga}
-                          gambar={p.gambar[0]}
-                          terjual={item.terjual}
-                          edit={true}
-                          loveProduk={true}
-                        />
-                      ))
-                    )
+                {isEdit ? (
+                  <EditProdukModal
+                    produk={onEdit}
+                    setMyProduks={setMyProduks}
+                    onClose={() => setIsEdit(false)}
+                  />
+                ) : (
+                  ""
+                )}
+                {myProduks.length > 0 ? (
+                  myProduks.map((item) =>
+                    item.produk.map((p) => (
+                      <CardProduk
+                        key={p.id}
+                        nama={item.nama}
+                        harga={p.harga}
+                        gambar={p.gambar[0]}
+                        terjual={item.terjual}
+                        edit={true}
+                        onEdit={() => {
+                          setOnEdit({ postId: item.id, ...p });
+
+                          setIsEdit(true);
+                        }}
+                        onHapus={() => {
+                          handleHapusProduk(item.id, p.id);
+                        }}
+                        loveProduk={true}
+                      />
+                    ))
+                  )
                 ) : (
                   <>
                     <p>Belum ada produk</p>

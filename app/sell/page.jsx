@@ -6,6 +6,7 @@ import kategoriList from "../../public/assets/kategoriProduk";
 import { useRouter } from "next/navigation";
 import Navbar from "../components/navbar";
 import DragDropUploader from "../components/DragDropUploader";
+import { v4 as uuidv4 } from "uuid";
 
 export default function JualPage() {
   const router = useRouter();
@@ -16,7 +17,7 @@ export default function JualPage() {
   console.log("user", user);
 
   const [form, setForm] = useState(() => ({
-    id: crypto.randomUUID(),
+    id: uuidv4(),
     nama: "",
     kategori: "",
     deskripsi: "",
@@ -26,7 +27,7 @@ export default function JualPage() {
   }));
 
   const [variasi, setVariasi] = useState(() => ({
-    id: crypto.randomUUID(),
+    id: uuidv4(),
     warna: "",
     harga: "",
     stok: "",
@@ -74,7 +75,7 @@ export default function JualPage() {
       return alert("Isi semua data variasi!");
 
     const newVar = {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       ownerId: user.id,
       warna: variasi.warna,
       harga: parseInt(variasi.harga, 10),
@@ -89,7 +90,7 @@ export default function JualPage() {
     setVariasiList((prev) => [...prev, newVar]);
 
     setVariasi({
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       warna: "",
       harga: "",
       stok: "",
@@ -110,7 +111,7 @@ export default function JualPage() {
     if (variasiList.length === 0) return alert("Tambahkan minimal 1 variasi");
 
     const newProduk = {
-      id: form.id || crypto.randomUUID(),
+      id: form.id || uuidv4(),
       nama: form.nama,
       kategori: form.kategori,
       deskripsi: form.deskripsi,
@@ -130,7 +131,7 @@ export default function JualPage() {
 
     // reset form & variasi
     setForm({
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       nama: "",
       kategori: "",
       deskripsi: "",
@@ -142,7 +143,7 @@ export default function JualPage() {
 
     setVariasiList([]);
     setVariasi({
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       warna: "",
       harga: "",
       stok: "",
@@ -294,7 +295,7 @@ export default function JualPage() {
             <button
               onClick={() => {
                 setVariasi({
-                  id: crypto.randomUUID(),
+                  id: uuidv4(),
                   warna: "",
                   harga: "",
                   stok: "",
