@@ -186,7 +186,7 @@ export default function ProdukDetail({ produkChose }) {
             <div className="relative aspect-4/3 w-full">
               <Image
                 src={selectedImage || allImg[0]}
-                alt={produkChose.nama}
+                alt={produkChose.nama || "produk-image"}
                 fill
                 unoptimized
                 className="object-cover rounded-lg"
