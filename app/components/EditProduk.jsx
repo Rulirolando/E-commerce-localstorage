@@ -97,7 +97,7 @@ export default function EditProdukModal({ produk, setMyProduks, onClose }) {
     <div className="fixed inset-0 z-50 bg-black/30 flex justify-center items-center backdrop-blur-sm">
       <div className="bg-white p-2 rounded-xl shadow-2xl w-full h-fit max-w-md ">
         <h2 className="text-2xl font-bold text-gray-800 text-center">
-          Edit Profile
+          Edit Produk
         </h2>
 
         {/* Upload Foto */}

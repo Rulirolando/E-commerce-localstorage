@@ -1,0 +1,112 @@
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id          Int      @id @default(autoincrement())
+  username    String   @unique
+  email       String   @unique
+  password    String
+
+  products    Product[]
+  loves     Love[]
+  orders      Order[]
+
+  carts Cart[]
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  nama        String
+  kategori    String
+  deskripsi  String?
+  lokasi      String
+  comment     String?
+  ownerId     Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner       User     @relation(fields: [ownerId], references: [id])
+  variations   Variation[]
+  loves     Love[]
+}
+
+model Variation {
+ id         Int   @id @default(autoincrement())
+  warna      String
+  harga      Int
+  stok       Int
+  terjual    Int        @default(0)
+  productId  Int
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  product    Product    @relation(fields: [productId], references: [id])
+  images     Img[]      
+  cartItems CartItem[]
+  sizes      Size[]
+}
+model Size {
+  id          Int      @id @default(autoincrement())
+  variationId Int
+  size        String
+createdAt   DateTime @default(now())
+updatedAt   DateTime @updatedAt
+  variation   Variation @relation(fields: [variationId], references: [id])
+}
+model Img {
+  id          Int      @id @default(autoincrement())
+  variationId Int
+  img      String
+  createdAt   DateTime @default(now())
+
+updatedAt   DateTime @updatedAt
+  variation   Variation @relation(fields: [variationId], references: [id])
+}
+
+
+model Love {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int
+  status    Boolean @default(true)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@unique([userId, productId])
+}
+
+model Order {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  totalAmount Int
+  status      String   @default("Belum dibayar") // pending, completed, cancelled
+  createdAt   DateTime @default(now())
+ total Int
+
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model Cart {
+  id      Int       @id @default(autoincrement())
+  userId  Int 
+  user    User      @relation(fields: [userId], references: [id])
+  items  CartItem[]
+}
+
+model CartItem {
+id Int @id @default(autoincrement())
+cartId Int
+cart Cart @relation(fields: [cartId], references: [id])
+
+variantId Int
+variant Variation @relation(fields: [variantId], references: [id])
+}

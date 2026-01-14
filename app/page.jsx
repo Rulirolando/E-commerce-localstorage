@@ -16,23 +16,42 @@ export default function Home() {
   const [currentUser, setCurrentUser] = useState({});
   console.log("Current", currentUser);
 
-  function toggleLove(produkId) {
+  async function toggleLove(produkId) {
     if (!currentUser) {
       alert("Silakan login terlebih dahulu untuk menyukai produk.");
       return;
     }
-    const updateProdukList = produkList.map((produk) => {
-      if (produkId !== produk.id) return produk;
-      const isLoved = produk.loved.some((l) => l.userId === currentUser?.id);
-      return {
-        ...produk,
-        loved: isLoved
-          ? produk.loved.filter((f) => f.userId !== currentUser?.id)
-          : [...produk.loved, { status: true, userId: currentUser?.id }],
-      };
-    });
-    setProdukList(updateProdukList);
-    localStorage.setItem("produkDB", JSON.stringify(updateProdukList));
+    try {
+      const res = await fetch("/api/love", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: currentUser.id,
+          productId: produkId,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        return alert(data.message);
+      }
+      setProdukList((prev) =>
+        prev.map((p) =>
+          p.id === produkId
+            ? {
+                ...p,
+                loves: data.loves
+                  ? [...p.loves, { userId: currentUser.id, status: true }]
+                  : p.loves.filter((l) => l.userId !== currentUser.id),
+              }
+            : p
+        )
+      );
+    } catch (error) {
+      console.error("Error toggling love:", error);
+      alert("Terjadi kesalahan saat menyukai produk. Silakan coba lagi.");
+    }
   }
   const kategoriArray = Object.keys(kategoriList)
     .map((key) => {
@@ -67,13 +86,16 @@ export default function Home() {
     : kategoriArray.slice(0, 6);
 
   useEffect(() => {
-    try {
-      const products = localStorage.getItem("produkDB");
-      setProdukList(products ? JSON.parse(products) : []);
-    } catch {
-      setProdukList([]);
-    } finally {
-    }
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch("/api/product");
+        const data = await res.json();
+        setProdukList(data);
+      } catch (err) {
+        console.error("Gagal ambil produk", err);
+      }
+    };
+    fetchProducts();
   }, []);
 
   useEffect(() => {
@@ -170,11 +192,13 @@ export default function Home() {
                     onClick={() => router.push(`produk/${p.id}`)}
                     key={p.id}
                     nama={p.nama}
-                    harga={"Rp " + p.produk?.[0]?.harga.toLocaleString("id-ID")}
-                    gambar={p.produk?.[0]?.gambar?.[0]}
-                    terjual={p.produk?.[0]?.terjual || 0}
+                    harga={
+                      "Rp " + p.variations?.[0]?.harga.toLocaleString("id-ID")
+                    }
+                    gambar={p.variations?.[0]?.images?.[0]?.img}
+                    terjual={p.variations?.[0]?.terjual || 0}
                     edit={false}
-                    isLoved={p.loved.some(
+                    isLoved={p.loves.some(
                       (l) => l.userId === currentUser?.id && l.status === true
                     )}
                     onLove={() => toggleLove(p.id)}
@@ -183,17 +207,19 @@ export default function Home() {
                 ))
                 .slice(0, 6)
             : produkList
-                .sort((a, b) => b.produk.terjual - a.produk.terjual)
+                .sort((a, b) => b.variations.terjual - a.variations.terjual)
                 .map((p) => (
                   <CardProduk
                     key={p.id}
                     onClick={() => router.push(`produk/${p.id}`)}
                     nama={p.nama}
-                    harga={"Rp " + p.produk?.[0]?.harga.toLocaleString("id-ID")}
-                    gambar={p.produk?.[0]?.gambar?.[0]}
-                    terjual={p.produk?.[0]?.terjual || 0}
+                    harga={
+                      "Rp " + p.variations?.[0]?.harga.toLocaleString("id-ID")
+                    }
+                    gambar={p.variations?.[0]?.images?.[0]?.img}
+                    terjual={p.variations?.[0]?.terjual || 0}
                     edit={false}
-                    isLoved={p.loved.some(
+                    isLoved={p.loves.some(
                       (l) => l.userId === currentUser?.id && l.status === true
                     )}
                     onLove={() => toggleLove(p.id)}

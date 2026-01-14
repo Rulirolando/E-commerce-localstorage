@@ -20,23 +20,42 @@ export default function SearchProduk() {
   const [loading, setLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState({});
 
-  function toggleLove(produkId) {
+  async function toggleLove(produkId) {
     if (!currentUser) {
       alert("Silakan login terlebih dahulu untuk menyukai produk.");
       return;
     }
-    const updateProdukList = produkList.map((produk) => {
-      if (produkId !== produk.id) return produk;
-      const isLoved = produk.loved.some((l) => l.userId === currentUser.id);
-      return {
-        ...produk,
-        loved: isLoved
-          ? produk.loved.filter((f) => f.userId !== currentUser.id)
-          : [...produk.loved, { status: true, userId: currentUser.id }],
-      };
-    });
-    setProdukList(updateProdukList);
-    localStorage.setItem("produkDB", JSON.stringify(updateProdukList));
+    try {
+      const res = await fetch("/api/love", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: currentUser.id,
+          productId: produkId,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        return alert(love.message);
+      }
+      setProdukList((prev) =>
+        prev.map((p) =>
+          p.id === produkId
+            ? {
+                ...p,
+                loves: data.loves
+                  ? [...p.loves, { userId: currentUser.id, status: true }]
+                  : p.loves.filter((l) => l.userId !== currentUser.id),
+              }
+            : p
+        )
+      );
+    } catch (error) {
+      console.error("Error toggling love:", error);
+      alert("Terjadi kesalahan saat menyukai produk. Silakan coba lagi.");
+    }
   }
   const filteredProduk = produkList.filter((p) => {
     const allWarna = p.produk.map((item) => item.warna.toLowerCase());
@@ -71,8 +90,11 @@ export default function SearchProduk() {
   // 🔥 Load data dari localStorage
   useEffect(() => {
     try {
-      const data = localStorage.getItem("produkDB");
-      if (data) setProdukList(JSON.parse(data));
+      fetch("/api/products/search")
+        .then((res) => res.json())
+        .then((data) => {
+          setProdukList(data);
+        });
     } catch {
       setProdukList([]);
     } finally {
@@ -103,7 +125,6 @@ export default function SearchProduk() {
               value={warna}
               onChange={(e) => {
                 setWarna(e.target.value);
-                router.push("/products");
               }}
             >
               <option value="">Semua Warna</option>
@@ -120,7 +141,6 @@ export default function SearchProduk() {
               value={ukuran}
               onChange={(e) => {
                 setUkuran(e.target.value);
-                router.push("/products");
               }}
             >
               <option value="">Semua Ukuran</option>
@@ -136,7 +156,6 @@ export default function SearchProduk() {
               value={lokasi}
               onChange={(e) => {
                 setLokasi(e.target.value);
-                router.push("/products");
               }}
             >
               <option value="">Semua Lokasi</option>
@@ -150,7 +169,6 @@ export default function SearchProduk() {
               value={kategori}
               onChange={(e) => {
                 setKategori(e.target.value);
-                router.push("/products");
               }}
             >
               <option value="">Semua Kategori</option>
@@ -181,7 +199,7 @@ export default function SearchProduk() {
                     gambar={p.produk?.[0]?.gambar?.[0]}
                     terjual={p.produk?.[0]?.terjual || 0}
                     edit={false}
-                    isLoved={p.loved.some(
+                    isLoved={p.loves.some(
                       (l) => l.userId === currentUser?.id && l.status === true
                     )}
                     onLove={() => toggleLove(p.id)}

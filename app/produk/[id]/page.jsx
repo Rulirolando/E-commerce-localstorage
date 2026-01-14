@@ -5,27 +5,24 @@ import ProdukDetail from "./ProdukDetailClient";
 
 export default function ProdukIdPage({ params }) {
   const { id } = use(params);
-
   const [produkChose, setProdukChose] = useState(null);
-  const [loading, setLoading] = useState(false);
+
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const data = localStorage.getItem("produkDB");
-      const list = JSON.parse(data);
-      // id adalah UUID → sudah string
-      const found = list.find((p) => p.id === id);
-
-      setProdukChose(found);
-    } catch {
-      setProdukChose(null);
-    } finally {
-      setLoading(true);
-    }
+    fetch(`/api/product/${id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data.error) setProdukChose(data);
+      })
+      .catch((err) => console.error(err))
+      .finally(() => setLoading(false));
   }, [id]);
 
-  if (!loading) return <div>Loading...</div>;
+  // Guard clause to return early if id is not available
+  if (!id) return <div>Loading...</div>;
 
+  if (loading) return <div>Loading...</div>;
   if (!produkChose) return <div>Produk tidak ditemukan!</div>;
 
   return <ProdukDetail produkChose={produkChose} />;

@@ -6,7 +6,6 @@ import kategoriList from "../../public/assets/kategoriProduk";
 import { useRouter } from "next/navigation";
 import Navbar from "../components/navbar";
 import DragDropUploader from "../components/DragDropUploader";
-import { v4 as uuidv4 } from "uuid";
 
 export default function JualPage() {
   const router = useRouter();
@@ -17,25 +16,19 @@ export default function JualPage() {
   console.log("user", user);
 
   const [form, setForm] = useState(() => ({
-    id: uuidv4(),
     nama: "",
     kategori: "",
     deskripsi: "",
     lokasi: "",
     comment: "",
-    createdAt: new Date().toISOString(),
   }));
 
   const [variasi, setVariasi] = useState(() => ({
-    id: uuidv4(),
     warna: "",
     harga: "",
     stok: "",
     ukuran: "",
     gambar: "",
-    terjual: 0,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
   }));
 
   const [variasiList, setVariasiList] = useState([]);
@@ -43,23 +36,18 @@ export default function JualPage() {
   // Load products + session once
   useEffect(() => {
     try {
-      const products = localStorage.getItem("produkDB");
-      if (products) setProdukList(JSON.parse(products));
-    } catch (err) {
-      console.error("fail load produkDB", err);
-      setProdukList([]);
-    } finally {
-    }
+      fetch("/api/product")
+        .then((res) => res.json())
+        .then(setProdukList)
+        .catch(console.error);
 
-    try {
       const session = localStorage.getItem("loginSessionDB");
       if (session) setUser(JSON.parse(session));
-    } catch (err) {
-      console.error("fail load session", err);
-      setUser(null);
-    }
 
-    setReady(true);
+      setReady(true);
+    } catch {
+    } finally {
+    }
   }, []);
 
   const tambahVariasi = () => {
@@ -75,84 +63,58 @@ export default function JualPage() {
       return alert("Isi semua data variasi!");
 
     const newVar = {
-      id: uuidv4(),
-      ownerId: user.id,
       warna: variasi.warna,
       harga: parseInt(variasi.harga, 10),
       stok: parseInt(variasi.stok, 10),
       ukuran: variasi.ukuran.split(",").map((u) => u.trim()),
       gambar: [variasi.gambar], // base64 or url
-      terjual: parseInt(variasi.terjual || 0, 10),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
     };
 
     setVariasiList((prev) => [...prev, newVar]);
 
     setVariasi({
-      id: uuidv4(),
       warna: "",
       harga: "",
       stok: "",
       ukuran: "",
       gambar: "",
-      terjual: 0,
     });
   };
 
   const hapusVariasi = (id) => {
-    setVariasiList((prev) => prev.filter((v) => v.id !== id));
+    setVariasiList((prev) => prev.filter((_, i) => i !== id));
   };
 
-  const simpanProduk = () => {
+  const simpanProduk = async () => {
     if (!user) return alert("Anda harus login terlebih dahulu.");
-    if (!form.nama) return alert("Nama produk wajib diisi");
-    if (!form.kategori) return alert("Kategori wajib dipilih");
-    if (variasiList.length === 0) return alert("Tambahkan minimal 1 variasi");
 
-    const newProduk = {
-      id: form.id || uuidv4(),
-      nama: form.nama,
-      kategori: form.kategori,
-      deskripsi: form.deskripsi,
-      lokasi: form.lokasi,
-      comment: form.comment,
-      createdAt: form.createdAt || new Date().toISOString(),
-      ownerId: user.id,
-      loved: [],
-      produk: variasiList,
-    };
-
-    const update = produkList ? [...produkList, newProduk] : [newProduk];
-
-    setProdukList(update);
-
-    localStorage.setItem("produkDB", JSON.stringify(update));
-
-    // reset form & variasi
-    setForm({
-      id: uuidv4(),
-      nama: "",
-      kategori: "",
-      deskripsi: "",
-      lokasi: "",
-      comment: "",
-      loved: [],
-      createdAt: new Date().toISOString(),
-    });
-
-    setVariasiList([]);
-    setVariasi({
-      id: uuidv4(),
-      warna: "",
-      harga: "",
-      stok: "",
-      ukuran: "",
-      gambar: "",
-      terjual: 0,
-    });
-
-    router.push("/");
+    try {
+      const newProduk = {
+        nama: form.nama,
+        kategori: form.kategori,
+        deskripsi: form.deskripsi,
+        lokasi: form.lokasi,
+        comment: form.comment,
+        ownerId: Number(user.id),
+        variasiList,
+      };
+      const res = await fetch("/api/product", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newProduk),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.message);
+        return;
+      }
+      alert("Produk berhasil disimpan");
+      router.push("/");
+    } catch {
+      alert("Gagal koneksi ke server");
+    }
   };
 
   if (!ready) return <h1>Loading...</h1>;
@@ -167,7 +129,7 @@ export default function JualPage() {
       <Navbar />
       <div className="p-6 max-w-3xl mx-auto">
         <h1 className="text-2xl font-bold mb-4">{`Jual produk kamu ${capitalizeFirst(
-          user.nama
+          user.nama || user.username
         )}`}</h1>
 
         {/* FORM PRODUK */}
@@ -295,13 +257,11 @@ export default function JualPage() {
             <button
               onClick={() => {
                 setVariasi({
-                  id: uuidv4(),
                   warna: "",
                   harga: "",
                   stok: "",
                   ukuran: "",
                   gambar: "",
-                  terjual: 0,
                 });
               }}
               className="px-3 py-2 border rounded"
@@ -316,8 +276,8 @@ export default function JualPage() {
           <div className="mt-3">
             <h3 className="font-bold">Variasi Ditambahkan:</h3>
             <ul className="list-disc ml-5">
-              {variasiList.map((v) => (
-                <li key={v.id} className="flex items-center gap-3">
+              {variasiList.map((v, index) => (
+                <li key={index} className="flex items-center gap-3">
                   <div className="flex-1">
                     {v.warna} — Rp{v.harga.toLocaleString()} — stok {v.stok}
                   </div>
@@ -332,7 +292,7 @@ export default function JualPage() {
                   )}
                   <button
                     className="text-sm text-red-600"
-                    onClick={() => hapusVariasi(v.id)}
+                    onClick={() => hapusVariasi(index)}
                   >
                     Hapus
                   </button>
@@ -370,14 +330,14 @@ export default function JualPage() {
                 <p className="text-sm text-gray-600">{p.kategori}</p>
 
                 <div className="flex gap-2 mt-2 overflow-auto">
-                  {p.produk?.map((v) => (
+                  {p.variations?.map((v) => (
                     <div
                       key={v.id}
                       className="w-20 h-20 rounded overflow-hidden border"
                     >
-                      {v.gambar?.[0] ? (
+                      {v.images?.[0]?.img ? (
                         <Image
-                          src={v.gambar[0]}
+                          src={v.images[0].img}
                           alt={v.warna}
                           width={100}
                           height={100}

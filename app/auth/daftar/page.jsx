@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { v4 as uuidv4 } from "uuid";
 
 export default function Daftar() {
   const router = useRouter();
@@ -15,52 +14,55 @@ export default function Daftar() {
     password: "",
     confirmPassword: "",
   });
-  const handleSubmit = (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (
-      user.username === "" ||
-      user.email === "" ||
-      user.password === "" ||
-      user.confirmPassword === ""
+      !user.username ||
+      !user.email ||
+      !user.password ||
+      !user.confirmPassword
     ) {
       alert("Semua field harus diisi");
       return;
     }
 
-    const UserData = localStorage.getItem("userDB");
-    const users = UserData ? JSON.parse(UserData) : [];
-
-    const usernameExists = users.find((p) => p.username === user.username);
-    if (usernameExists) return alert("Username sudah terdaftar");
-
-    const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
-    if (!emailRegex.test(user.email)) {
-      alert("Email tidak valid");
-      return;
-    }
-
-    const emailExists = users.find((p) => p.email === user.email);
-    if (emailExists) return alert("Email sudah terdaftar");
-
     if (user.password !== user.confirmPassword) {
       alert("Password tidak sama");
       return;
     }
-    const newUser = {
-      id: uuidv4(),
-      username: user.username,
-      email: user.email,
-      password: user.password,
-      foto: "",
-    };
 
-    const update = users ? [...users, newUser] : [newUser];
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: user.username,
+          email: user.email,
+          password: user.password,
+        }),
+      });
 
-    localStorage.setItem("userDB", JSON.stringify(update));
-    alert("Selamat akun anda berhasil dibuat");
-    setUser({ username: "", email: "", password: "", confirmPassword: "" });
-    //console.log("alluser", allUser);
-    router.push("/products");
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message);
+        return;
+      }
+
+      alert("Selamat akun anda berhasil dibuat");
+      setUser({
+        username: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
+
+      router.push("/products");
+    } catch {
+      alert("Gagal koneksi ke server");
+    }
   };
 
   useEffect(() => {

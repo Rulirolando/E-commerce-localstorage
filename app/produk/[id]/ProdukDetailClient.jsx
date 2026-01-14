@@ -7,22 +7,23 @@ import Footer from "../../components/Footer";
 export default function ProdukDetail({ produkChose }) {
   console.log("produkChose", produkChose);
   // ambil semua gambar dulu (pastikan ini ada sebelum useState)
-  const allImg = produkChose.produk.flatMap((p) => p.gambar);
+  const allImg =
+    produkChose?.variations?.flatMap(
+      (v) => v.images?.map((i) => i.img) || []
+    ) || [];
   const [selectedImage, setSelectedImage] = useState(allImg[0] || "");
   const [currentUser, setCurrentUser] = useState({});
   console.log("currentuser", currentUser);
 
   const [selectedProduk, setSelectedProduk] = useState({
-    id: produkChose.id,
+    id: "",
     produkId: "",
-    ownerId: produkChose.ownerId,
-    gambar: allImg[0] || "",
-    harga: produkChose.produk[0]?.harga || 0,
-    nama: produkChose.nama,
     warna: "",
     ukuran: "",
     stok: 0,
-    jumlah: 1, // default 1 supaya tidak disabled
+    jumlah: 1,
+    harga: 0,
+    gambar: "",
   });
 
   console.log("produkChose", produkChose);
@@ -34,15 +35,17 @@ export default function ProdukDetail({ produkChose }) {
   }
 
   const handlewarna = (warna, img, harga, idProdukVariasi) => {
-    const variasi = produkChose.produk.find((p) => p.id === idProdukVariasi);
+    const variasi = produkChose.variations.find(
+      (p) => p.id === idProdukVariasi
+    );
     // jika toggle off (klik warna yg sama), reset produkId & warna
-    if (selectedProduk.warna === warna) {
+    if (selectedProduk?.warna === warna) {
       setSelectedProduk((prev) => ({
         ...prev,
         produkId: "",
         warna: "",
         gambar: img || allImg[0] || "",
-        harga: harga || produkChose.produk[0]?.harga || 0,
+        harga: harga || produkChose.variations[0]?.harga || 0,
         stok: 0,
         jumlah: 1,
       }));
@@ -67,13 +70,15 @@ export default function ProdukDetail({ produkChose }) {
   };
 
   // pilih ukuran berdasarkan warna yang dipilih
-  const produkDipilih = produkChose.produk.find(
+  const produkDipilih = produkChose?.variations?.find(
     (p) => p.warna === selectedProduk.warna
   );
 
   // Ambil semua ukuran dari semua produk dan hapus duplikat
   const deleteSameUkuran = [
-    ...new Set(produkChose.produk.flatMap((p) => p.ukuran)),
+    ...new Set(
+      produkChose?.variations?.flatMap((v) => v.sizes.map((s) => s.size))
+    ),
   ];
 
   const handleukuran = (ukuran) => {
@@ -90,9 +95,10 @@ export default function ProdukDetail({ produkChose }) {
     }));
   };
 
-  const produkIdChoose = produkChose.produk.find((p) =>
-    p.gambar.includes(selectedImage)
+  const produkIdChoose = produkChose.variations.find((v) =>
+    v.images?.some((img) => img.img === selectedImage)
   );
+
   function handleBeli() {
     const produkBeli = selectedProduk;
     const BeliLama = JSON.parse(localStorage.getItem("beliDB")) || [];
@@ -112,7 +118,7 @@ export default function ProdukDetail({ produkChose }) {
       id: produkChose.id,
       produkId: "",
       gambar: allImg[0] || "",
-      harga: produkChose.produk[0]?.harga || 0,
+      harga: produkChose.variations[0]?.harga || 0,
       nama: produkChose.nama,
       warna: "",
       ukuran: "",
@@ -155,7 +161,7 @@ export default function ProdukDetail({ produkChose }) {
       produkId: "",
       gambar: allImg[0] || "",
       ownerId: produkChose.ownerId,
-      harga: produkChose.produk[0]?.harga || 0,
+      harga: produkChose.variations[0]?.harga || 0,
       nama: produkChose.nama,
       warna: "",
       ukuran: "",
@@ -176,6 +182,31 @@ export default function ProdukDetail({ produkChose }) {
     } finally {
     }
   }, []);
+
+  useEffect(() => {
+    if (!produkChose) return;
+
+    const firstImage = produkChose.variations?.[0]?.images?.[0]?.img ?? null;
+
+    setSelectedImage(firstImage);
+
+    setSelectedProduk({
+      id: produkChose.id,
+      ownerId: produkChose.owner?.id,
+      produkId: "",
+      nama: produkChose.nama,
+      gambar: firstImage,
+      harga: produkChose.variations?.[0]?.harga ?? 0,
+      warna: "",
+      ukuran: "",
+      stok: 0,
+      jumlah: 1,
+    });
+  }, [produkChose]);
+
+  if (!produkChose || !selectedProduk) {
+    return <div>Loading produk...</div>;
+  }
 
   return (
     <>
@@ -198,7 +229,7 @@ export default function ProdukDetail({ produkChose }) {
                 <div key={index} className="w-16 h-1/2">
                   <Image
                     src={img}
-                    alt={`${produkChose.nama}-${index}`}
+                    alt={`${produkChose.nama}-${index}` || "produk-image"}
                     width={50}
                     height={100}
                     unoptimized
@@ -227,23 +258,30 @@ export default function ProdukDetail({ produkChose }) {
               Rp.
               {produkIdChoose
                 ? produkIdChoose.harga.toLocaleString("id-ID")
-                : produkChose.produk[0].harga.toLocaleString("id-ID")}
+                : produkChose?.variations?.[0].harga.toLocaleString("id-ID")}
             </span>
           </div>
           <div className="text-sm font-light-bold mt-2 w-full flex gap-2 flex-wrap justify-start items-center">
             <p>Warna:</p>
-            {produkChose.produk.map((p, index) => (
+            {produkChose?.variations?.map((p, index) => (
               <button
                 key={p.id || index}
                 onMouseEnter={() => {
-                  setSelectedImage(p.gambar[0]);
+                  setSelectedImage(p.images?.[0]?.img ?? null);
                 }}
                 className={`px-2 py-1 border rounded-md  cursor-pointer transition-all duration-200 ${
                   selectedProduk.warna === p.warna
                     ? "bg-blue-700 text-white"
                     : ""
                 }`}
-                onClick={() => handlewarna(p.warna, p.gambar[0], p.harga, p.id)}
+                onClick={() =>
+                  handlewarna(
+                    p.warna,
+                    p.images?.[0]?.img ?? null,
+                    p.harga,
+                    p.id
+                  )
+                }
               >
                 {p.warna}
               </button>
@@ -256,7 +294,7 @@ export default function ProdukDetail({ produkChose }) {
             <p>Ukuran:</p>
             {deleteSameUkuran.map((ukuran, index) => {
               const isAvailable = selectedProduk.warna
-                ? produkDipilih?.ukuran.includes(ukuran)
+                ? produkDipilih?.sizes.some((s) => s.size === ukuran)
                 : true;
 
               return (

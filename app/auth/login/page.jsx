@@ -7,23 +7,36 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (user.email === "" || user.password === "") {
       alert("Semua field harus diisi");
       return;
     }
-    const UserData = localStorage.getItem("userDB");
-    const users = UserData ? JSON.parse(UserData) : [];
-    const userExists = users.find((p) => p.email === user.email);
-    if (!userExists) return alert("Email belum terdaftar");
-    if (userExists.password !== user.password) return alert("Password salah");
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: user.email,
+          password: user.password,
+        }),
+      });
+      const userExists = await res.json();
+      console.log(userExists);
 
-    // Login berhasil, simpan login session
-    localStorage.setItem("loginSessionDB", JSON.stringify(userExists));
+      if (!res.ok) {
+        alert(userExists.message);
+        return;
+      }
+      // Login berhasil, simpan login session
+      localStorage.setItem("loginSessionDB", JSON.stringify(userExists.user));
 
-    alert("Login berhasil");
-    router.push("/");
+      alert("Login berhasil");
+      router.push("/");
+    } catch {
+      alert("Gagal koneksi ke server");
+    }
   };
 
   useEffect(() => {
