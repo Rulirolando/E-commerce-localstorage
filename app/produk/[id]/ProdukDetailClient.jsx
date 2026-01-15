@@ -13,12 +13,14 @@ export default function ProdukDetail({ produkChose }) {
     ) || [];
   const [selectedImage, setSelectedImage] = useState(allImg[0] || "");
   const [currentUser, setCurrentUser] = useState({});
+  console.log(typeof currentUser.id);
+  console.log("ksdjfksjkdjfksjdkjf", currentUser.id);
   console.log("currentuser", currentUser);
 
   const [selectedProduk, setSelectedProduk] = useState({
-    id: "",
-    produkId: "",
+    produkId: 0,
     warna: "",
+    nama: produkChose.nama || "",
     ukuran: "",
     stok: 0,
     jumlah: 1,
@@ -42,7 +44,7 @@ export default function ProdukDetail({ produkChose }) {
     if (selectedProduk?.warna === warna) {
       setSelectedProduk((prev) => ({
         ...prev,
-        produkId: "",
+        produkId: 0,
         warna: "",
         gambar: img || allImg[0] || "",
         harga: harga || produkChose.variations[0]?.harga || 0,
@@ -99,32 +101,69 @@ export default function ProdukDetail({ produkChose }) {
     v.images?.some((img) => img.img === selectedImage)
   );
 
-  function handleBeli() {
-    const produkBeli = selectedProduk;
-    const BeliLama = JSON.parse(localStorage.getItem("beliDB")) || [];
-    const confirmation = confirm("Apakah Anda yakin ingin membeli produk ini?");
-    const update = {
-      ...produkBeli,
-      status: "Belum dibayar",
-      buyerId: currentUser.id,
-      date: new Date().toISOString(),
-    };
-    if (!confirmation) {
-      return;
-    }
-    localStorage.setItem("beliDB", JSON.stringify([...BeliLama, update]));
+  async function handleBeli() {
+    try {
+      // 1. Validasi pilihan user sebelum kirim
+      if (!selectedProduk.warna || !selectedProduk.ukuran) {
+        alert("Silakan pilih warna dan ukuran terlebih dahulu");
+        return;
+      }
 
-    setSelectedProduk({
-      id: produkChose.id,
-      produkId: "",
-      gambar: allImg[0] || "",
-      harga: produkChose.variations[0]?.harga || 0,
-      nama: produkChose.nama,
-      warna: "",
-      ukuran: "",
-      jumlah: 1,
-    });
-    setSelectedImage(allImg[0] || "");
+      const confirmation = confirm(
+        "Apakah Anda yakin ingin membeli produk ini?"
+      );
+      if (!confirmation) return;
+
+      // 2. Susun Payload (Gunakan variabel 'payload' secara konsisten)
+      const payload = {
+        nama: selectedProduk.nama,
+        warna: selectedProduk.warna,
+        ukuran: selectedProduk.ukuran,
+        stok: Number(selectedProduk.stok),
+        jumlah: Number(selectedProduk.jumlah),
+        harga: Number(selectedProduk.harga),
+        gambar: selectedProduk.gambar,
+        produkId: Number(selectedProduk.id), // ID produk utama
+        buyerId: Number(currentUser.id),
+      };
+
+      console.log("Data yang akan dikirim:", payload); // Ganti 'update' jadi 'payload'
+
+      const res = await fetch("/api/order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.error("Detail Error Server:", data.error);
+        alert(data.message || "Gagal membuat order");
+        return;
+      }
+
+      alert("Pembelian berhasil!");
+
+      // 3. Reset state setelah berhasil
+      setSelectedProduk({
+        id: produkChose.id,
+        produkId: 0,
+        gambar: allImg[0] || "",
+        harga: produkChose.variations[0]?.harga || 0,
+        nama: produkChose.nama,
+        warna: "",
+        ukuran: "",
+        jumlah: 1,
+        stok: 0,
+      });
+      setSelectedImage(allImg[0] || "");
+    } catch (error) {
+      console.error("Error Catch:", error);
+      alert("Terjadi kesalahan: " + error.message);
+    }
   }
 
   const handleAddToCart = () => {
@@ -158,7 +197,7 @@ export default function ProdukDetail({ produkChose }) {
     // reset selectedProduk lengkap (termasuk gambar & harga)
     setSelectedProduk({
       id: produkChose.id,
-      produkId: "",
+      produkId: 0,
       gambar: allImg[0] || "",
       ownerId: produkChose.ownerId,
       harga: produkChose.variations[0]?.harga || 0,
@@ -193,7 +232,7 @@ export default function ProdukDetail({ produkChose }) {
     setSelectedProduk({
       id: produkChose.id,
       ownerId: produkChose.owner?.id,
-      produkId: "",
+      produkId: 0,
       nama: produkChose.nama,
       gambar: firstImage,
       harga: produkChose.variations?.[0]?.harga ?? 0,

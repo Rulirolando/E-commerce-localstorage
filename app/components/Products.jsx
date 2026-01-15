@@ -1,5 +1,4 @@
 "use client";
-import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import ShowProduk from "./produk";
 import { useSearchParams } from "next/navigation";
@@ -7,7 +6,6 @@ import kategoriList from "../../public/assets/kategoriProduk";
 import CardProduk from "./CardProduk";
 export default function SearchProduk() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const kategoriURL = (searchParams.get("q") || "").toLowerCase().trim();
   const [kategori, setKategori] = useState(kategoriURL || "");
   const [warna, setWarna] = useState("");
@@ -58,9 +56,9 @@ export default function SearchProduk() {
     }
   }
   const filteredProduk = produkList.filter((p) => {
-    const allWarna = p.produk.map((item) => item.warna.toLowerCase());
-    const allUkuran = p.produk.flatMap((item) =>
-      item.ukuran.map((u) => u.toLowerCase())
+    const allWarna = p.variations.map((item) => item.warna.toLowerCase());
+    const allUkuran = p.variations.map((item) =>
+      item.sizes.flatMap((u) => u.size.toLowerCase())
     );
 
     const matchKategori =
@@ -195,9 +193,11 @@ export default function SearchProduk() {
                     key={p.id}
                     onClick={() => setProdukChosen(p)}
                     nama={p.nama}
-                    harga={"Rp " + p.produk?.[0]?.harga.toLocaleString("id-ID")}
-                    gambar={p.produk?.[0]?.gambar?.[0]}
-                    terjual={p.produk?.[0]?.terjual || 0}
+                    harga={
+                      "Rp " + p.variations?.[0]?.harga.toLocaleString("id-ID")
+                    }
+                    gambar={p.variations?.[0]?.images?.[0]?.img || ""}
+                    terjual={p.variations?.[0]?.terjual || 0}
                     edit={false}
                     isLoved={p.loves.some(
                       (l) => l.userId === currentUser?.id && l.status === true

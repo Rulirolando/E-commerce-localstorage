@@ -16,7 +16,14 @@ export async function GET(req: Request) {
           : undefined,
       },
       include: {
-        produk: true,
+        variations: {
+          include: {
+            images: { select: { img: true } },
+            sizes: {
+              select: { size: true },
+            },
+          },
+        },
         loves: true,
         owner: {
           select: {

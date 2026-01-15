@@ -10,7 +10,7 @@ export default function ShowProduk({ produkSelected }) {
   console.log("selectedimage", selectedImage);
   console.log("produkselected", produkSelected);
   const allimg = produkSelected
-    ? produkSelected.produk.flatMap((item) => item.gambar)
+    ? produkSelected.variations.flatMap((item) => item.gambar)
     : [];
 
   function capitalizeFirst(text) {
@@ -27,8 +27,8 @@ export default function ShowProduk({ produkSelected }) {
 
   useEffect(() => {
     try {
-      if (produkSelected && produkSelected.produk.length > 0) {
-        setSelectedImage(produkSelected.produk[0].gambar[0]);
+      if (produkSelected && produkSelected.variations.length > 0) {
+        setSelectedImage(produkSelected.variations[0].gambar[0]);
       }
     } catch {
       setSelectedImage("");
@@ -59,7 +59,7 @@ export default function ShowProduk({ produkSelected }) {
 
   const idImg =
     produkSelected && selectedImage
-      ? produkSelected.produk.find((p) => p.gambar.includes(selectedImage))
+      ? produkSelected.variations.find((p) => p.gambar.includes(selectedImage))
       : null;
 
   console.log("idimg", idImg);
@@ -79,7 +79,7 @@ export default function ShowProduk({ produkSelected }) {
         <>
           <div className="relative aspect-4/3 w-full ">
             <Image
-              src={selectedImage || produkSelected.produk[0].gambar[0]}
+              src={selectedImage || produkSelected.variations[0].images[0].img}
               alt={produkSelected.nama}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -89,16 +89,16 @@ export default function ShowProduk({ produkSelected }) {
 
           {/* gambar kecil yang dipilih */}
           <div className="flex justify-start gap-2 mt-2">
-            {produkSelected.produk.map((p, index) => (
+            {produkSelected.variations.map((p, index) => (
               <Image
                 key={index}
-                src={p.gambar[0]}
+                src={p.images[0].img}
                 alt={produkSelected.nama}
                 width={50}
                 height={50}
-                onClick={() => setSelectedImage(p.gambar[0])}
+                onClick={() => setSelectedImage(p.images[0].img)}
                 className={`object-cover rounded-2xl cursor-pointer w-16 h-16 border-2 ${
-                  selectedImage === p.gambar[0] ? "border-blue-500" : ""
+                  selectedImage === p.images[0].img ? "border-blue-500" : ""
                 }`}
               />
             ))}
@@ -112,7 +112,9 @@ export default function ShowProduk({ produkSelected }) {
               <span className="bg-blue-300 text-blue-900 px-3 mx-1 rounded-full text-sm font-medium ">
                 {idImg
                   ? idImg.ukuran.join(" | ")
-                  : produkSelected.produk[0].ukuran.join(" | ")}
+                  : produkSelected.variations[0].sizes
+                      .flatMap((p) => p.size)
+                      .join(" | ")}
               </span>{" "}
             </span>
           </div>
@@ -122,7 +124,7 @@ export default function ShowProduk({ produkSelected }) {
             <span className="font-semibold text-sm mr-2">
               Warna:
               <span className="bg-blue-300 text-blue-900 px-3 mx-1 rounded-full text-sm font-medium ">
-                {idImg ? idImg.warna : produkSelected.produk[0].warna}
+                {idImg ? idImg.warna : produkSelected.variations[0].warna}
               </span>{" "}
             </span>
           </div>
@@ -133,7 +135,7 @@ export default function ShowProduk({ produkSelected }) {
             <span className="font-semibold text-sm mr-2">
               Stok:
               <span className="bg-blue-300 text-blue-900 px-3 mx-1 rounded-full text-sm font-medium ">
-                {idImg ? idImg.stok : produkSelected.produk[0].stok}
+                {idImg ? idImg.stok : produkSelected.variations[0].stok}
               </span>{" "}
             </span>
           </div>
@@ -147,7 +149,7 @@ export default function ShowProduk({ produkSelected }) {
               Rp{" "}
               {idImg
                 ? idImg.harga.toLocaleString("id-ID")
-                : produkSelected.produk[0].harga.toLocaleString("id-ID")}
+                : produkSelected.variations[0].harga.toLocaleString("id-ID")}
             </p>
             <button
               onClick={handleOwner}

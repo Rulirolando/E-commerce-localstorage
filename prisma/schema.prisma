@@ -16,9 +16,10 @@ model User {
 
   products    Product[]
   loves     Love[]
-  orders      Order[]
+
 
   carts Cart[]
+  orders      Order[]
 }
 
 model Product {
@@ -51,6 +52,7 @@ model Variation {
   images     Img[]      
   cartItems CartItem[]
   sizes      Size[]
+  orders     Order[]
 }
 model Size {
   id          Int      @id @default(autoincrement())
@@ -86,13 +88,21 @@ model Love {
 
 model Order {
   id          Int      @id @default(autoincrement())
-  userId      Int
-  totalAmount Int
-  status      String   @default("Belum dibayar") // pending, completed, cancelled
+  warna      String
+  nama       String
+  ukuran      String
+  stok       Int
+  harga      Int
+  gambar    String
+  buyerId     Int
+  status      String   @default("Belum dibayar") 
   createdAt   DateTime @default(now())
- total Int
+  jumlah        Int
+  produkId     Int
+ totalHarga  Int
+  buyer       User     @relation(fields: [buyerId], references: [id])
+  produk      Variation  @relation(fields: [produkId], references: [id])
 
-  user        User     @relation(fields: [userId], references: [id])
 }
 
 model Cart {
