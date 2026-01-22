@@ -9,7 +9,7 @@ export default function ProdukDetail({ produkChose }) {
   // ambil semua gambar dulu (pastikan ini ada sebelum useState)
   const allImg =
     produkChose?.variations?.flatMap(
-      (v) => v.images?.map((i) => i.img) || []
+      (v) => v.images?.map((i) => i.img) || [],
     ) || [];
   const [selectedImage, setSelectedImage] = useState(allImg[0] || "");
   const [currentUser, setCurrentUser] = useState({});
@@ -38,7 +38,7 @@ export default function ProdukDetail({ produkChose }) {
 
   const handlewarna = (warna, img, harga, idProdukVariasi) => {
     const variasi = produkChose.variations.find(
-      (p) => p.id === idProdukVariasi
+      (p) => p.id === idProdukVariasi,
     );
     // jika toggle off (klik warna yg sama), reset produkId & warna
     if (selectedProduk?.warna === warna) {
@@ -61,6 +61,7 @@ export default function ProdukDetail({ produkChose }) {
       id: produkChose.id,
       produkId: idProdukVariasi,
       warna,
+      ukuran: "",
       gambar: img,
       harga,
       stok: variasi?.stok || 0,
@@ -73,20 +74,20 @@ export default function ProdukDetail({ produkChose }) {
 
   // pilih ukuran berdasarkan warna yang dipilih
   const produkDipilih = produkChose?.variations?.find(
-    (p) => p.warna === selectedProduk.warna
+    (p) => p.warna === selectedProduk.warna,
   );
 
   // Ambil semua ukuran dari semua produk dan hapus duplikat
   const deleteSameUkuran = [
     ...new Set(
-      produkChose?.variations?.flatMap((v) => v.sizes.map((s) => s.size))
+      produkChose?.variations?.flatMap((v) => v.sizes.map((s) => s.size)),
     ),
   ];
 
   const handleukuran = (ukuran) => {
     setSelectedProduk((prev) => ({
       ...prev,
-      ukuran: prev.ukuran === ukuran ? "" : ukuran,
+      ukuran,
     }));
   };
 
@@ -98,7 +99,7 @@ export default function ProdukDetail({ produkChose }) {
   };
 
   const produkIdChoose = produkChose.variations.find((v) =>
-    v.images?.some((img) => img.img === selectedImage)
+    v.images?.some((img) => img.img === selectedImage),
   );
 
   async function handleBeli() {
@@ -110,7 +111,7 @@ export default function ProdukDetail({ produkChose }) {
       }
 
       const confirmation = confirm(
-        "Apakah Anda yakin ingin membeli produk ini?"
+        "Apakah Anda yakin ingin membeli produk ini?",
       );
       if (!confirmation) return;
 
@@ -166,34 +167,28 @@ export default function ProdukDetail({ produkChose }) {
     }
   }
 
-  const handleAddToCart = () => {
-    const produkBaru = selectedProduk;
-
-    // Ambil data lama dari localStorage
-    const keranjangLama = JSON.parse(localStorage.getItem("keranjang")) || [];
-
-    // Cek apakah produk dengan id, warna, ukuran yang sama sudah ada
-    const sudahAda = keranjangLama.find(
-      (item) =>
-        item.id === produkBaru.id &&
-        item.warna === produkBaru.warna &&
-        item.ukuran === produkBaru.ukuran &&
-        item.produkId === produkBaru.produkId
-    );
-
-    if (sudahAda) {
-      // Update jumlah jika produk sudah ada (copy immutable)
-      const updated = keranjangLama.map((it) =>
-        it === sudahAda ? { ...it, jumlah: it.jumlah + produkBaru.jumlah } : it
-      );
-      localStorage.setItem("keranjang", JSON.stringify(updated));
-    } else {
-      localStorage.setItem(
-        "keranjang",
-        JSON.stringify([...keranjangLama, produkBaru])
-      );
+  const handleAddToCart = async () => {
+    if (!selectedProduk.warna || !selectedProduk.ukuran) {
+      alert("Pilih warna dan ukuran dulu");
+      return;
     }
 
+    if (currentUser.id === selectedProduk.ownerId) {
+      alert("Anda tidak bisa menambahkan produk Anda sendiri ke keranjang.");
+      return;
+    }
+
+    await fetch("/api/keranjang", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: currentUser.id,
+        variantId: selectedProduk.produkId,
+        ukuran: selectedProduk.ukuran,
+        jumlah: selectedProduk.jumlah,
+      }),
+    });
+    alert("Produk berhasil ditambahkan ke keranjang!");
     // reset selectedProduk lengkap (termasuk gambar & harga)
     setSelectedProduk({
       id: produkChose.id,
@@ -207,8 +202,6 @@ export default function ProdukDetail({ produkChose }) {
       jumlah: 1,
     });
     setSelectedImage(allImg[0] || "");
-
-    alert("Produk berhasil ditambahkan ke keranjang!");
   };
 
   useEffect(() => {
@@ -318,7 +311,7 @@ export default function ProdukDetail({ produkChose }) {
                     p.warna,
                     p.images?.[0]?.img ?? null,
                     p.harga,
-                    p.id
+                    p.id,
                   )
                 }
               >
@@ -399,18 +392,13 @@ export default function ProdukDetail({ produkChose }) {
                 !selectedProduk.ukuran ||
                 !selectedProduk.jumlah
               }
-              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-200"
+              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-200 cursor-pointer"
             >
               Beli Sekarang
             </button>
             <button
-              disabled={
-                !selectedProduk.warna ||
-                !selectedProduk.ukuran ||
-                !selectedProduk.jumlah
-              }
               onClick={() => handleAddToCart()}
-              className="mt-4 ml-4 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors duration-200"
+              className="mt-4 ml-4 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors duration-200 cursor-pointer"
             >
               Tambah ke Keranjang
             </button>

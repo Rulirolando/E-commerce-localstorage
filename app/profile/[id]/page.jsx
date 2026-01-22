@@ -27,13 +27,14 @@ import EditProdukModal from "../../components/EditProduk";
 export default function ProfilePage({ params }) {
   const { id: username } = use(params);
   const [user, setUser] = useState({});
-  const [produkList, setProdukList] = useState(null);
+  const [produkList, setProdukList] = useState([]);
   console.log("produklist", produkList);
   const [activeMenu, setActiveMenu] = useState("profile");
   const [activePesananMenu, setActivePesananMenu] = useState("semuapesanan");
   const [notifEnabled, setNotifEnabled] = useState(false);
   const [mailEnabled, setMailEnabled] = useState(false);
-  const [currentUser, setCurrentUser] = useState({});
+  const [currentUser, setCurrentUser] = useState(null);
+  console.log("currentuser", currentUser);
   const [IsEditProfile, setIsEditProfile] = useState(false);
   const [isAddAddress, setIsAddAddress] = useState(false);
   const [isEditAddress, setIsEditAddress] = useState(null);
@@ -43,6 +44,7 @@ export default function ProfilePage({ params }) {
   console.log("isedit", isEdit);
   const [onEdit, setOnEdit] = useState({});
   const [myProduks, setMyProduks] = useState([]);
+  console.log("myProduks", myProduks);
   console.log("produkBeli", produkBeli);
   const router = useRouter();
 
@@ -73,7 +75,7 @@ export default function ProfilePage({ params }) {
     if (!editAddress) return;
 
     const updateAddressList = addressList.map((item) =>
-      item.id === id ? editAddress : item
+      item.id === id ? editAddress : item,
     );
     setAddressList(updateAddressList);
     localStorage.setItem("addressDB", JSON.stringify(updateAddressList));
@@ -134,14 +136,19 @@ export default function ProfilePage({ params }) {
   }, [username]);
 
   useEffect(() => {
-    try {
-      const allProduk = JSON.parse(localStorage.getItem("produkDB")) || [];
-      if (allProduk) setProdukList(allProduk);
-      //Produk Yang saya jual
-      const myProduk = allProduk.filter((p) => p.ownerId === user.id);
-      setMyProduks(myProduk);
-    } catch {}
-  }, [user]);
+    async function fetchMyProduk() {
+      try {
+        const myProduk = await fetch(`/api/product/user/${currentUser.id}`);
+        const myProdukData = await myProduk.json();
+        setMyProduks(myProdukData);
+      } catch {
+        setMyProduks([]);
+      }
+    }
+    if (currentUser) {
+      fetchMyProduk();
+    }
+  }, [currentUser]);
 
   useEffect(() => {
     try {
@@ -443,7 +450,7 @@ export default function ProfilePage({ params }) {
                               <p className="font-light text-sm">
                                 Rp.
                                 {(produk.jumlah * produk.harga).toLocaleString(
-                                  "id-ID"
+                                  "id-ID",
                                 )}
                               </p>
 
@@ -472,7 +479,7 @@ export default function ProfilePage({ params }) {
                       .filter(
                         (produk) =>
                           produk.status === "Belum dibayar" &&
-                          produk.buyerId === currentUser.id
+                          produk.buyerId === currentUser.id,
                       )
                       .map((produk, index) => (
                         <div
@@ -524,7 +531,7 @@ export default function ProfilePage({ params }) {
                               <p className="font-light text-sm">
                                 Rp.
                                 {(produk.jumlah * produk.harga).toLocaleString(
-                                  "id-ID"
+                                  "id-ID",
                                 )}
                               </p>
 
@@ -552,7 +559,7 @@ export default function ProfilePage({ params }) {
                       .filter(
                         (produk) =>
                           produk.status === "Dikemas" &&
-                          produk.buyerId === currentUser.id
+                          produk.buyerId === currentUser.id,
                       )
                       .map((produk, index) => (
                         <div
@@ -604,7 +611,7 @@ export default function ProfilePage({ params }) {
                               <p className="font-light text-sm">
                                 Rp.
                                 {(produk.jumlah * produk.harga).toLocaleString(
-                                  "id-ID"
+                                  "id-ID",
                                 )}
                               </p>
 
@@ -632,7 +639,7 @@ export default function ProfilePage({ params }) {
                       .filter(
                         (produk) =>
                           produk.status === "Dikirim" &&
-                          produk.buyerId === currentUser.id
+                          produk.buyerId === currentUser.id,
                       )
                       .map((produk, index) => (
                         <div
@@ -684,7 +691,7 @@ export default function ProfilePage({ params }) {
                               <p className="font-light text-sm">
                                 Rp.
                                 {(produk.jumlah * produk.harga).toLocaleString(
-                                  "id-ID"
+                                  "id-ID",
                                 )}
                               </p>
 
@@ -712,7 +719,7 @@ export default function ProfilePage({ params }) {
                       .filter(
                         (produk) =>
                           produk.status === "Selesai" &&
-                          produk.buyerId === currentUser.id
+                          produk.buyerId === currentUser.id,
                       )
                       .map((produk, index) => (
                         <div
@@ -764,7 +771,7 @@ export default function ProfilePage({ params }) {
                               <p className="font-light text-sm">
                                 Rp.
                                 {(produk.jumlah * produk.harga).toLocaleString(
-                                  "id-ID"
+                                  "id-ID",
                                 )}
                               </p>
 
@@ -838,7 +845,7 @@ export default function ProfilePage({ params }) {
                         }}
                         loveProduk={true}
                       />
-                    ))
+                    )),
                   )
                 ) : (
                   <>
@@ -861,11 +868,11 @@ export default function ProfilePage({ params }) {
               <div className="flex flex-start flex-wrap w-full h-full">
                 {/* Card Produk */}
                 {produkList.filter((u) =>
-                  u.loved.some((l) => l.userId === currentUser?.id)
+                  u.loved.some((l) => l.userId === currentUser?.id),
                 ).length > 0 ? (
                   produkList
                     .filter((u) =>
-                      u.loved.some((l) => l.userId === currentUser?.id)
+                      u.loved.some((l) => l.userId === currentUser?.id),
                     )
                     .map((produk) => (
                       <CardProduk
@@ -880,7 +887,7 @@ export default function ProfilePage({ params }) {
                         edit={false}
                         isLoved={produk.loved.some(
                           (l) =>
-                            l.userId === currentUser?.id && l.status === true
+                            l.userId === currentUser?.id && l.status === true,
                         )}
                         onLove={() => toggleLove(produk.id)}
                         showLove={produk.ownerId === currentUser?.id}
@@ -986,7 +993,7 @@ export default function ProfilePage({ params }) {
                               onChange={(e) => {
                                 const onlyNumber = e.target.value.replace(
                                   /\D/g,
-                                  ""
+                                  "",
                                 );
                                 setEditAddress({
                                   ...editAddress,

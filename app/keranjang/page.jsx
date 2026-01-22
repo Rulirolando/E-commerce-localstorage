@@ -4,269 +4,222 @@ import Image from "next/image";
 import Navbar from "../components/navbar";
 
 export default function KeranjangPage() {
-  const [keranjang, setKeranjang] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [currentUser, setCurrentUser] = useState({});
-  const [mounted, setMounted] = useState(false);
-  const [selectproduk, setSelectProduk] = useState([]);
-  console.log("selectproduk", selectproduk);
-  const [beli, setBeli] = useState([]);
-  const [users, setUsers] = useState([]);
-  console.log("users", users);
-  console.log("beli", beli);
+  const [keranjang, setKeranjang] = useState(null);
   console.log("keranjang", keranjang);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [mounted, setMounted] = useState(false);
+  const [selectProduk, setSelectProduk] = useState([]);
+  console.log("selectProduk", selectProduk);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      const raw = localStorage.getItem("keranjang") || "[]";
-      const data = JSON.parse(raw);
-      console.log(data);
-      setKeranjang(Array.isArray(data) ? data : []);
-    } catch {
-      setKeranjang([]);
-    } finally {
-      setMounted(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    try {
-      const users = JSON.parse(localStorage.getItem("userDB"));
-      setUsers(users);
-    } catch {
-      setUsers([]);
-    }
-  }, []);
-
+  /* =====================
+     Ambil session user
+  ====================== */
   useEffect(() => {
     try {
       const session = JSON.parse(localStorage.getItem("loginSessionDB"));
       setCurrentUser(session);
     } catch {
-      setCurrentUser({});
-    }
-  }, []);
-
-  useEffect(() => {
-    try {
-      const products = localStorage.getItem("produkDB") || "[]";
-      const data = JSON.parse(products);
-      setProducts(data);
-    } catch {
-      setProducts([]);
+      setCurrentUser(null);
     } finally {
-      setMounted(true);
     }
   }, []);
 
+  /* =====================
+     Fetch keranjang dari API
+  ====================== */
   useEffect(() => {
-    try {
-      const beli = JSON.parse(localStorage.getItem("beliDB"));
-      setBeli(beli);
-    } catch {
-      setBeli([]);
-    }
-  }, []);
+    if (!currentUser?.id) return;
+
+    const fetchCart = async () => {
+      const res = await fetch(`/api/keranjang?userId=${currentUser.id}`);
+      const data = await res.json();
+      setKeranjang(data || {});
+      setMounted(true);
+    };
+
+    fetchCart();
+  }, [currentUser]);
+
+  /* =====================
+     Helper
+  ====================== */
+  const isSelected = (item) =>
+    selectProduk.some(
+      (p) =>
+        p.id === item.id &&
+        p.ukuran === item.ukuran &&
+        p.variantId === item.variantId,
+    );
 
   const handleSelect = (item, checked) => {
-    console.log("checked", checked);
     if (checked) {
       setSelectProduk((prev) => [...prev, item]);
-      console.log("selectproduk", selectproduk);
     } else {
       setSelectProduk((prev) =>
         prev.filter(
           (p) =>
             !(
-              p.id == item.id &&
-              p.warna == item.warna &&
-              p.ukuran == item.ukuran
-            )
-        )
+              p.id === item.id &&
+              p.ukuran === item.ukuran &&
+              p.variantId === item.variantId
+            ),
+        ),
       );
-      console.log("selectprodukdihapus", selectproduk);
     }
   };
 
-  function capitalizeFirst(text) {
-    if (!text) return "";
-    return text.charAt(0).toUpperCase() + text.slice(1);
-  }
+  const handleSelectAll = (checked) => {
+    setSelectProduk(checked ? keranjang.items : []);
+  };
+
+  /* =====================
+     Hapus item
+  ====================== */
+  const handleHapus = async (id) => {
+    if (!confirm("Yakin hapus item ini?")) return;
+
+    await fetch(`/api/keranjang/${id}`, { method: "DELETE" });
+    setKeranjang((prev) => ({
+      ...prev,
+      items: prev.items.filter((item) => item.id !== id),
+    }));
+
+    setSelectProduk((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  /* =====================
+     Checkout
+  ====================== */
+  const handleCheckout = async () => {
+    if (selectProduk.length === 0) {
+      alert("Pilih produk terlebih dahulu");
+      return;
+    }
+
+    const confirmCheckout = confirm("Yakin checkout produk ini?");
+    if (!confirmCheckout) return;
+
+    for (const item of selectProduk) {
+      await fetch("/api/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nama: item.nama,
+          warna: item.warna,
+          ukuran: item.ukuran,
+          jumlah: item.jumlah,
+          gambar: item.gambar,
+          variantId: item.variantId,
+          buyerId: currentUser.id,
+        }),
+      });
+    }
+
+    alert("Checkout berhasil");
+    setSelectProduk([]);
+  };
 
   if (!mounted) {
-    // tampilkan skeleton / loading yang sama di server & client sehingga tidak ada mismatch
     return (
       <div className="p-6">
-        <h1 className="text-2xl font-bold mb-4">🛒 Keranjang Belanja</h1>
-        <p className="text-gray-600">Memuat...</p>
+        <h1 className="text-2xl font-bold">🛒 Keranjang</h1>
+        <p>Memuat...</p>
       </div>
     );
   }
 
-  // Fungsi hapus item
-  const handleHapus = (index) => {
-    if (window.confirm("Apakah Anda yakin ingin menghapus item ini?")) {
-      const newKeranjang = keranjang.filter((_, i) => i !== index);
-      setKeranjang(newKeranjang);
-      localStorage.setItem("keranjang", JSON.stringify(newKeranjang));
-    }
-  };
-
-  const allSelected =
-    selectproduk.length === keranjang.length && keranjang.length > 0;
-
-  const handleSelectAll = (checked) => {
-    if (checked) {
-      setSelectProduk(keranjang);
-    } else {
-      setSelectProduk([]);
-    }
-  };
-
-  function handleCheckout() {
-    if (selectproduk.length === 0) {
-      alert("Anda belum memilih produk.");
-      return;
-    }
-    const produkBeli = selectproduk.map((produk) => ({
-      ...produk,
-      status: "Belum dibayar",
-      buyerId: currentUser.id,
-      date: new Date().toISOString(),
-    }));
-    const beliLama = JSON.parse(localStorage.getItem("beliDB")) || [];
-    const confirmation = confirm("Apakah Anda yakin ingin membeli produk ini?");
-    if (!confirmation) {
-      return;
-    }
-    localStorage.setItem(
-      "beliDB",
-      JSON.stringify([...beliLama, ...produkBeli])
-    );
-  }
+  const totalHarga = selectProduk.reduce(
+    (total, item) => total + item.variant.harga * item.jumlah,
+    0,
+  );
 
   return (
     <>
       <Navbar />
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-4">🛒 Keranjang Belanja</h1>
-        {keranjang.length === 0 ? (
-          <p className="text-gray-600">Keranjang masih kosong.</p>
-        ) : (
-          <div className="space-y-3">
-            {/* Header */}
-            <div className="grid grid-cols-7 gap-4 border p-4 rounded-lg font-semibold text-gray-800 bg-gray-100">
-              <div className=" col-span-2">Produk</div>
-              <div>Detail</div>
-              <div className="text-center">Satuan</div>
-              <div className="text-center">Jumlah</div>
-              <div className="text-center">Total</div>
-              <div className="text-center">Aksi</div>
-            </div>
 
-            {/* Isi Keranjang */}
-            {keranjang.map((item, index) => (
+        {!keranjang || keranjang.items.length === 0 ? (
+          <p>Keranjang kosong</p>
+        ) : (
+          <>
+            {keranjang.items.map((item) => (
               <div
-                key={`${item.id}-${item.ukuran}-${index}`}
-                className="grid grid-cols-7 gap-4 border p-4 rounded-lg items-center"
+                key={item.id}
+                className="grid grid-cols-7 gap-4 border p-4 mb-3 rounded-lg items-center"
               >
-                {/* Kolom 1: Produk */}
-                <div className="flex items-center space-x-3 col-span-2">
+                <div className="col-span-2 flex gap-3">
                   <input
                     type="checkbox"
-                    className="w-4 h-4"
-                    checked={
-                      selectproduk.filter(
-                        (p) =>
-                          p.id === item.id &&
-                          p.warna === item.warna &&
-                          p.ukuran === item.ukuran
-                      ).length
-                    }
+                    checked={isSelected(item)}
                     onChange={(e) => handleSelect(item, e.target.checked)}
                   />
                   <Image
-                    src={item.gambar}
-                    alt={item.nama}
+                    src={item.variant.images[0].img}
+                    alt={item.variant.product.nama}
                     width={64}
                     height={64}
-                    className="w-16 h-16 object-cover rounded-md"
+                    className="rounded"
                   />
-                  <div className="flex justify-start w-[230px] h-16 overflow-hidden">
-                    <p
-                      className="text-sm font-semibold overflow-hidden text-ellipsis"
-                      style={{
-                        display: "-webkit-box",
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: "vertical",
-                      }}
-                    >
-                      {capitalizeFirst(item.nama)}
-                    </p>
-                  </div>
+                  <p className="font-semibold">{item.variant.product.nama}</p>
                 </div>
 
-                {/* Kolom 2: Detail */}
-                <div className="text-sm text-gray-500">
-                  Warna: {item.warna} <br /> Ukuran: {item.ukuran}
+                <div>
+                  Warna: {item.variant.warna}
+                  <br />
+                  Ukuran: {item.ukuran}
                 </div>
 
-                {/* Kolom 3: Harga Satuan */}
                 <div className="text-center">
-                  Rp {item.harga.toLocaleString("id-ID")}
+                  Rp {item.variant.harga.toLocaleString("id-ID")}
                 </div>
 
-                {/* Kolom 4: Jumlah */}
                 <div className="text-center">{item.jumlah}</div>
 
-                {/* Kolom 5: Total Harga */}
-                <div className="text-center font-semibold">
-                  Rp {(item.harga * item.jumlah).toLocaleString("id-ID")}
+                <div className="text-center font-bold">
+                  Rp{" "}
+                  {(item.variant.harga * item.jumlah).toLocaleString("id-ID")}
                 </div>
 
-                {/* Kolom 6: Tombol Hapus */}
                 <div className="text-center">
                   <button
-                    onClick={() => handleHapus(index)}
-                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-sm transition-all"
-                    aria-label={`Hapus ${item.nama}`}
+                    onClick={() => handleHapus(item.id)}
+                    className="bg-red-500 text-white px-3 py-1 rounded"
                   >
                     Hapus
                   </button>
                 </div>
               </div>
             ))}
-          </div>
-        )}
-        {keranjang.length > 0 && (
-          <div className="flex justify-between border p-4 rounded-lg font-semibold text-gray-800 bg-gray-100 h-20 mt-4 sticky bottom-2">
-            <div className="flex gap-3 items-center">
-              <input
-                type="checkbox"
-                name={keranjang.id}
-                id={keranjang.id}
-                checked={allSelected}
-                onChange={(e) => handleSelectAll(e.target.checked)}
-              />
-              <label htmlFor={keranjang.id}>Pilih Semua</label>
+
+            {/* Footer */}
+            <div className="flex justify-between items-center border p-4 rounded bg-gray-100 sticky bottom-2">
+              <div>
+                <input
+                  type="checkbox"
+                  checked={
+                    selectProduk.length === keranjang.length &&
+                    keranjang.length > 0
+                  }
+                  onChange={(e) => handleSelectAll(e.target.checked)}
+                />{" "}
+                Pilih Semua
+              </div>
+
+              <div className="flex gap-4 items-center">
+                <p>Total ({selectProduk.length})</p>
+                <p className="font-bold">
+                  Rp {totalHarga.toLocaleString("id-ID")}
+                </p>
+                <button
+                  onClick={handleCheckout}
+                  className="bg-blue-500 text-white px-4 py-2 rounded"
+                >
+                  Checkout
+                </button>
+              </div>
             </div>
-            <div className="flex items-center gap-4">
-              <p>Total belanja ({selectproduk.length})</p>
-              <p className="ml-2">
-                Rp{" "}
-                {selectproduk
-                  .reduce((total, item) => total + item.harga * item.jumlah, 0)
-                  .toLocaleString("id-ID")}
-              </p>
-              <button
-                onClick={handleCheckout}
-                className="ml-2 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm transition-all"
-              >
-                Checkout
-              </button>
-            </div>
-          </div>
+          </>
         )}
       </div>
     </>

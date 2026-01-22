@@ -7,14 +7,13 @@ import { useRouter } from "next/navigation";
 
 export default function Navbar({ className = "" }) {
   const router = useRouter();
-  const [user, setUser] = useState(null);
-
+  const [currentUser, setCurrentUser] = useState(null);
   const [query, setQuery] = useState("");
 
   useEffect(() => {
     try {
       const loginSession = localStorage.getItem("loginSessionDB");
-      if (loginSession) setUser(JSON.parse(loginSession));
+      if (loginSession) setCurrentUser(JSON.parse(loginSession));
     } catch {
     } finally {
     }
@@ -74,15 +73,15 @@ export default function Navbar({ className = "" }) {
         <SlBasket />
       </Link>
 
-      {user && <Link href="/sell">Sell</Link>}
+      {currentUser && <Link href="/sell">Sell</Link>}
 
       <div className="flex gap-6 text-sm">
-        {user ? (
+        {currentUser ? (
           <>
-            <Link href={`/order/${user.id}`}>Kelola pesanan</Link>
-            <Link href={`/profile/${user.username}`}>
+            <Link href={`/order/${currentUser.id}`}>Kelola pesanan</Link>
+            <Link href={`/profile/${currentUser.username}`}>
               {" "}
-              <p>{capitalizeFirst(user.username)}</p>
+              <p>{capitalizeFirst(currentUser.username)}</p>
             </Link>
           </>
         ) : (

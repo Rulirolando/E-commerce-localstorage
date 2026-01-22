@@ -7,8 +7,8 @@ export async function GET(
   try {
     const { id } = await params;
 
-    const product = await prisma.product.findUnique({
-      where: { id: Number(id) },
+    const product = await prisma.product.findMany({
+      where: { ownerId: Number(id) },
       include: {
         owner: { select: { username: true, id: true } },
         variations: { include: { images: true, sizes: true } },
