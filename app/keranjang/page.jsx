@@ -2,40 +2,27 @@
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Navbar from "../components/navbar";
+import { useSession } from "next-auth/react";
 
 export default function KeranjangPage() {
   const [keranjang, setKeranjang] = useState(null);
   console.log("keranjang", keranjang);
-  const [currentUser, setCurrentUser] = useState(null);
-  const [mounted, setMounted] = useState(false);
   const [selectProduk, setSelectProduk] = useState([]);
   const [addressList, setAddressList] = useState([]);
   console.log("selectProduk", selectProduk);
-
-  /* =====================
-     Ambil session user
-  ====================== */
-  useEffect(() => {
-    try {
-      const session = JSON.parse(localStorage.getItem("loginSessionDB"));
-      setCurrentUser(session);
-    } catch {
-      setCurrentUser(null);
-    } finally {
-    }
-  }, []);
+  const { data: session, status } = useSession();
+  const currentUser = session;
 
   /* =====================
      Fetch keranjang dari API
   ====================== */
   useEffect(() => {
-    if (!currentUser?.id) return;
+    if (!currentUser?.user.id) return;
 
     const fetchCart = async () => {
-      const res = await fetch(`/api/keranjang?userId=${currentUser.id}`);
+      const res = await fetch(`/api/keranjang?userId=${currentUser.user.id}`);
       const data = await res.json();
       setKeranjang(data || {});
-      setMounted(true);
     };
 
     fetchCart();
@@ -119,8 +106,8 @@ export default function KeranjangPage() {
           totalHarga: Number((item.variant?.harga || 0) * (item.jumlah || 1)),
           gambar: fotoProduk,
           produkId: item.variant?.id ? Number(item.variant.id) : null,
-          buyerId: Number(currentUser.id),
-          namaPenerima: currentUser.nama || "Pembeli",
+          buyerId: currentUser.user.id,
+          namaPenerima: currentUser.user.name || "Pembeli",
           telepon: String(alamatUtama.telepon || ""),
           alamat: String(alamatUtama.alamat || ""),
         };
@@ -153,9 +140,12 @@ export default function KeranjangPage() {
 
   const fetchAddresses = useCallback(async () => {
     try {
-      const response = await fetch(`/api/profile/address/${currentUser.id}`, {
-        method: "GET",
-      });
+      const response = await fetch(
+        `/api/profile/address/${currentUser.user.id}`,
+        {
+          method: "GET",
+        },
+      );
       const data = await response.json();
       setAddressList(data);
     } catch (error) {
@@ -164,10 +154,10 @@ export default function KeranjangPage() {
   }, [currentUser]);
 
   useEffect(() => {
-    if (currentUser?.id) fetchAddresses();
+    if (currentUser?.user.id) fetchAddresses();
   }, [fetchAddresses, currentUser]);
 
-  if (!mounted) {
+  if (status === "loading") {
     return (
       <div className="p-6">
         <h1 className="text-2xl font-bold">🛒 Keranjang</h1>

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
 export async function POST(req: Request) {
@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     if (!username || !email || !password) {
       return NextResponse.json(
         { message: "Semua field wajib diisi" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     if (usernameExists) {
       return NextResponse.json(
         { message: "Username sudah terdaftar" },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     if (emailExists) {
       return NextResponse.json(
         { message: "Email sudah terdaftar" },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -56,13 +56,13 @@ export async function POST(req: Request) {
           email: user.email,
         },
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error(error);
     return NextResponse.json(
       { message: "Terjadi kesalahan server" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

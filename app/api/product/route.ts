@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
   try {
@@ -9,7 +9,7 @@ export async function POST(req: Request) {
     if (!nama || !kategori || !lokasi || !ownerId || !variasiList.length) {
       return NextResponse.json(
         { message: "Data produk tidak lengkap" },
-        { status: 400 }
+        { status: 400 },
       );
     }
     const product = await prisma.product.create({
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
                 create: v.gambar.map((i: string) => ({ img: i })),
               },
               terjual: v.terjual,
-            })
+            }),
           ),
         },
       },
@@ -50,13 +50,13 @@ export async function POST(req: Request) {
         message: "Produk berhasil ditambahkan",
         product,
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error(error);
     return NextResponse.json(
       { message: "Terjadi kesalahan saat menambahkan produk", error },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -93,7 +93,7 @@ export async function GET() {
     console.error(error);
     return NextResponse.json(
       { message: "Internal Server Error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

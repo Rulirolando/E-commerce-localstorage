@@ -6,14 +6,15 @@ import kategoriList from "../../public/assets/kategoriProduk";
 import { useRouter } from "next/navigation";
 import Navbar from "../components/navbar";
 import DragDropUploader from "../components/DragDropUploader";
+import { useSession } from "next-auth/react";
 
 export default function JualPage() {
   const router = useRouter();
+  const { data: session, status } = useSession();
+  const currentUser = session;
+  console.log("currentUser:", currentUser);
   const [produkList, setProdukList] = useState([]);
   console.log("produkList", produkList);
-  const [ready, setReady] = useState(false);
-  const [user, setUser] = useState(null);
-  console.log("user", user);
 
   const [form, setForm] = useState(() => ({
     nama: "",
@@ -40,18 +41,14 @@ export default function JualPage() {
         .then((res) => res.json())
         .then(setProdukList)
         .catch(console.error);
-
-      const session = localStorage.getItem("loginSessionDB");
-      if (session) setUser(JSON.parse(session));
-
-      setReady(true);
     } catch {
     } finally {
     }
   }, []);
 
   const tambahVariasi = () => {
-    if (!user) return alert("User belum siap. Silakan login ulang jika perlu.");
+    if (!currentUser)
+      return alert("User belum siap. Silakan login ulang jika perlu.");
 
     if (
       !variasi.warna ||
@@ -86,7 +83,7 @@ export default function JualPage() {
   };
 
   const simpanProduk = async () => {
-    if (!user) return alert("Anda harus login terlebih dahulu.");
+    if (!currentUser) return alert("Anda harus login terlebih dahulu.");
 
     try {
       const newProduk = {
@@ -95,7 +92,7 @@ export default function JualPage() {
         deskripsi: form.deskripsi,
         lokasi: form.lokasi,
         comment: form.comment,
-        ownerId: Number(user.id),
+        ownerId: currentUser.user.id,
         variasiList,
       };
       const res = await fetch("/api/product", {
@@ -117,8 +114,7 @@ export default function JualPage() {
     }
   };
 
-  if (!ready) return <h1>Loading...</h1>;
-  if (!user) return <h1>Anda belum login</h1>;
+  if (status === "loading") return <p>Loading...</p>;
   function capitalizeFirst(text) {
     if (!text) return "";
     return text.charAt(0).toUpperCase() + text.slice(1);
@@ -126,10 +122,10 @@ export default function JualPage() {
 
   return (
     <>
-      <Navbar />
+      <Navbar currentUser={currentUser} />
       <div className="p-6 max-w-3xl mx-auto">
         <h1 className="text-2xl font-bold mb-4">{`Jual produk kamu ${capitalizeFirst(
-          user.nama || user.username
+          currentUser.user.name,
         )}`}</h1>
 
         {/* FORM PRODUK */}
@@ -323,7 +319,7 @@ export default function JualPage() {
 
         <div className="mt-4 space-y-4">
           {produkList
-            .filter((p) => p.ownerId === user.id)
+            .filter((p) => p.ownerId === currentUser.user.id)
             .map((p) => (
               <div key={p.id} className="p-4 border rounded-xl bg-white shadow">
                 <h3 className="font-bold">{p.nama}</h3>

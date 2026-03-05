@@ -2,40 +2,45 @@
 
 import { signIn } from "next-auth/react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
 
   // Handler untuk Login Credentials (Email/Password)
   const handleCredentialsLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
     const formData = new FormData(e.currentTarget);
     const email = formData.get("email");
     const password = formData.get("password");
 
-    if (!email || !password) {
-      alert("Email dan password harus diisi");
-      return;
-    }
-
-    setLoading(true);
     try {
-      const result = await signIn("credentials", {
+      // Kita panggil signIn credentials bawaan NextAuth
+      const res = await signIn("credentials", {
         email,
         password,
-        callbackUrl: "/", // Tujuan setelah login sukses
-        redirect: false,
+        redirect: false, // Supaya kita bisa tangkap error manual
       });
 
-      if (result?.error) {
-        alert("Login gagal! Periksa kembali email dan password Anda.");
+      if (res?.error) {
+        // Cek jika error-nya adalah "EMAIL_NOT_VERIFIED" (dari auth.ts)
+        if (res.error.includes("EMAIL_NOT_VERIFIED")) {
+          router.push(`/auth/verify?email=${encodeURIComponent(email)}`);
+        } else {
+          setError("Email atau password salah");
+        }
       } else {
-        // Login berhasil, redirect ke halaman utama
-        window.location.href = "/";
+        // Login Berhasil
+        router.push("/");
+        router.refresh();
       }
-    } catch (error) {
-      console.error(error);
-      alert("Terjadi kesalahan sistem.");
+    } catch {
+      setError("Terjadi kesalahan sistem");
     } finally {
       setLoading(false);
     }
@@ -54,7 +59,11 @@ export default function LoginPage() {
         </div>
 
         <p className="text-blue-400 text-xl font-bold mt-4">Masuk</p>
-
+        {error && (
+          <div className="bg-red-50 text-red-500 text-xs p-3 rounded-lg mb-4 border border-red-100 text-center font-medium">
+            ⚠️ {error}
+          </div>
+        )}
         <form
           onSubmit={handleCredentialsLogin}
           className="flex flex-col gap-3 mt-4"
@@ -66,12 +75,22 @@ export default function LoginPage() {
             className="p-2 border-2 border-blue-400 rounded-md"
           />
 
-          <input
-            name="password"
-            type="password"
-            placeholder="Password"
-            className="p-2 border-2 border-blue-400 rounded-md"
-          />
+          <div className="relative">
+            <input
+              name="password"
+              type={showPassword ? "text" : "password"}
+              required
+              placeholder="Password"
+              className="p-2 border-2 border-blue-400 rounded-md w-full text-sm"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-2 top-2 text-xs text-blue-500"
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
+          </div>
 
           <button
             type="submit"

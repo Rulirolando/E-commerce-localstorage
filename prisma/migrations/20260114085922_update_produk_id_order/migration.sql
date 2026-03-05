@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE "Order" ALTER COLUMN "produkId" SET DATA TYPE TEXT;

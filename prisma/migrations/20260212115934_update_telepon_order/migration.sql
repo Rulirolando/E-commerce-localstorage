@@ -1,3 +1,0 @@
--- AlterTable
-ALTER TABLE "Order" ALTER COLUMN "telepon" SET DEFAULT '',
-ALTER COLUMN "telepon" SET DATA TYPE TEXT;

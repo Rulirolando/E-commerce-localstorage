@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -7,7 +7,7 @@ export async function POST(req: Request) {
     if (!userId || !productId) {
       return NextResponse.json(
         { message: "Data tidak lengkap" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
     console.error(error);
     return NextResponse.json(
       { message: "Terjadi kesalahan saat memproses suka", error },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

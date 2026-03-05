@@ -270,8 +270,8 @@ export default function ProfilePage({ userId, currentUser }) {
             <Image
               id={user.id}
               src={
-                user.imgProfile ||
-                currentUser.user.image ||
+                user?.imgProfile ||
+                currentUser?.user?.image ||
                 "/default-avatar.png"
               }
               alt="Profile"
