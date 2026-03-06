@@ -28,6 +28,7 @@ export type OtpMinAggregateOutputType = {
   id: string | null
   email: string | null
   code: string | null
+  type: string | null
   expiresAt: Date | null
   createdAt: Date | null
 }
@@ -36,6 +37,7 @@ export type OtpMaxAggregateOutputType = {
   id: string | null
   email: string | null
   code: string | null
+  type: string | null
   expiresAt: Date | null
   createdAt: Date | null
 }
@@ -44,6 +46,7 @@ export type OtpCountAggregateOutputType = {
   id: number
   email: number
   code: number
+  type: number
   expiresAt: number
   createdAt: number
   _all: number
@@ -54,6 +57,7 @@ export type OtpMinAggregateInputType = {
   id?: true
   email?: true
   code?: true
+  type?: true
   expiresAt?: true
   createdAt?: true
 }
@@ -62,6 +66,7 @@ export type OtpMaxAggregateInputType = {
   id?: true
   email?: true
   code?: true
+  type?: true
   expiresAt?: true
   createdAt?: true
 }
@@ -70,6 +75,7 @@ export type OtpCountAggregateInputType = {
   id?: true
   email?: true
   code?: true
+  type?: true
   expiresAt?: true
   createdAt?: true
   _all?: true
@@ -151,6 +157,7 @@ export type OtpGroupByOutputType = {
   id: string
   email: string
   code: string
+  type: string
   expiresAt: Date
   createdAt: Date
   _count: OtpCountAggregateOutputType | null
@@ -180,6 +187,7 @@ export type OtpWhereInput = {
   id?: Prisma.StringFilter<"Otp"> | string
   email?: Prisma.StringFilter<"Otp"> | string
   code?: Prisma.StringFilter<"Otp"> | string
+  type?: Prisma.StringFilter<"Otp"> | string
   expiresAt?: Prisma.DateTimeFilter<"Otp"> | Date | string
   createdAt?: Prisma.DateTimeFilter<"Otp"> | Date | string
 }
@@ -188,6 +196,7 @@ export type OtpOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   email?: Prisma.SortOrder
   code?: Prisma.SortOrder
+  type?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -199,6 +208,7 @@ export type OtpWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.OtpWhereInput | Prisma.OtpWhereInput[]
   email?: Prisma.StringFilter<"Otp"> | string
   code?: Prisma.StringFilter<"Otp"> | string
+  type?: Prisma.StringFilter<"Otp"> | string
   expiresAt?: Prisma.DateTimeFilter<"Otp"> | Date | string
   createdAt?: Prisma.DateTimeFilter<"Otp"> | Date | string
 }, "id">
@@ -207,6 +217,7 @@ export type OtpOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   email?: Prisma.SortOrder
   code?: Prisma.SortOrder
+  type?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.OtpCountOrderByAggregateInput
@@ -221,6 +232,7 @@ export type OtpScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"Otp"> | string
   email?: Prisma.StringWithAggregatesFilter<"Otp"> | string
   code?: Prisma.StringWithAggregatesFilter<"Otp"> | string
+  type?: Prisma.StringWithAggregatesFilter<"Otp"> | string
   expiresAt?: Prisma.DateTimeWithAggregatesFilter<"Otp"> | Date | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Otp"> | Date | string
 }
@@ -229,6 +241,7 @@ export type OtpCreateInput = {
   id?: string
   email: string
   code: string
+  type?: string
   expiresAt: Date | string
   createdAt?: Date | string
 }
@@ -237,6 +250,7 @@ export type OtpUncheckedCreateInput = {
   id?: string
   email: string
   code: string
+  type?: string
   expiresAt: Date | string
   createdAt?: Date | string
 }
@@ -245,6 +259,7 @@ export type OtpUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.StringFieldUpdateOperationsInput | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -253,6 +268,7 @@ export type OtpUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.StringFieldUpdateOperationsInput | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -261,6 +277,7 @@ export type OtpCreateManyInput = {
   id?: string
   email: string
   code: string
+  type?: string
   expiresAt: Date | string
   createdAt?: Date | string
 }
@@ -269,6 +286,7 @@ export type OtpUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.StringFieldUpdateOperationsInput | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -277,6 +295,7 @@ export type OtpUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.StringFieldUpdateOperationsInput | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -285,6 +304,7 @@ export type OtpCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   email?: Prisma.SortOrder
   code?: Prisma.SortOrder
+  type?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -293,6 +313,7 @@ export type OtpMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   email?: Prisma.SortOrder
   code?: Prisma.SortOrder
+  type?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -301,6 +322,7 @@ export type OtpMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   email?: Prisma.SortOrder
   code?: Prisma.SortOrder
+  type?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -311,6 +333,7 @@ export type OtpSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = ru
   id?: boolean
   email?: boolean
   code?: boolean
+  type?: boolean
   expiresAt?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["otp"]>
@@ -319,6 +342,7 @@ export type OtpSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extension
   id?: boolean
   email?: boolean
   code?: boolean
+  type?: boolean
   expiresAt?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["otp"]>
@@ -327,6 +351,7 @@ export type OtpSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extension
   id?: boolean
   email?: boolean
   code?: boolean
+  type?: boolean
   expiresAt?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["otp"]>
@@ -335,11 +360,12 @@ export type OtpSelectScalar = {
   id?: boolean
   email?: boolean
   code?: boolean
+  type?: boolean
   expiresAt?: boolean
   createdAt?: boolean
 }
 
-export type OtpOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "code" | "expiresAt" | "createdAt", ExtArgs["result"]["otp"]>
+export type OtpOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "code" | "type" | "expiresAt" | "createdAt", ExtArgs["result"]["otp"]>
 
 export type $OtpPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Otp"
@@ -348,6 +374,7 @@ export type $OtpPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
     id: string
     email: string
     code: string
+    type: string
     expiresAt: Date
     createdAt: Date
   }, ExtArgs["result"]["otp"]>
@@ -776,6 +803,7 @@ export interface OtpFieldRefs {
   readonly id: Prisma.FieldRef<"Otp", 'String'>
   readonly email: Prisma.FieldRef<"Otp", 'String'>
   readonly code: Prisma.FieldRef<"Otp", 'String'>
+  readonly type: Prisma.FieldRef<"Otp", 'String'>
   readonly expiresAt: Prisma.FieldRef<"Otp", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"Otp", 'DateTime'>
 }

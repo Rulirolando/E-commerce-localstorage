@@ -3,6 +3,7 @@
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -90,6 +91,16 @@ export default function LoginPage() {
             >
               {showPassword ? "Hide" : "Show"}
             </button>
+          </div>
+
+          {/* LINK LUPA PASSWORD */}
+          <div className="flex justify-end">
+            <Link
+              href="/auth/forgot-password"
+              className="text-[11px] text-blue-500 hover:underline font-medium"
+            >
+              Lupa Password?
+            </Link>
           </div>
 
           <button

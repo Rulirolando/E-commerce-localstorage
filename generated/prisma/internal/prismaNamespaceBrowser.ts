@@ -121,6 +121,7 @@ export const OtpScalarFieldEnum = {
   id: 'id',
   email: 'email',
   code: 'code',
+  type: 'type',
   expiresAt: 'expiresAt',
   createdAt: 'createdAt'
 } as const
