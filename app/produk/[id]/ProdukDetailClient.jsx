@@ -3,15 +3,17 @@ import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
 import Navbar from "../../components/navbar";
 import Footer from "../../components/Footer";
+import { useSession } from "next-auth/react";
 
 export default function ProdukDetail({ produkChose }) {
+  const { data: session } = useSession();
+  const currentUser = session;
   console.log("produkChose", produkChose);
   const allImg =
     produkChose?.variations?.flatMap(
       (v) => v.images?.map((i) => i.img) || [],
     ) || [];
   const [selectedImage, setSelectedImage] = useState(allImg[0] || "");
-  const [currentUser, setCurrentUser] = useState({});
   const [addressList, setAddressList] = useState([]);
 
   console.log("currentuser", currentUser);
@@ -106,6 +108,11 @@ export default function ProdukDetail({ produkChose }) {
       return;
     }
 
+    if (currentUser.user.id === selectedProduk.ownerId) {
+      alert("Anda tidak bisa membeli produk Anda sendiri.");
+      return;
+    }
+
     const confirmation = confirm("Apakah Anda yakin ingin membeli produk ini?");
     if (!confirmation) return;
 
@@ -125,14 +132,15 @@ export default function ProdukDetail({ produkChose }) {
         ukuran: selectedProduk.ukuran,
         jumlah: Number(selectedProduk.jumlah),
         harga: Number(selectedProduk.harga),
+        author: selectedProduk.ownerId,
         totalHarga:
           Number(selectedProduk.harga) * Number(selectedProduk.jumlah),
         gambar: selectedProduk.gambar,
-        namaPenerima: currentUser.nama,
+        namaPenerima: currentUser.user.name,
         telepon: String(alamatUtama.telepon || ""),
         alamat: String(alamatUtama.alamat || ""),
         produkId: Number(selectedProduk.id),
-        buyerId: Number(currentUser.id),
+        buyerId: currentUser.user.id,
       };
 
       console.log("Data yang akan dikirim:", payload); // Ganti 'update' jadi 'payload'
@@ -179,7 +187,7 @@ export default function ProdukDetail({ produkChose }) {
       return;
     }
 
-    if (currentUser.id === selectedProduk.ownerId) {
+    if (currentUser.user.id === selectedProduk.ownerId) {
       alert("Anda tidak bisa menambahkan produk Anda sendiri ke keranjang.");
       return;
     }
@@ -188,7 +196,7 @@ export default function ProdukDetail({ produkChose }) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        userId: currentUser.id,
+        userId: currentUser.user.id,
         variantId: selectedProduk.produkId,
         ukuran: selectedProduk.ukuran,
         jumlah: selectedProduk.jumlah,
@@ -211,31 +219,25 @@ export default function ProdukDetail({ produkChose }) {
   };
 
   const fetchAddresses = useCallback(async () => {
+    if (!currentUser.user?.id) return;
     try {
-      const response = await fetch(`/api/profile/address/${currentUser.id}`, {
-        method: "GET",
-      });
+      const response = await fetch(
+        `/api/profile/address/${currentUser.user.id}`,
+        {
+          method: "GET",
+        },
+      );
+      if (!response.ok) throw new Error("Failed to fetch");
       const data = await response.json();
       setAddressList(data);
     } catch (error) {
       console.error("Gagal ambil alamat:", error);
     }
-  }, [currentUser]);
+  }, [currentUser.user?.id]);
 
   useEffect(() => {
-    if (currentUser?.id) fetchAddresses();
-  }, [fetchAddresses, currentUser]);
-
-  useEffect(() => {
-    try {
-      const currentUser = JSON.parse(localStorage.getItem("loginSessionDB"));
-
-      setCurrentUser(currentUser);
-    } catch {
-      setCurrentUser({});
-    } finally {
-    }
-  }, []);
+    fetchAddresses();
+  }, [fetchAddresses, currentUser.user?.id]);
 
   useEffect(() => {
     if (!produkChose) return;
@@ -264,7 +266,7 @@ export default function ProdukDetail({ produkChose }) {
 
   return (
     <>
-      <Navbar />
+      <Navbar currentUser={currentUser} />
       <div className="grid grid-cols-2 w-full bg-blue-100">
         <div className="col-span-1 w-full h-full">
           <div className="relative flex flex-col justify-self-center rounded-lg mt-4 w-1/2">

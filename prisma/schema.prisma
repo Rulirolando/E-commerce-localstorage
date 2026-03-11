@@ -154,6 +154,8 @@ model Order {
   jumlah        Int
  totalHarga  Int
 
+ author String @default("") // orang yang punya produk
+
   buyerId     String
   buyer       User     @relation("BuyerOrders",fields: [buyerId], references: [id])
 

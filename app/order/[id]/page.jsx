@@ -7,7 +7,6 @@ export default async function Profile({ params }) {
   const userId = resolvedParams.id;
   const currentUser = session;
   console.log("currentUser:", currentUser);
-  console.log(userId);
   if (currentUser?.user?.id !== userId) {
     return (
       <div className="w-full h-screen flex items-center justify-center">
@@ -15,5 +14,5 @@ export default async function Profile({ params }) {
       </div>
     );
   }
-  return <OrderPage userId={userId} currentUser={currentUser} />;
+  return <OrderPage currentUser={currentUser} />;
 }

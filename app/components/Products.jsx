@@ -4,6 +4,8 @@ import ShowProduk from "./produk";
 import { useSearchParams } from "next/navigation";
 import kategoriList from "../../public/assets/kategoriProduk";
 import CardProduk from "./CardProduk";
+import { useSession } from "next-auth/react";
+
 export default function SearchProduk() {
   const searchParams = useSearchParams();
   const kategoriURL = (searchParams.get("q") || "").toLowerCase().trim();
@@ -16,10 +18,11 @@ export default function SearchProduk() {
   const [produkList, setProdukList] = useState([]);
   console.log("produklist", produkList);
   const [loading, setLoading] = useState(false);
-  const [currentUser, setCurrentUser] = useState({});
+  const { data: session } = useSession();
+  const currentUser = session;
 
   async function toggleLove(produkId) {
-    if (!currentUser) {
+    if (!currentUser.user.id) {
       alert("Silakan login terlebih dahulu untuk menyukai produk.");
       return;
     }
@@ -30,7 +33,7 @@ export default function SearchProduk() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userId: currentUser.id,
+          userId: currentUser.user.id,
           productId: produkId,
         }),
       });
@@ -44,11 +47,11 @@ export default function SearchProduk() {
             ? {
                 ...p,
                 loves: data.loves
-                  ? [...p.loves, { userId: currentUser.id, status: true }]
-                  : p.loves.filter((l) => l.userId !== currentUser.id),
+                  ? [...p.loves, { userId: currentUser.user.id, status: true }]
+                  : p.loves.filter((l) => l.userId !== currentUser.user.id),
               }
-            : p
-        )
+            : p,
+        ),
       );
     } catch (error) {
       console.error("Error toggling love:", error);
@@ -58,7 +61,7 @@ export default function SearchProduk() {
   const filteredProduk = produkList.filter((p) => {
     const allWarna = p.variations.map((item) => item.warna.toLowerCase());
     const allUkuran = p.variations.map((item) =>
-      item.sizes.flatMap((u) => u.size.toLowerCase())
+      item.sizes.flatMap((u) => u.size.toLowerCase()),
     );
 
     const matchKategori =
@@ -98,10 +101,6 @@ export default function SearchProduk() {
     } finally {
       setLoading(true);
     }
-  }, []);
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("loginSessionDB"));
-    if (user) setCurrentUser(user);
   }, []);
 
   useEffect(() => {
@@ -200,10 +199,11 @@ export default function SearchProduk() {
                     terjual={p.variations?.[0]?.terjual || 0}
                     edit={false}
                     isLoved={p.loves.some(
-                      (l) => l.userId === currentUser?.id && l.status === true
+                      (l) =>
+                        l.userId === currentUser?.user.id && l.status === true,
                     )}
                     onLove={() => toggleLove(p.id)}
-                    showLove={p.ownerId === currentUser?.id}
+                    showLove={p.ownerId === currentUser?.user.id}
                   />
                 ))
               ) : (

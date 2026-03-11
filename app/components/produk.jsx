@@ -2,9 +2,10 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 export default function ShowProduk({ produkSelected }) {
-  const [currentUser, setCurrentUser] = useState({});
-  console.log("currentuser", currentUser);
+  const { data: session } = useSession();
+  const currentUser = session;
   const [selectedImage, setSelectedImage] = useState("");
   const [mounted, setMounted] = useState(false);
   console.log("selectedimage", selectedImage);
@@ -36,16 +37,6 @@ export default function ShowProduk({ produkSelected }) {
       setMounted(true);
     }
   }, [produkSelected]);
-
-  useEffect(() => {
-    try {
-      const user = JSON.parse(localStorage.getItem("loginSessionDB"));
-      setCurrentUser(user);
-    } catch {
-      setCurrentUser({});
-    } finally {
-    }
-  }, []);
 
   if (!mounted) {
     // tampilkan skeleton / loading yang sama di server & client sehingga tidak ada mismatch

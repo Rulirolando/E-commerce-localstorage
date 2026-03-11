@@ -26,7 +26,6 @@ import { signOut } from "next-auth/react";
 
 export default function ProfilePage({ userId, currentUser }) {
   const [user, setUser] = useState({});
-  console.log("user", user);
   const [username, setUsername] = useState(null);
   const [produkLoves, setProdukLoves] = useState([]);
   const [activeMenu, setActiveMenu] = useState("profile");
@@ -38,6 +37,7 @@ export default function ProfilePage({ userId, currentUser }) {
   const [isEditAddress, setIsEditAddress] = useState(null);
   const [editAddress, setEditAddress] = useState(null);
   const [produkBeli, setProdukBeli] = useState([]);
+  console.log("produk beli:", produkBeli);
   const [isEdit, setIsEdit] = useState(false);
   const [onEdit, setOnEdit] = useState({});
   const [myProduks, setMyProduks] = useState(null);
@@ -228,13 +228,17 @@ export default function ProfilePage({ userId, currentUser }) {
 
   useEffect(() => {
     try {
-      const allProduk = JSON.parse(localStorage.getItem("beliDB")) || [];
-      if (allProduk) setProdukBeli(allProduk);
+      async function fetchProdukBeli() {
+        const allProduk = await fetch(`/api/order/${currentUser.user.id}`);
+        const allProdukData = await allProduk.json();
+        setProdukBeli(allProdukData);
+      }
+      fetchProdukBeli();
     } catch {
       setProdukBeli([]);
     } finally {
     }
-  }, []);
+  }, [currentUser.user.id]);
 
   useEffect(() => {
     async function fetchFavorites() {
@@ -270,9 +274,7 @@ export default function ProfilePage({ userId, currentUser }) {
             <Image
               id={user.id}
               src={
-                user?.imgProfile ||
-                currentUser?.user?.image ||
-                "/default-avatar.png"
+                currentUser?.user?.image || user?.imgProfile || "/no-image.png"
               }
               alt="Profile"
               width={50}
@@ -519,7 +521,9 @@ export default function ProfilePage({ userId, currentUser }) {
                                 <h1>ID: {produk.produkId}</h1>
                                 <p className="font-light text-sm">
                                   Tanggal:{" "}
-                                  {new Date(produk.date).toLocaleString()}
+                                  {new Date(produk.createdAt).toLocaleString(
+                                    "id-ID",
+                                  )}
                                 </p>
                               </div>
                             </div>
@@ -600,7 +604,9 @@ export default function ProfilePage({ userId, currentUser }) {
                               <div className="flex flex-col ml-3">
                                 <h1>ID: {produk.produkId}</h1>
                                 <p className="font-light text-sm">
-                                  Tanggal: 12-12-2022
+                                  {new Date(produk.createdAt).toLocaleString(
+                                    "id-ID",
+                                  )}
                                 </p>
                               </div>
                             </div>
@@ -680,7 +686,9 @@ export default function ProfilePage({ userId, currentUser }) {
                               <div className="flex flex-col ml-3">
                                 <h1>ID: {produk.produkId}</h1>
                                 <p className="font-light text-sm">
-                                  Tanggal: 12-12-2022
+                                  {new Date(produk.createdAt).toLocaleString(
+                                    "id-ID",
+                                  )}
                                 </p>
                               </div>
                             </div>
@@ -760,7 +768,9 @@ export default function ProfilePage({ userId, currentUser }) {
                               <div className="flex flex-col ml-3">
                                 <h1>ID: {produk.produkId}</h1>
                                 <p className="font-light text-sm">
-                                  Tanggal: 12-12-2022
+                                  {new Date(produk.createdAt).toLocaleString(
+                                    "id-ID",
+                                  )}
                                 </p>
                               </div>
                             </div>
@@ -840,7 +850,9 @@ export default function ProfilePage({ userId, currentUser }) {
                               <div className="flex flex-col ml-3">
                                 <h1>ID: {produk.produkId}</h1>
                                 <p className="font-light text-sm">
-                                  Tanggal: 12-12-2022
+                                  {new Date(produk.createdAt).toLocaleString(
+                                    "id-ID",
+                                  )}
                                 </p>
                               </div>
                             </div>

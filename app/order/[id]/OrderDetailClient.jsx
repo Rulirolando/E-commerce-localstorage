@@ -8,83 +8,50 @@ import Link from "next/link";
 import { GoPerson } from "react-icons/go";
 import { MdOutlinePhone } from "react-icons/md";
 
-export default function DetailPage({ userId, currentUser }) {
+export default function DetailPage({ currentUser }) {
   const [activePesananMenu, setActivePesananMenu] = useState("semuapesanan");
   const [produkBeli, setProdukBeli] = useState([]);
   console.log("produkBeli", produkBeli);
-  const [users, setUsers] = useState([]);
-  const [status, setStatus] = useState({});
-  const [isStatus, setIsStatus] = useState("");
-  const [produkList, setProdukList] = useState([]);
-  console.log("produkList", produkList);
 
-  function handleStatusChange(id, ket) {
-    setStatus(id);
-    setIsStatus(ket);
-    const update = produkBeli.map((produk) => {
-      if (produk.id !== status) return produk;
-      return { ...produk, status: isStatus };
-    });
-    setProdukBeli(update);
-    localStorage.setItem("beliDB", JSON.stringify(update));
-
-    if (isStatus === "Selesai") {
-      const updateProduk = produkList.map((produk) => {
-        if (produk.id !== id) return produk;
-
-        return {
-          ...produk,
-          produk: produk.produk.map((item) => {
-            // total dibeli untuk item ini
-            const totalDibeli = produkBeli.reduce((total, p) => {
-              return p.produkId === item.id ? total + p.jumlah : total;
-            }, 0);
-
-            return {
-              ...item,
-              stok: Math.max(0, item.stok - totalDibeli),
-            };
-          }),
-        };
+  async function handleStatusChange(id, ket) {
+    try {
+      const response = await fetch("/api/order", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status: ket }),
       });
 
-      setProdukList(updateProduk);
-      localStorage.setItem("produkDB", JSON.stringify(updateProduk));
+      if (response.ok) {
+        const produk = await fetch(`/api/order/produk/${currentUser.user.id}`);
+        const data = await produk.json();
+        setProdukBeli(data);
+
+        alert(`Pesanan ${ket}!`);
+      } else {
+        alert("Gagal memperbarui status di server");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Terjadi kesalahan koneksi");
     }
   }
 
   useEffect(() => {
     try {
-      const allProduk = JSON.parse(localStorage.getItem("beliDB")) || [];
-      if (allProduk) setProdukBeli(allProduk);
+      async function fetchData() {
+        const response = await fetch(
+          `/api/order/produk/${currentUser.user.id}`,
+        );
+        const data = await response.json();
+        setProdukBeli(data);
+      }
+      fetchData();
     } catch {
       setProdukBeli([]);
     } finally {
     }
-  }, []);
-  useEffect(() => {
-    try {
-      const users = JSON.parse(localStorage.getItem("userDB")) || [];
-      setUsers(users);
-    } catch {
-      setUsers([]);
-    } finally {
-    }
-  }, []);
+  }, [currentUser.user.id]);
 
-  useEffect(() => {
-    try {
-      const allProduk = JSON.parse(localStorage.getItem("produkDB")) || [];
-      console.log("allProduk", allProduk);
-      const produk = allProduk.filter((prod) =>
-        produkBeli.some((p) => p.ownerId === prod.ownerId),
-      );
-      if (produk) setProdukList(produk);
-    } catch {
-      setProdukList([]);
-    } finally {
-    }
-  }, [produkBeli]);
   return (
     <>
       <Navbar currentUser={currentUser} />
@@ -149,83 +116,76 @@ export default function DetailPage({ userId, currentUser }) {
             <>
               {" "}
               <div className="w-full h-full  ">
-                {produkBeli
-                  .filter((p) => p.ownerId === id)
-                  .map((produk, index) => (
-                    <div
-                      key={index}
-                      className="w-full  bg-blue-200 ml-2 mt-5 rounded-2xl p-4 shadow-2xs"
-                    >
-                      <div className="flex w-full justify-between items-center">
-                        <div className="w-1/2 flex flex-row">
-                          {" "}
-                          <IoBasket size={30} />{" "}
-                          <div className="flex flex-col ml-3">
-                            <h1>ID: {produk.produkId}</h1>
-                            <p className="font-light text-sm">
-                              Tanggal: {new Date(produk.date).toLocaleString()}
+                {produkBeli.map((produk, index) => (
+                  <div
+                    key={index}
+                    className="w-full  bg-blue-200 ml-2 mt-5 rounded-2xl p-4 shadow-2xs"
+                  >
+                    <div className="flex w-full justify-between items-center">
+                      <div className="w-1/2 flex flex-row">
+                        {" "}
+                        <IoBasket size={30} />{" "}
+                        <div className="flex flex-col ml-3">
+                          <h1>ID: {produk.produkId}</h1>
+                          <p className="font-light text-sm">
+                            Tanggal:{" "}
+                            {new Date(produk.createdAt).toLocaleString("id-ID")}
+                          </p>
+                          <div className="flex items-center">
+                            {" "}
+                            <GoPerson />
+                            <p className="font-light text-sm ml-2">
+                              {produk.namaPenerima}
                             </p>
-                            <div className="flex items-center">
+                          </div>
+                          <div className="flex items-center">
+                            <MdOutlinePhone />
+                            <p className="font-light text-sm ml-2">
                               {" "}
-                              <GoPerson />
-                              <p className="font-light text-sm ml-2">
-                                {
-                                  users.find((u) => u.id === produk.buyerId)
-                                    ?.username
-                                }
-                              </p>
-                            </div>
-                            <div className="flex items-center">
-                              <MdOutlinePhone />
-                              <p className="font-light text-sm ml-2">
-                                {" "}
-                                {users.find((u) => u.id === produk.buyerId)
-                                  ?.telepon || "Tidak ada nomor telepon"}
-                              </p>
-                            </div>
+                              {produk.telepon}
+                            </p>
                           </div>
                         </div>
+                      </div>
 
-                        <p className="border-gray-100 rounded-lg px-2 text-[12px] text-light py-0.5 bg-blue-400 ">
-                          {produk.status}
+                      <p className="border-gray-100 rounded-lg px-2 text-[12px] text-light py-0.5 bg-blue-400 ">
+                        {produk.status}
+                      </p>
+                    </div>
+                    <hr className="mt-5" />
+                    <div className="flex justify-between w-full mt-5 items-center">
+                      <div className="flex items-center">
+                        <Image
+                          src={produk.gambar}
+                          width={100}
+                          height={100}
+                          alt="foto barang"
+                          className="object-cover w-30 h-30 rounded-md"
+                        />
+                        <div className="flex flex-col ml-3">
+                          <h1 className="font-normal text-sm">{produk.nama}</h1>
+                          <div className="flex items-center space-x-3 ">
+                            <p className="font-normal text-sm">
+                              Rp.{produk.harga.toLocaleString("id-ID")}
+                            </p>
+                            <p className="font-light text-light text-sm">
+                              {produk.jumlah} x
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex flex-col">
+                        <h1>Total belanja</h1>
+                        <p className="font-light text-sm">
+                          Rp.
+                          {(produk.jumlah * produk.harga).toLocaleString(
+                            "id-ID",
+                          )}
                         </p>
                       </div>
-                      <hr className="mt-5" />
-                      <div className="flex justify-between w-full mt-5 items-center">
-                        <div className="flex items-center">
-                          <Image
-                            src={produk.gambar}
-                            width={100}
-                            height={100}
-                            alt="foto barang"
-                            className="object-cover w-30 h-30 rounded-md"
-                          />
-                          <div className="flex flex-col ml-3">
-                            <h1 className="font-normal text-sm">
-                              {produk.nama}
-                            </h1>
-                            <div className="flex items-center space-x-3 ">
-                              <p className="font-normal text-sm">
-                                Rp.{produk.harga.toLocaleString("id-ID")}
-                              </p>
-                              <p className="font-light text-light text-sm">
-                                {produk.jumlah} x
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex flex-col">
-                          <h1>Total belanja</h1>
-                          <p className="font-light text-sm">
-                            Rp.
-                            {(produk.jumlah * produk.harga).toLocaleString(
-                              "id-ID",
-                            )}
-                          </p>
-                        </div>
-                      </div>
                     </div>
-                  ))}
+                  </div>
+                ))}
               </div>
             </>
           )}
@@ -235,11 +195,7 @@ export default function DetailPage({ userId, currentUser }) {
               {" "}
               <div className="w-full h-full  ">
                 {produkBeli
-                  .filter(
-                    (produk) =>
-                      produk.status === "Belum dibayar" &&
-                      produk.ownerId === id,
-                  )
+                  .filter((produk) => produk.status === "Belum dibayar")
                   .map((produk, index) => (
                     <div
                       key={index}
@@ -252,24 +208,22 @@ export default function DetailPage({ userId, currentUser }) {
                           <div className="flex flex-col ml-3">
                             <h1>ID: {produk.produkId}</h1>
                             <p className="font-light text-sm">
-                              Tanggal: 12-12-2022
+                              {new Date(produk.createdAt).toLocaleString(
+                                "id-ID",
+                              )}
                             </p>
                             <div className="flex items-center">
                               {" "}
                               <GoPerson />
                               <p className="font-light text-sm ml-2">
-                                {
-                                  users.find((u) => u.id === produk.buyerId)
-                                    ?.username
-                                }
+                                {produk.namaPenerima}
                               </p>
                             </div>
                             <div className="flex items-center">
                               <MdOutlinePhone />
                               <p className="font-light text-sm ml-2">
                                 {" "}
-                                {users.find((u) => u.id === produk.buyerId)
-                                  ?.telepon || "Tidak ada nomor telepon"}
+                                {produk.telepon}
                               </p>
                             </div>
                           </div>
@@ -335,10 +289,7 @@ export default function DetailPage({ userId, currentUser }) {
               {" "}
               <div className="w-full h-full  ">
                 {produkBeli
-                  .filter(
-                    (produk) =>
-                      produk.status === "Dikemas" && produk.ownerId === id,
-                  )
+                  .filter((produk) => produk.status === "Dikemas")
                   .map((produk, index) => (
                     <div
                       key={index}
@@ -351,24 +302,22 @@ export default function DetailPage({ userId, currentUser }) {
                           <div className="flex flex-col ml-3">
                             <h1>ID: {produk.produkId}</h1>
                             <p className="font-light text-sm">
-                              Tanggal: 12-12-2022
+                              {new Date(produk.createdAt).toLocaleString(
+                                "id-ID",
+                              )}
                             </p>
                             <div className="flex items-center">
                               {" "}
                               <GoPerson />
                               <p className="font-light text-sm ml-2">
-                                {
-                                  users.find((u) => u.id === produk.buyerId)
-                                    ?.username
-                                }
+                                {produk.namaPenerima}
                               </p>
                             </div>
                             <div className="flex items-center">
                               <MdOutlinePhone />
                               <p className="font-light text-sm ml-2">
                                 {" "}
-                                {users.find((u) => u.id === produk.buyerId)
-                                  ?.telepon || "Tidak ada nomor telepon"}
+                                {produk.telepon}
                               </p>
                             </div>
                           </div>
@@ -434,10 +383,7 @@ export default function DetailPage({ userId, currentUser }) {
               {" "}
               <div className="w-full h-full  ">
                 {produkBeli
-                  .filter(
-                    (produk) =>
-                      produk.status === "Dikirim" && produk.ownerId === id,
-                  )
+                  .filter((produk) => produk.status === "Dikirim")
                   .map((produk, index) => (
                     <div
                       key={index}
@@ -450,24 +396,22 @@ export default function DetailPage({ userId, currentUser }) {
                           <div className="flex flex-col ml-3">
                             <h1>ID: {produk.produkId}</h1>
                             <p className="font-light text-sm">
-                              Tanggal: 12-12-2022
+                              {new Date(produk.createdAt).toLocaleString(
+                                "id-ID",
+                              )}
                             </p>
                             <div className="flex items-center">
                               {" "}
                               <GoPerson />
                               <p className="font-light text-sm ml-2">
-                                {
-                                  users.find((u) => u.id === produk.buyerId)
-                                    ?.username
-                                }
+                                {produk.namaPenerima}
                               </p>
                             </div>
                             <div className="flex items-center">
                               <MdOutlinePhone />
                               <p className="font-light text-sm ml-2">
                                 {" "}
-                                {users.find((u) => u.id === produk.buyerId)
-                                  ?.telepon || "Tidak ada nomor telepon"}
+                                {produk.telepon}
                               </p>
                             </div>
                           </div>
@@ -533,10 +477,7 @@ export default function DetailPage({ userId, currentUser }) {
               {" "}
               <div className="w-full h-full  ">
                 {produkBeli
-                  .filter(
-                    (produk) =>
-                      produk.status === "Selesai" && produk.ownerId === id,
-                  )
+                  .filter((produk) => produk.status === "Selesai")
                   .map((produk, index) => (
                     <div
                       key={index}
@@ -549,24 +490,22 @@ export default function DetailPage({ userId, currentUser }) {
                           <div className="flex flex-col ml-3">
                             <h1>ID: {produk.produkId}</h1>
                             <p className="font-light text-sm">
-                              Tanggal: 12-12-2022
+                              {new Date(produk.createdAt).toLocaleString(
+                                "id-ID",
+                              )}
                             </p>
                             <div className="flex items-center">
                               {" "}
                               <GoPerson />
                               <p className="font-light text-sm ml-2">
-                                {
-                                  users.find((u) => u.id === produk.buyerId)
-                                    ?.username
-                                }
+                                {produk.namaPenerima}
                               </p>
                             </div>
                             <div className="flex items-center">
                               <MdOutlinePhone />
                               <p className="font-light text-sm ml-2">
                                 {" "}
-                                {users.find((u) => u.id === produk.buyerId)
-                                  ?.telepon || "Tidak ada nomor telepon"}
+                                {produk.telepon}
                               </p>
                             </div>
                           </div>

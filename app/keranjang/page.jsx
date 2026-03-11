@@ -59,7 +59,6 @@ export default function KeranjangPage() {
   const handleSelectAll = (checked) => {
     setSelectProduk(checked ? keranjang.items : []);
   };
-
   /* =====================
      Hapus item
   ====================== */
@@ -67,12 +66,9 @@ export default function KeranjangPage() {
     if (!confirm("Yakin hapus item ini?")) return;
 
     await fetch(`/api/keranjang/${id}`, { method: "DELETE" });
-    setKeranjang((prev) => ({
-      ...prev,
-      items: prev.items.filter((item) => item.id !== id),
-    }));
-
-    setSelectProduk((prev) => prev.filter((item) => item.id !== id));
+    const res = await fetch(`/api/keranjang?userId=${currentUser.user.id}`);
+    const data = await res.json();
+    setKeranjang(data || {});
   };
 
   /* =====================
@@ -105,6 +101,7 @@ export default function KeranjangPage() {
           harga: Number(item.variant?.harga) || 0,
           totalHarga: Number((item.variant?.harga || 0) * (item.jumlah || 1)),
           gambar: fotoProduk,
+          author: item.variant?.product?.ownerId,
           produkId: item.variant?.id ? Number(item.variant.id) : null,
           buyerId: currentUser.user.id,
           namaPenerima: currentUser.user.name || "Pembeli",
@@ -173,15 +170,15 @@ export default function KeranjangPage() {
 
   return (
     <>
-      <Navbar />
+      <Navbar currentUser={currentUser} />
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-4">🛒 Keranjang Belanja</h1>
 
-        {!keranjang || keranjang.items.length === 0 ? (
+        {!keranjang || keranjang.items?.length === 0 ? (
           <p>Keranjang kosong</p>
         ) : (
           <>
-            {keranjang.items.map((item) => (
+            {keranjang?.items?.map((item) => (
               <div
                 key={item.id}
                 className="grid grid-cols-7 gap-4 border p-4 mb-3 rounded-lg items-center"
@@ -236,11 +233,11 @@ export default function KeranjangPage() {
                 <input
                   type="checkbox"
                   checked={
-                    selectProduk.length === keranjang.length &&
-                    keranjang.length > 0
+                    keranjang?.items?.length > 0 &&
+                    selectProduk.length === keranjang.items.length
                   }
                   onChange={(e) => handleSelectAll(e.target.checked)}
-                />{" "}
+                />
                 Pilih Semua
               </div>
 

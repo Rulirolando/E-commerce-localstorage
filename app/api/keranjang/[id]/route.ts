@@ -3,10 +3,11 @@ import { prisma } from "@/lib/prisma";
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const cartItemId = Number(params.id);
+    const { id } = await params;
+    const cartItemId = Number(id);
 
     await prisma.cartItem.delete({
       where: { id: cartItemId },
