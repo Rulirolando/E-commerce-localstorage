@@ -107,18 +107,18 @@ export default function SearchProduk() {
     setKategori(""); // reset kategori saat search
   }, [searchParams]);
 
-  if (!loading) return <p>Memuat...</p>;
+  if (!loading) return <p className="dark:text-white">Memuat...</p>;
 
   return (
     <>
       {/* Konten */}
-      <div className="flex m-0 w-full gap-2 bg-[#F3F4F6]">
+      <div className="flex m-0 w-full gap-2 bg-[#F3F4F6] dark:bg-slate-950 transition-colors duration-300">
         <div className="p-2 space-y-2 w-full">
           {/* Filter Section */}
           <div className="flex flex-wrap gap-4">
             {/* Filter Warna */}
             <select
-              className="border border-gray-300 rounded-xl px-3 py-2"
+              className="border dark:border-slate-700 dark:bg-slate-800 dark:text-white border-gray-300 rounded-xl px-3 py-2"
               value={warna}
               onChange={(e) => {
                 setWarna(e.target.value);
@@ -134,7 +134,7 @@ export default function SearchProduk() {
 
             {/* Filter Ukuran */}
             <select
-              className="border border-gray-300 rounded-xl px-3 py-2"
+              className="border dark:border-slate-700 dark:bg-slate-800 dark:text-white border-gray-300 rounded-xl px-3 py-2"
               value={ukuran}
               onChange={(e) => {
                 setUkuran(e.target.value);
@@ -149,7 +149,7 @@ export default function SearchProduk() {
 
             {/* Filter Lokasi */}
             <select
-              className="border border-gray-300 rounded-xl px-3 py-2"
+              className="border border-gray-300  dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-xl px-3 py-2"
               value={lokasi}
               onChange={(e) => {
                 setLokasi(e.target.value);
@@ -162,7 +162,7 @@ export default function SearchProduk() {
               <option value="yogyakarta">Yogyakarta</option>
             </select>
             <select
-              className="border border-gray-300 rounded-xl px-1 py-2 text-center"
+              className="border border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-xl px-1 py-2 text-center"
               value={kategori}
               onChange={(e) => {
                 setKategori(e.target.value);
@@ -184,7 +184,7 @@ export default function SearchProduk() {
                 produkChosen
                   ? "col-span-5 translate-x-0 opacity-100"
                   : "col-span-6 translate-x-0 opacity-100"
-              } flex flex-wrap items-start justify-center h-full bg-blue-200 rounded-2xl`}
+              } flex flex-wrap items-start justify-center h-full bg-blue-200 dark:bg-slate-900 rounded-2xl`}
             >
               {produkList.length > 0 ? (
                 filteredProduk.map((p) => (
@@ -207,7 +207,7 @@ export default function SearchProduk() {
                   />
                 ))
               ) : (
-                <div className="p-10 text-center">
+                <div className="p-10 text-center dark:text-white">
                   <p>Produk Tidak Ditemukan!</p>
                 </div>
               )}

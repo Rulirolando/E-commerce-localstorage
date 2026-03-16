@@ -261,13 +261,13 @@ export default function ProdukDetail({ produkChose }) {
   }, [produkChose]);
 
   if (!produkChose || !selectedProduk) {
-    return <div>Loading produk...</div>;
+    return <div className="dark:text-white">Loading produk...</div>;
   }
 
   return (
     <>
       <Navbar currentUser={currentUser} />
-      <div className="grid grid-cols-2 w-full bg-blue-100">
+      <div className="grid grid-cols-2 w-full bg-blue-100 dark:bg-slate-900 transition-colors duration-300">
         <div className="col-span-1 w-full h-full">
           <div className="relative flex flex-col justify-self-center rounded-lg mt-4 w-1/2">
             <div className="relative aspect-4/3 w-full">
@@ -292,7 +292,7 @@ export default function ProdukDetail({ produkChose }) {
                     className={`object-cover rounded-lg w-16 h-16  border-2 cursor-pointer ${
                       selectedImage === img
                         ? "border-blue-500"
-                        : "border-transparent"
+                        : "border-transparent dark:border-slate-700"
                     }`}
                     onClick={() => {
                       setSelectedImage(img);
@@ -305,7 +305,7 @@ export default function ProdukDetail({ produkChose }) {
             </div>
           </div>
         </div>
-        <div className="col-span-1 w-3/4">
+        <div className="col-span-1 w-3/4 text-black dark:text-white">
           <div className="text-4xl font-light-semibold mt-8">
             <p className="">{capitalizeFirst(produkChose.nama)}</p>
           </div>
@@ -325,7 +325,7 @@ export default function ProdukDetail({ produkChose }) {
                 onMouseEnter={() => {
                   setSelectedImage(p.images?.[0]?.img ?? null);
                 }}
-                className={`px-2 py-1 border rounded-md  cursor-pointer transition-all duration-200 ${
+                className={`px-2 py-1 border rounded-md  cursor-pointer transition-all duration-200 dark:border-slate-600 ${
                   selectedProduk.warna === p.warna
                     ? "bg-blue-700 text-white"
                     : ""
@@ -357,10 +357,10 @@ export default function ProdukDetail({ produkChose }) {
                 <button
                   key={index}
                   disabled={!isAvailable}
-                  className={`px-2 py-1 border rounded-lg cursor-pointer transition-all duration-200 ${
+                  className={`px-2 py-1 border rounded-lg transition-all duration-200 dark:border-slate-600 cursor-pointer ${
                     selectedProduk.ukuran === ukuran
                       ? "bg-blue-700 text-white"
-                      : ""
+                      : "bg-white dark:bg-slate-800"
                   } ${!isAvailable ? "opacity-40 cursor-not-allowed" : ""}`}
                   onClick={() => handleukuran(ukuran)}
                 >
@@ -378,13 +378,13 @@ export default function ProdukDetail({ produkChose }) {
               value={selectedProduk.jumlah ?? 0}
               disabled={!selectedProduk.ukuran || !selectedProduk.warna}
               onClick={() => handlejumlah(selectedProduk.jumlah - 1)}
-              className="px-3 py-2 bg-gray-200 rounded-lg text-xl font-bold hover:bg-gray-300"
+              className="px-3 py-2 bg-gray-200 rounded-lg text-xl font-bold hover:bg-gray-300 dark:bg-slate-700 dark:text-white cursor-pointer"
             >
               -
             </button>
 
             {/* Angka */}
-            <div className="px-4 py-2 bg-white border rounded-lg text-lg font-semibold min-w-10 text-center">
+            <div className="px-4 py-2 bg-white dark:bg-slate-800  dark:border-slate-600 border rounded-lg text-lg font-semibold min-w-10 text-center">
               {selectedProduk.jumlah}
             </div>
 
@@ -397,7 +397,7 @@ export default function ProdukDetail({ produkChose }) {
                 selectedProduk.jumlah >= selectedProduk.stok
               }
               onClick={() => handlejumlah(selectedProduk.jumlah + 1)}
-              className="px-3 py-2 bg-gray-200 rounded-lg text-xl font-bold hover:bg-gray-300"
+              className="px-3 py-2 bg-gray-200 dark:bg-slate-700 dark:text-white rounded-lg text-xl font-bold hover:bg-gray-300 cursor-pointer"
             >
               +
             </button>
@@ -428,8 +428,8 @@ export default function ProdukDetail({ produkChose }) {
             </button>
           </div>
 
-          <div className="relative w-1/2 h-16 border mt-3 rounded-lg">
-            <div className="absolute top-1 left-1 w-14 h-14 border rounded-full flex items-center justify-center">
+          <div className="relative w-1/2 h-16 border dark:border-slate-600 dark:bg-slate-800 mt-3 rounded-lg">
+            <div className="absolute top-1 left-1 w-14 h-14 border dark:border-slate-600 rounded-full flex items-center justify-center">
               <p className="text-sm font-semibold ">Profile</p>
             </div>
             <div className="absolute w-1/2 h-1/2 left-16 top-1/4 flex items-center">
@@ -441,8 +441,8 @@ export default function ProdukDetail({ produkChose }) {
           </div>
         </div>
       </div>
-      <div className="flex flex-col w-full bg-blue-200">
-        <div className="m-4 bg-blue-100 shadow-lg rounded-md p-2">
+      <div className="flex flex-col w-full bg-blue-200 dark:bg-slate-950 transition-colors duration-300">
+        <div className="m-4 bg-blue-100 shadow-lg rounded-md p-2 text-black dark:text-white dark:bg-slate-800">
           <p className="text-4xl font-semibold mt-3">Deskripsi Produk</p>
           <p className="text-lg font-light mt-2 text-justify leading-relaxed mx-2">
             {capitalizeFirst(produkChose.deskripsi)} Lorem ipsum dolor sit amet,
@@ -469,8 +469,8 @@ export default function ProdukDetail({ produkChose }) {
           </p>
         </div>
       </div>
-      <div className="w-full">
-        <div className="m-4 bg-blue-100 shadow-lg rounded-md p-2">
+      <div className="w-full dark:bg-slate-950 transition-colors duration-300">
+        <div className="m-4 bg-blue-100 shadow-lg rounded-md p-2 dark:bg-slate-800 text-black dark:text-white">
           <h1 className="text-4xl font-semibold mt-3">Komentar</h1>
           <p className="text-lg font-light mt-2">{produkChose.comment}</p>
         </div>

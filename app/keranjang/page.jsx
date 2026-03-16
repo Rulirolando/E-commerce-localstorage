@@ -156,9 +156,12 @@ export default function KeranjangPage() {
 
   if (status === "loading") {
     return (
-      <div className="p-6">
-        <h1 className="text-2xl font-bold">🛒 Keranjang</h1>
-        <p>Memuat...</p>
+      <div className="min-h-screen bg-white dark:bg-slate-950 transition-colors duration-300">
+        <Navbar currentUser={currentUser} />
+        <div className="p-6">
+          <h1 className="text-2xl font-bold dark:text-white">🛒 Keranjang</h1>
+          <p className="dark:text-gray-400">Memuat sesi...</p>
+        </div>
       </div>
     );
   }
@@ -171,17 +174,19 @@ export default function KeranjangPage() {
   return (
     <>
       <Navbar currentUser={currentUser} />
-      <div className="p-6">
-        <h1 className="text-2xl font-bold mb-4">🛒 Keranjang Belanja</h1>
+      <div className="min-h-screen p-6 dark:bg-slate-950 transition-colors duration-300">
+        <h1 className="text-2xl font-bold mb-4 dark:text-white">
+          🛒 Keranjang Belanja
+        </h1>
 
         {!keranjang || keranjang.items?.length === 0 ? (
-          <p>Keranjang kosong</p>
+          <p className="dark:text-gray-400">Keranjang kosong</p>
         ) : (
           <>
             {keranjang?.items?.map((item) => (
               <div
                 key={item.id}
-                className="grid grid-cols-7 gap-4 border p-4 mb-3 rounded-lg items-center"
+                className="grid grid-cols-7 gap-4 border p-4 mb-3 rounded-lg items-center dark:border-slate-700 dark:bg-slate-900 dark:text-white transition-colors"
               >
                 <div className="col-span-2 flex gap-3">
                   <input
@@ -199,7 +204,7 @@ export default function KeranjangPage() {
                   <p className="font-semibold">{item.variant.product.nama}</p>
                 </div>
 
-                <div>
+                <div className="text-sm dark:text-gray-300">
                   Warna: {item.variant.warna}
                   <br />
                   Ukuran: {item.ukuran}
@@ -211,7 +216,7 @@ export default function KeranjangPage() {
 
                 <div className="text-center">{item.jumlah}</div>
 
-                <div className="text-center font-bold">
+                <div className="text-center font-bold dark:text-blue-400">
                   Rp{" "}
                   {(item.variant.harga * item.jumlah).toLocaleString("id-ID")}
                 </div>
@@ -228,7 +233,7 @@ export default function KeranjangPage() {
             ))}
 
             {/* Footer */}
-            <div className="flex justify-between items-center border p-4 rounded bg-gray-100 sticky bottom-2">
+            <div className="flex justify-between items-center border p-4 rounded bg-gray-100 sticky bottom-2 dark:border-slate-700 dark:bg-slate-800 dark:text-white transition-colors">
               <div>
                 <input
                   type="checkbox"
@@ -242,8 +247,10 @@ export default function KeranjangPage() {
               </div>
 
               <div className="flex gap-4 items-center">
-                <p>Total ({selectProduk.length})</p>
-                <p className="font-bold">
+                <p className="dark:text-gray-300">
+                  Total ({selectProduk.length})
+                </p>
+                <p className="font-bold text-xl text-blue-700 dark:text-blue-400">
                   Rp {totalHarga.toLocaleString("id-ID")}
                 </p>
                 <button

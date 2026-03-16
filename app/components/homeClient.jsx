@@ -99,7 +99,7 @@ export default function Home({ currentUser }) {
 
   return (
     <>
-      <div className="w-full bg-blue-100">
+      <div className="w-full bg-blue-100 dark:bg-slate-950 transition-colors duration-300 min-h-screen">
         {" "}
         <Navbar className="fixed z-50" currentUser={currentUser} />
         <div className="relative w-full h-1/2">
@@ -108,7 +108,7 @@ export default function Home({ currentUser }) {
             alt="logo"
             width={100}
             height={100}
-            className="w-full h-1/2 object-cover"
+            className="w-full h-1/2 object-cover dark:brightness-75 transition-all"
           ></Image>
           <div className="absolute top-1/4 left-30 w-1/2 space-y-4 text-white">
             <h1 className="text-5xl font-bold">
@@ -121,7 +121,7 @@ export default function Home({ currentUser }) {
             </p>
           </div>
         </div>
-        <h1 className="text-center font-bold text-5xl mt-12">
+        <h1 className="text-center font-bold text-5xl mt-12 dark:text-white transition-colors text-slate-900">
           Kategori Populer
         </h1>
         <p className="text-center mt-4">
@@ -131,33 +131,26 @@ export default function Home({ currentUser }) {
           {tampilkanKategori}
         </div>
         {/* BUTTON LIHAT SEMUA */}
-        {!showAllKategori === true ? (
-          <button
-            className="flex justify-self-center mt-7 px-4 py-2 text-blue-400 border-2 border-blue-700  shadow-blue-500 rounded-lg hover:bg-blue-300 text-center cursor-pointer transition translate hover:-translate-y-1 hover:scale-105 duration-300"
-            onClick={() => setShowAll(true)}
-          >
-            Lihat Semua
-          </button>
-        ) : (
-          <button
-            className="flex justify-self-center mt-7 px-4 py-2  text-blue-400 border-2 border-blue-700  shadow-blue-500 rounded-lg hover:bg-blue-300 text-center cursor-pointer transition translate hover:-translate-y-1 hover:scale-105 duration-300"
-            onClick={() => setShowAll(false)}
-          >
-            Lihat Lebih Sedikit
-          </button>
-        )}
-        <h1 className="text-center font-bold text-5xl mt-12">Produk Terbaru</h1>
+        <button
+          className="flex justify-self-center mt-7 px-4 py-2 text-blue-400 dark:text-blue-400 border-2 border-blue-700  shadow-blue-500 rounded-lg hover:bg-blue-300 text-center cursor-pointer transition translate hover:-translate-y-1 hover:scale-105 duration-300"
+          onClick={() => setShowAll(!showAllKategori)}
+        >
+          {showAllKategori ? "Lihat Lebih Sedikit" : "Lihat Semua"}
+        </button>
+        <h1 className="text-center font-bold text-5xl mt-12 dark:text-white">
+          Produk Terbaru
+        </h1>
         <p className="text-center mt-4">
           Jelajahi berbagai produk pilihan kami
         </p>
         <div className="w-full flex justify-center mt-7">
-          <div className="border-gray-100 shadow-lg rounded-2xl px-1 flex">
+          <div className="bg-white dark:bg-slate-800 dark:border-slate-700 transition-colors border-gray-100 shadow-lg rounded-2xl px-1 flex">
             <button
               onClick={() => setRecentProduk("terbaru")}
               className={`border rounded-2xl px-4 ${
                 recentProduk === "terbaru" &&
                 "bg-blue-400 transition-colors duration-300 "
-              } border-gray-400 cursor-pointer`}
+              } border-gray-400 cursor-pointer dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700`}
             >
               Terbaru
             </button>
@@ -166,7 +159,7 @@ export default function Home({ currentUser }) {
               className={`border rounded-2xl px-4 ${
                 recentProduk === "terlaris" &&
                 "bg-blue-400 transition-colors duration-300"
-              } border-gray-400 cursor-pointer`}
+              } border-gray-400 cursor-pointer dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700`}
             >
               Terlaris
             </button>

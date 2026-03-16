@@ -114,7 +114,13 @@ export default function JualPage() {
     }
   };
 
-  if (status === "loading") return <p>Loading...</p>;
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-white dark:bg-slate-950 p-6 flex items-center justify-center">
+        <p className="dark:text-white animate-pulse text-lg">Memuat data...</p>
+      </div>
+    );
+  }
   function capitalizeFirst(text) {
     if (!text) return "";
     return text.charAt(0).toUpperCase() + text.slice(1);
@@ -122,113 +128,127 @@ export default function JualPage() {
 
   return (
     <>
-      <Navbar currentUser={currentUser} />
-      <div className="p-6 max-w-3xl mx-auto">
-        <h1 className="text-2xl font-bold mb-4">{`Jual produk kamu ${capitalizeFirst(
-          currentUser.user.name,
-        )}`}</h1>
+      <div className="min-h-screen bg-white dark:bg-slate-950 transition-colors duration-300 w-full">
+        <Navbar currentUser={currentUser} />
+        <div className="p-6 max-w-3xl mx-auto">
+          <h1 className="text-2xl font-bold mb-4 dark:text-white">{`Jual produk kamu ${capitalizeFirst(
+            currentUser.user.name,
+          )}`}</h1>
 
-        {/* FORM PRODUK */}
-        <div className="space-y-3 bg-blue-100 p-4 rounded-xl">
-          <input
-            placeholder="Nama produk"
-            className="p-2 w-full border rounded"
-            value={form.nama}
-            onChange={(e) => setForm({ ...form, nama: e.target.value })}
-          />
+          {/* FORM PRODUK */}
+          <div className="space-y-3 bg-blue-100 p-4 rounded-xl dark:bg-slate-900 transition-colors shadow-sm">
+            <input
+              placeholder="Nama produk"
+              className="p-2 w-full border rounded dark:bg-slate-800 dark:border-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+              value={form.nama}
+              onChange={(e) => setForm({ ...form, nama: e.target.value })}
+            />
 
-          <div className="p-4 w-full max-w-xl">
-            <label className="font-semibold text-lg">
-              Pilih Kategori Produk
-            </label>
-            <select
-              className="w-full p-3 mt-2 border rounded-lg"
-              value={form.kategori}
-              onChange={(e) => setForm({ ...form, kategori: e.target.value })}
-            >
-              <option value="">-- Pilih Kategori --</option>
-              {Object.keys(kategoriList).map((kategori) => (
-                <option key={kategori} value={kategori}>
-                  {kategori}
-                </option>
-              ))}
-            </select>
+            <div className="p-4 w-full max-w-xl">
+              <label className="font-semibold text-lg dark:text-gray-300">
+                Pilih Kategori Produk
+              </label>
+              <select
+                className="w-full p-3 mt-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700 dark:text-white outline-none"
+                value={form.kategori}
+                onChange={(e) => setForm({ ...form, kategori: e.target.value })}
+              >
+                <option value="">-- Pilih Kategori --</option>
+                {Object.keys(kategoriList).map((kategori) => (
+                  <option key={kategori} value={kategori}>
+                    {kategori}
+                  </option>
+                ))}
+              </select>
 
-            {form.kategori && (
-              <div className="mt-4 p-4 border rounded-lg bg-gray-100">
-                <h2 className="font-bold text-xl">{form.kategori}</h2>
-                <p className="mt-2 text-gray-700">
-                  {kategoriList[form.kategori].deskripsi}
-                </p>
+              {form.kategori && (
+                <div className="mt-4 p-4 border rounded-lg bg-gray-100 dark:bg-slate-800/50 backdrop-blur-sm transition-colors">
+                  <h2 className="font-bold text-xl dark:text-blue-400">
+                    {form.kategori}
+                  </h2>
+                  <p className="mt-2 text-gray-700 dark:text-gray-300">
+                    {kategoriList[form.kategori].deskripsi}
+                  </p>
 
-                <h3 className="font-semibold mt-3">Contoh Produk:</h3>
-                <ul className="list-disc ml-5 text-gray-800">
-                  {kategoriList[form.kategori].contoh.map((item, i) => (
-                    <li key={i}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+                  <h3 className="font-semibold mt-3 dark:text-white">
+                    Contoh Produk:
+                  </h3>
+                  <ul className="list-disc ml-5 text-gray-800 dark:text-gray-400">
+                    {kategoriList[form.kategori].contoh.map((item, i) => (
+                      <li key={i}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            <textarea
+              placeholder="Deskripsi"
+              className="p-2 w-full border rounded dark:bg-slate-800 dark:border-slate-700 dark:text-white outline-none"
+              value={form.deskripsi}
+              onChange={(e) => setForm({ ...form, deskripsi: e.target.value })}
+            />
+
+            <input
+              placeholder="Lokasi"
+              className="p-2 w-full border rounded dark:bg-slate-800 dark:border-slate-700 dark:text-white outline-none"
+              value={form.lokasi}
+              onChange={(e) => setForm({ ...form, lokasi: e.target.value })}
+            />
           </div>
 
-          <textarea
-            placeholder="Deskripsi"
-            className="p-2 w-full border rounded"
-            value={form.deskripsi}
-            onChange={(e) => setForm({ ...form, deskripsi: e.target.value })}
-          />
+          <h2 className="text-lg font-bold mt-4 dark:text-white">
+            Variasi Produk
+          </h2>
 
-          <input
-            placeholder="Lokasi"
-            className="p-2 w-full border rounded"
-            value={form.lokasi}
-            onChange={(e) => setForm({ ...form, lokasi: e.target.value })}
-          />
-        </div>
+          {/* FORM VARIASI */}
+          <div className="space-y-3 bg-blue-50 p-4 rounded-xl mt-2 dark:bg-slate-900 dark:border-slate-800 ">
+            <input
+              placeholder="Warna"
+              className="p-2 w-full border rounded dark:bg-slate-800 dark:border-slate-700 dark:text-white outline-none"
+              value={variasi.warna}
+              onChange={(e) =>
+                setVariasi({ ...variasi, warna: e.target.value })
+              }
+            />
 
-        <h2 className="text-lg font-bold mt-4">Variasi Produk</h2>
+            <input
+              placeholder="Harga"
+              type="number"
+              className="p-2 w-full border rounded dark:bg-slate-800 dark:border-slate-700 dark:text-white outline-none"
+              value={variasi.harga}
+              onChange={(e) =>
+                setVariasi({ ...variasi, harga: e.target.value })
+              }
+            />
 
-        {/* FORM VARIASI */}
-        <div className="space-y-3 bg-blue-50 p-4 rounded-xl mt-2">
-          <input
-            placeholder="Warna"
-            className="p-2 w-full border rounded"
-            value={variasi.warna}
-            onChange={(e) => setVariasi({ ...variasi, warna: e.target.value })}
-          />
+            <input
+              placeholder="Stok"
+              type="number"
+              className="p-2 w-full border rounded dark:bg-slate-800 dark:border-slate-700 dark:text-white outline-none"
+              value={variasi.stok}
+              onChange={(e) => setVariasi({ ...variasi, stok: e.target.value })}
+            />
 
-          <input
-            placeholder="Harga"
-            type="number"
-            className="p-2 w-full border rounded"
-            value={variasi.harga}
-            onChange={(e) => setVariasi({ ...variasi, harga: e.target.value })}
-          />
-
-          <input
-            placeholder="Stok"
-            type="number"
-            className="p-2 w-full border rounded"
-            value={variasi.stok}
-            onChange={(e) => setVariasi({ ...variasi, stok: e.target.value })}
-          />
-
-          <input
-            placeholder="Ukuran (pisahkan dengan koma: S,M,L)"
-            className="p-2 w-full border rounded"
-            value={variasi.ukuran}
-            onChange={(e) => setVariasi({ ...variasi, ukuran: e.target.value })}
-          />
-
-          <DragDropUploader
-            onUpload={(file) => {
-              const reader = new FileReader();
-              reader.onloadend = () => {
-                setVariasi((prev) => ({ ...prev, gambar: reader.result }));
-              };
-              reader.readAsDataURL(file);
-            }}
-          />
+            <input
+              placeholder="Ukuran (pisahkan dengan koma: S,M,L)"
+              className="p-2 w-full border rounded dark:bg-slate-800 dark:border-slate-700 dark:text-white outline-none"
+              value={variasi.ukuran}
+              onChange={(e) =>
+                setVariasi({ ...variasi, ukuran: e.target.value })
+              }
+            />
+            <div className="dark:bg-slate-800 rounded-lg p-2"></div>
+            <DragDropUploader
+              onUpload={(file) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                  setVariasi((prev) => ({ ...prev, gambar: reader.result }));
+                };
+                reader.readAsDataURL(file);
+              }}
+            />
+          </div>
 
           {/* Preview gambar setelah upload */}
           {variasi.gambar && (
@@ -260,7 +280,7 @@ export default function JualPage() {
                   gambar: "",
                 });
               }}
-              className="px-3 py-2 border rounded"
+              className="px-3 py-2 border border-gray-300 rounded dark:border-slate-600 dark:text-gray-300 dark:hover:bg-slate-800 transition-colors hover:bg-gray-100"
             >
               Reset Variasi
             </button>
@@ -269,12 +289,15 @@ export default function JualPage() {
 
         {/* LIST VARIASI */}
         {variasiList.length > 0 && (
-          <div className="mt-3">
-            <h3 className="font-bold">Variasi Ditambahkan:</h3>
+          <div className="mt-3 dark:bg-slate-900 dark:border-slate-800 w-1/2 flex justify-self-center">
+            <h3 className="font-bold dark:text-white">Variasi Ditambahkan:</h3>
             <ul className="list-disc ml-5">
               {variasiList.map((v, index) => (
-                <li key={index} className="flex items-center gap-3">
-                  <div className="flex-1">
+                <li
+                  key={index}
+                  className="flex items-center gap-3 dark:bg-slate-800"
+                >
+                  <div className="flex-1 dark:text-blue-400">
                     {v.warna} — Rp{v.harga.toLocaleString()} — stok {v.stok}
                   </div>
                   {v.gambar?.[0] && (
@@ -287,7 +310,7 @@ export default function JualPage() {
                     />
                   )}
                   <button
-                    className="text-sm text-red-600"
+                    className="text-sm text-red-500 hover:text-red-700"
                     onClick={() => hapusVariasi(index)}
                   >
                     Hapus
@@ -300,36 +323,32 @@ export default function JualPage() {
 
         <button
           onClick={simpanProduk}
-          className="mt-4 w-full bg-green-600 text-white p-3 rounded-xl"
+          className="mt-4 w-1/2 bg-green-600 text-white p-3 rounded-xl flex justify-self-center justify-center"
         >
           Simpan Produk
         </button>
 
-        <button
-          onClick={() => {
-            localStorage.removeItem("produkDB");
-            setProdukList([]);
-          }}
-        >
-          Hapus Semua Produk
-        </button>
-
         {/* DAFTAR PRODUK */}
-        <h2 className="text-xl font-bold mt-8">Produk Kamu</h2>
+        <h2 className="text-xl font-bold mt-8 dark:text-white">Produk Kamu</h2>
 
         <div className="mt-4 space-y-4">
           {produkList
             .filter((p) => p.ownerId === currentUser.user.id)
             .map((p) => (
-              <div key={p.id} className="p-4 border rounded-xl bg-white shadow">
-                <h3 className="font-bold">{p.nama}</h3>
-                <p className="text-sm text-gray-600">{p.kategori}</p>
+              <div
+                key={p.id}
+                className="p-4 border rounded-xl bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm transition-colors"
+              >
+                <h3 className="font-bold dark:text-white">{p.nama}</h3>
+                <p className="text-sm  dark:bg-blue-900 text-blue-700 dark:text-blue-200">
+                  {p.kategori}
+                </p>
 
                 <div className="flex gap-2 mt-2 overflow-auto">
                   {p.variations?.map((v) => (
                     <div
                       key={v.id}
-                      className="w-20 h-20 rounded overflow-hidden border"
+                      className="w-20 h-20 rounded overflow-hidden border dark:border-slate-700"
                     >
                       {v.images?.[0]?.img ? (
                         <Image
@@ -340,7 +359,7 @@ export default function JualPage() {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                        <div className="w-full h-full flex items-center justify-center text-gray-400 dark:bg-slate-800">
                           No Image
                         </div>
                       )}
@@ -348,7 +367,7 @@ export default function JualPage() {
                   ))}
                 </div>
 
-                <p className="text-sm mt-2">{p.deskripsi}</p>
+                <p className="text-sm mt-2 dark:text-gray-400">{p.deskripsi}</p>
               </div>
             ))}
         </div>

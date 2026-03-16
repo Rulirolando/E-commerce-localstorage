@@ -63,55 +63,55 @@ export default function ProfileEditModal({ user, setUser, onClose }) {
     reader.readAsDataURL(file);
   };
 
+  const inputFilter = (label, placeholder, value, type, onChange) => {
+    return (
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-slate-300">
+          {label}
+        </label>
+        <input
+          className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+          placeholder={placeholder}
+          value={value}
+          type={type}
+          onChange={onChange}
+        />
+      </div>
+    );
+  };
+
   return (
-    <div className="fixed inset-0 z-50 bg-black/30 flex justify-center items-center backdrop-blur-sm">
-      <div className="bg-white p-2 rounded-xl shadow-2xl w-full h-fit max-w-md space-y-6">
-        <h2 className="text-2xl font-bold text-gray-800 text-center">
+    <div className="fixed inset-0 z-50 bg-black/30 flex justify-center items-center backdrop-blur-sm px-4 transition-all">
+      <div className="bg-white p-2 rounded-xl shadow-2xl w-full h-fit max-w-md space-y-6 border-transparent dark:bg-slate-900 dark:border-slate-800 transition-colors">
+        <h2 className="text-2xl font-bold text-gray-800 text-center dark:text-white">
           Edit Profile
         </h2>
 
         {/* Upload Foto */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-slate-300">
             Foto Profil
           </label>
-          <DragDropUploader onUpload={updateFoto} />
+          <div className="dark:bg-slate-800 rounded-lg p-1">
+            <DragDropUploader onUpload={updateFoto} />
+          </div>
         </div>
 
         {/* Form Fields */}
         <div className="space-y-1">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Nama
-            </label>
-            <input
-              className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              placeholder="Nama Lengkap"
-              value={nama}
-              type="text"
-              onChange={(e) => setNama(e.target.value)}
-            />
-          </div>
+          {inputFilter("Nama", "Nama Lengkap", nama, "text", (e) =>
+            setNama(e.target.value),
+          )}
+          {inputFilter("Email", "email@contoh.com", email, "email", (e) =>
+            setEmail(e.target.value),
+          )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <input
-              className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              placeholder="email@contoh.com"
-              value={email}
-              type="email"
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300">
               Telepon
             </label>
             <input
-              className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-slate-800 dark:border-slate-700 dark:text-white"
               placeholder="08xxxxxxxxxx"
               type="text"
               inputMode="numeric"
@@ -125,23 +125,24 @@ export default function ProfileEditModal({ user, setUser, onClose }) {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
+            {}
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300">
                 Tanggal Lahir
               </label>
               <input
                 type="date"
-                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-slate-800 dark:border-slate-700 dark:text-white"
                 value={tanggalLahir}
                 onChange={(e) => setTanggalLahir(e.target.value)}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300">
                 Gender
               </label>
               <select
-                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-slate-800 dark:border-slate-700 dark:text-white"
                 value={gender}
                 onChange={(e) => setGender(e.target.value)}
               >

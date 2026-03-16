@@ -262,13 +262,157 @@ export default function ProfilePage({ userId, currentUser }) {
     fetchFavorites();
   }, [currentUser]);
 
+  const menuItems = [
+    {
+      id: "profile",
+      label: "Profile",
+      icon: <MdAccountCircle size={30} />,
+      show: true,
+    },
+    {
+      id: "pesanan",
+      label: "Pesanan saya",
+      icon: <IoBasket size={30} />,
+      show: currentUser?.user.id === userId,
+    },
+    {
+      id: "produk",
+      label: `Produk ${currentUser?.user.id === userId ? "saya" : username}`,
+      icon: <TbBrandProducthunt size={30} />,
+      show: true,
+    },
+    {
+      id: "favorit",
+      label: "Favorit",
+      icon: <FaHeart size={30} />,
+      show: currentUser?.user.id === userId,
+    },
+    {
+      id: "alamat",
+      label: "Alamat",
+      icon: <FaLocationDot size={30} />,
+      show: true,
+    },
+    {
+      id: "pengaturan",
+      label: "Pengaturan",
+      icon: <IoIosSettings size={30} />,
+      show: currentUser?.user.id === userId,
+    },
+  ];
+
+  const handleLogout = async () => {
+    setActiveMenu("keluar");
+    if (confirm("Apakah Anda yakin ingin keluar?")) {
+      await signOut({ callbackUrl: "/", redirect: true });
+    }
+  };
+
+  const ButtonPesanan = ({ target, label }) => (
+    <button
+      onClick={() => setActivePesananMenu(target)}
+      className={`cursor-pointer border p-1 px-2 rounded-lg bg-blue-950 text-gray-200 transition-all duration-200 ${
+        activePesananMenu === target
+          ? "bg-blue-600 dark:bg-blue-500 text-white border-blue-400 shadow-md"
+          : "bg-blue-100 dark:bg-slate-800 text-blue-900 dark:text-slate-300 border-gray-300 dark:border-slate-700 hover:bg-blue-300 dark:hover:bg-slate-700"
+      } `}
+    >
+      {label}
+    </button>
+  );
+
+  const filteredProduk = (condisi) => {
+    return (
+      <>
+        <div className="w-full h-full  ">
+          {produkBeli.filter(condisi).map((produk, index) => (
+            <div
+              key={index}
+              className="w-full dark:bg-slate-800 transition-colors bg-blue-200 ml-2 mt-5 rounded-2xl p-4 shadow-2xs"
+            >
+              <div className="flex w-full justify-between items-center">
+                <div className="w-1/2 flex flex-row dark:text-slate-100">
+                  {" "}
+                  <IoBasket size={30} />{" "}
+                  <div className="flex flex-col ml-3">
+                    <h1>ID: {produk.produkId}</h1>
+                    <p className="font-light text-sm">
+                      Tanggal:{" "}
+                      {new Date(produk.createdAt).toLocaleString("id-ID")}
+                    </p>
+                  </div>
+                </div>
+
+                <p className="border-gray-100 rounded-lg px-2 text-[12px] text-light py-0.5 bg-blue-400 dark:bg-blue-600 ">
+                  {produk.status}
+                </p>
+              </div>
+              <hr className="mt-5 dark:border-slate-700" />
+              <div className="flex justify-between w-full mt-5 items-center">
+                <div className="flex items-center">
+                  <Image
+                    src={produk.gambar}
+                    width={100}
+                    height={100}
+                    alt="foto barang"
+                    className="object-cover w-30 h-30 rounded-md"
+                  />
+                  <div className="flex flex-col ml-3 dark:text-slate-200">
+                    <h1 className="font-normal text-sm">{produk.nama}</h1>
+                    <div className="flex items-center space-x-3 ">
+                      <p className="font-normal text-sm">
+                        Rp.{produk.harga.toLocaleString("id-ID")}
+                      </p>
+                      <p className="font-light text-light text-sm">
+                        {produk.jumlah} x
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-col">
+                  <h1 className="text-xs uppercase tracking-wider text-amber-900 dark:text-slate-400">
+                    Total belanja
+                  </h1>
+                  <p className="font-light text-sm dark:text-blue-400">
+                    Rp.
+                    {(produk.jumlah * produk.harga).toLocaleString("id-ID")}
+                  </p>
+
+                  <div className="flex mt-7">
+                    <button className="border-gray-100 bg-blue-500 rounded-lg p-2 dark:bg-blue-700 dark:hover:bg-blue-500">
+                      <Link href={`/produk/${produk.produkId}`}>
+                        {" "}
+                        Lihat detail
+                      </Link>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </>
+    );
+  };
+
+  const profileMenu = (label, input) => (
+    <div className="flex flex-col w-1/2">
+      <span className="text-amber-900 dark:text-slate-400 text-sm mb-1">
+        {label}
+      </span>
+      <div className=" bg-blue-100 border border-gray-300 rounded-md px-2 py-1 w-[90%] dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 shadow-inner">
+        {input}
+      </div>
+    </div>
+  );
+
   if (!user) return <div>User tidak ditemukan</div>;
   return (
     <>
       <Navbar currentUser={currentUser} />
-      <div className="w-full bg-blue-100 flex gap-4 h-auto ">
+      <div className="w-full bg-blue-100 flex gap-4 h-auto dark:bg-slate-900 transition-colors duration-300">
         {/* Kiri */}
-        <div className="sticky top-2 mb-4   w-[250px] bg-blue-200 border-gray-100 ml-32 mt-14 rounded-2xl p-4 h-screen">
+        <div className="sticky top-2 mb-4   w-[250px] bg-blue-200 border-gray-100 ml-32 mt-14 rounded-2xl p-4 h-screen dark:bg-slate-800  transition-colors duration-300 ">
           <div className="flex flex-col items-center">
             {" "}
             <Image
@@ -279,131 +423,63 @@ export default function ProfilePage({ userId, currentUser }) {
               alt="Profile"
               width={50}
               height={50}
-              className="w-16 h-16 rounded-full mb-4"
+              className="w-16 h-16 rounded-full mb-4 border-transparent dark:border-slate-700 shadow-sm"
             />
-            <h2 className=" font-light text-sm text-gray-500">
+            <h2 className=" font-light text-sm text-gray-500 dark:text-slate-400">
               {user.username}
             </h2>
           </div>
 
-          <button
-            onClick={() => setActiveMenu("profile")}
-            className={`flex items-center  mt-8 cursor-pointer ${
-              activeMenu === "profile"
-                ? "bg-blue-300 text-amber-950 border-gray-100"
-                : ""
-            }  p-2 rounded-lg w-[90%] `}
-          >
-            {" "}
-            <MdAccountCircle size={30} />
-            <p className="ml-4 font-bold text-amber-950">Profile</p>
-          </button>
-          <button
-            onClick={() => setActiveMenu("pesanan")}
-            className={`flex items-center  mt-2 cursor-pointer ${
-              activeMenu === "pesanan"
-                ? "bg-blue-300 text-amber-950 border-gray-100"
-                : ""
-            }  p-2 rounded-lg w-[90%] `}
-          >
-            {" "}
-            <IoBasket
-              size={30}
-              className={`${currentUser?.user.id === userId ? "" : "hidden"}`}
-            />
-            <p
-              className={`${currentUser?.user.id === userId ? "" : "hidden"} ml-4 font-bold text-amber-950`}
-            >
-              Pesanan saya
-            </p>
-          </button>
-          <button
-            onClick={() => setActiveMenu("produk")}
-            className={`flex items-center  mt-2 cursor-pointer ${
-              activeMenu === "produk"
-                ? "bg-blue-300 text-amber-950 border-gray-100"
-                : ""
-            }  p-2 rounded-lg w-[90%] `}
-          >
-            {" "}
-            <TbBrandProducthunt size={30} />
-            <p className="ml-4 font-bold text-amber-950">
-              Produk {currentUser?.user.id === userId ? "saya" : username}
-            </p>
-          </button>
-          <button
-            onClick={() => setActiveMenu("favorit")}
-            className={`flex items-center  mt-2 cursor-pointer ${
-              activeMenu === "favorit"
-                ? "bg-blue-300 text-amber-950 border-gray-100"
-                : ""
-            } ${currentUser?.user.id === userId ? "" : "hidden"}  p-2 rounded-lg w-[90%] `}
-          >
-            {" "}
-            <FaHeart size={30} />
-            <p className="ml-4 font-bold text-amber-950">Favorit</p>
-          </button>
-          <button
-            onClick={() => setActiveMenu("alamat")}
-            className={`flex items-center  mt-2 cursor-pointer ${
-              activeMenu === "alamat"
-                ? "bg-blue-300 text-amber-950 border-gray-100"
-                : ""
-            }  p-2 rounded-lg w-[90%] `}
-          >
-            {" "}
-            <FaLocationDot size={30} />
-            <p className="ml-4 font-bold text-amber-950">Alamat</p>
-          </button>
-          <button
-            onClick={() => setActiveMenu("pengaturan")}
-            className={`flex items-center  mt-2 cursor-pointer ${
-              activeMenu === "pengaturan"
-                ? "bg-blue-300 text-amber-950 border-gray-100"
-                : ""
-            } ${currentUser?.user.id === userId ? "" : "hidden"}  p-2 rounded-lg w-[90%] `}
-          >
-            {" "}
-            <IoIosSettings size={30} />
-            <p className="ml-4 font-bold text-amber-950">Pengaturan</p>
-          </button>
+          <div className="flex flex-col">
+            {menuItems.map(
+              (item, index) =>
+                item.show && (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveMenu(item.id)}
+                    className={`flex items-center cursor-pointer p-2 rounded-lg w-[90%] transition-colors 
+              ${index === 0 ? "mt-8" : "mt-2"}
+              ${activeMenu === item.id ? "bg-blue-300 text-amber-950 border-gray-100 dark:bg-blue-600 dark:text-white" : "text-amber-950 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-red-950/30"}
+            `}
+                  >
+                    {item.icon}
+                    <p className="ml-4 font-bold text-amber-950 dark:text-slate-300">
+                      {item.label}
+                    </p>
+                  </button>
+                ),
+            )}
 
-          <button
-            onClick={async () => {
-              setActiveMenu("keluar");
-              const confirmLogout = confirm("Apakah Anda yakin ingin keluar?");
-
-              if (confirmLogout) {
-                await signOut({
-                  callbackUrl: "/",
-                  redirect: true, // Biarkan Auth.js menangani perpindahan halaman
-                });
-              }
-            }}
-            className={`flex items-center mt-2 cursor-pointer ${
-              activeMenu === "keluar"
-                ? "bg-blue-300 text-amber-950 border-gray-100"
-                : ""
-            } ${currentUser?.user.id === userId ? "" : "hidden"} p-2 rounded-lg w-[90%] `}
-          >
-            <RiLogoutBoxRLine size={30} />
-            <p className="ml-4 font-bold text-amber-950">Keluar</p>
-          </button>
+            {currentUser?.user.id === userId && (
+              <button
+                onClick={handleLogout}
+                className={`flex items-center mt-2 cursor-pointer p-2 rounded-lg w-[90%] transition-colors 
+            ${activeMenu === "keluar" ? "bg-blue-300 text-amber-950 dark:bg-blue-600 dark:text-white" : "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"}`}
+              >
+                <RiLogoutBoxRLine size={30} />
+                <p className="ml-4 font-bold text-amber-950 dark:text-slate-300">
+                  Keluar
+                </p>
+              </button>
+            )}
+          </div>
         </div>
+
         {/* Kanan */}
 
         {activeMenu === "profile" && (
           <>
-            <div className="sticky top-2 w-[800px] h-full bg-blue-200 border-gray-100 ml-2 mt-14 rounded-2xl p-4 shadow-2xl">
+            <div className="sticky top-2 w-[800px] h-full bg-blue-200 border-gray-100 ml-2 mt-14 rounded-2xl p-4 shadow-2xl dark:bg-slate-800 transition-colors duration-300">
               <div className="flex justify-between">
-                <h1 className="text-2xl font-semibold">
+                <h1 className="text-2xl font-semibold dark:text-white">
                   Profile
                   {currentUser?.user.id === userId ? "Saya" : ` ${username}`}
                 </h1>
                 <button
                   type="button"
                   onClick={() => setIsEditProfile(true)}
-                  className={`${currentUser?.user.id === userId ? "" : "hidden"} font-semibold border border-blue-500 hover:bg-blue-300 hover:text-amber-950 hover:border-gray-100 p-2 rounded-lg`}
+                  className={`${currentUser?.user.id === userId ? "" : "hidden"} font-semibold border border-blue-500 hover:bg-blue-300 hover:text-amber-950 hover:border-gray-100 p-2 rounded-lg dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-600 dark:hover:text-white
+           transition-all cursor-pointer`}
                 >
                   Edit profile
                 </button>
@@ -419,36 +495,14 @@ export default function ProfilePage({ userId, currentUser }) {
               <div className="w-full mt-10">
                 <div className="flex w-full flex-wrap justify-start space-y-11">
                   {" "}
-                  <div className="flex flex-col w-1/2">
-                    <span>Nama Lengkap</span>
-                    <div className=" bg-blue-100 border border-gray-300 rounded-md px-2 py-1 w-[90%]">
-                      {user.nama}
-                    </div>
-                  </div>
-                  <div className="flex flex-col w-1/2">
-                    <span>Email</span>
-                    <div className=" bg-blue-100 border border-gray-300 rounded-md px-2 py-1 w-[90%]">
-                      {user.email}
-                    </div>
-                  </div>
-                  <div className="flex flex-col w-1/2">
-                    <span>Nomor Telepon</span>
-                    <div className=" bg-blue-100 border border-gray-300 rounded-md px-2 py-1 w-[90%]">
-                      {user.noTelp}
-                    </div>
-                  </div>
-                  <div className="flex flex-col w-1/2">
-                    <span>Tanggal Lahir</span>
-                    <div className="div bg-blue-100 border border-gray-300 rounded-md px-2 py-1 w-[90%]">
-                      {new Date(user.tanggalLahir).toLocaleDateString("id-ID")}
-                    </div>
-                  </div>
-                  <div className="flex flex-col w-1/2">
-                    <span>Jenis Kelamin</span>
-                    <div className="div bg-blue-100 border border-gray-300 rounded-md px-2 py-1 w-[90%]">
-                      {user.jenisKelamin}
-                    </div>
-                  </div>
+                  {profileMenu("Nama Lengkap", user.nama)}
+                  {profileMenu("Email", user.email)}
+                  {profileMenu("Nomor Telepon", user.noTelp)}
+                  {profileMenu(
+                    "Tanggal Lahir",
+                    new Date(user.tanggalLahir).toLocaleDateString("id-ID"),
+                  )}
+                  {profileMenu("Jenis Kelamin", user.jenisKelamin)}
                 </div>
               </div>
             </div>
@@ -458,481 +512,94 @@ export default function ProfilePage({ userId, currentUser }) {
         {activeMenu === "pesanan" && (
           <>
             <div className="w-[800px] h-full mb-4 flex flex-col">
-              <div className="w-full h-full bg-blue-200 border-gray-100 ml-2 mt-14 rounded-2xl p-4 shadow-sm">
+              <div className="w-full h-full bg-blue-200 border-gray-100 ml-2 mt-14 rounded-2xl p-4 shadow-sm dark:bg-slate-800 dark:border-slate-700 transition-colors duration-300">
                 <div className="w-full">
-                  <h1 className="text-2xl font-semibold text-start">
+                  <h1 className="text-2xl font-semibold text-start dark:text-white">
                     Pesanan saya
                   </h1>
                   <div className="flex gap-3 mt-7">
-                    <button
-                      onClick={() => setActivePesananMenu("semuapesanan")}
-                      className="cursor-pointer border p-1 px-2 rounded-lg bg-blue-950 text-gray-200"
-                    >
-                      Semua
-                    </button>
-                    <button
-                      onClick={() =>
-                        setActivePesananMenu("belumdibayarpesanan")
-                      }
-                      className="cursor-pointer border p-1 px-2 rounded-lg bg-blue-950 text-gray-200"
-                    >
-                      Belum dibayar
-                    </button>
-                    <button
-                      onClick={() => setActivePesananMenu("dikemaspesanan")}
-                      className="cursor-pointer border p-1 px-2 rounded-lg bg-blue-950 text-gray-200"
-                    >
-                      Dikemas
-                    </button>
-                    <button
-                      onClick={() => setActivePesananMenu("dikirimpesanan")}
-                      className="cursor-pointer border p-1 px-2 rounded-lg bg-blue-950 text-gray-200"
-                    >
-                      Dikirim
-                    </button>
-                    <button
-                      onClick={() => setActivePesananMenu("selesaipesanan")}
-                      className="cursor-pointer border p-1 px-2 rounded-lg bg-blue-950 text-gray-200"
-                    >
-                      Selesai
-                    </button>
+                    <ButtonPesanan target="semuapesanan" label="Semua" />
+
+                    <ButtonPesanan
+                      target="belumdibayarpesanan"
+                      label="Belum dibayar"
+                    />
+                    <ButtonPesanan target="dikemaspesanan" label="Dikemas" />
+                    <ButtonPesanan target="dikirimpesanan" label="Dikirim" />
+                    <ButtonPesanan target="selesaipesanan" label="Selesai" />
                   </div>
                 </div>
               </div>
               {/* Semua pesanan */}
-              {activePesananMenu === "semuapesanan" && (
-                <>
-                  {" "}
-                  <div className="w-full h-full  ">
-                    {produkBeli
-                      .filter(
-                        (produk) => produk.buyerId === currentUser.user.id,
-                      )
-                      .map((produk, index) => (
-                        <div
-                          key={index}
-                          className="w-full  bg-blue-200 ml-2 mt-5 rounded-2xl p-4 shadow-2xs"
-                        >
-                          <div className="flex w-full justify-between items-center">
-                            <div className="w-1/2 flex flex-row">
-                              {" "}
-                              <IoBasket size={30} />{" "}
-                              <div className="flex flex-col ml-3">
-                                <h1>ID: {produk.produkId}</h1>
-                                <p className="font-light text-sm">
-                                  Tanggal:{" "}
-                                  {new Date(produk.createdAt).toLocaleString(
-                                    "id-ID",
-                                  )}
-                                </p>
-                              </div>
-                            </div>
-
-                            <p className="border-gray-100 rounded-lg px-2 text-[12px] text-light py-0.5 bg-blue-400 ">
-                              {produk.status}
-                            </p>
-                          </div>
-                          <hr className="mt-5" />
-                          <div className="flex justify-between w-full mt-5 items-center">
-                            <div className="flex items-center">
-                              <Image
-                                src={produk.gambar}
-                                width={100}
-                                height={100}
-                                alt="foto barang"
-                                className="object-cover w-30 h-30 rounded-md"
-                              />
-                              <div className="flex flex-col ml-3">
-                                <h1 className="font-normal text-sm">
-                                  {produk.nama}
-                                </h1>
-                                <div className="flex items-center space-x-3 ">
-                                  <p className="font-normal text-sm">
-                                    Rp.{produk.harga.toLocaleString("id-ID")}
-                                  </p>
-                                  <p className="font-light text-light text-sm">
-                                    {produk.jumlah} x
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex flex-col">
-                              <h1>Total belanja</h1>
-                              <p className="font-light text-sm">
-                                Rp.
-                                {(produk.jumlah * produk.harga).toLocaleString(
-                                  "id-ID",
-                                )}
-                              </p>
-
-                              <div className="flex mt-7">
-                                <button className="border-gray-100 bg-blue-500 rounded-lg p-2">
-                                  <Link href={`/produk/${produk.id}`}>
-                                    {" "}
-                                    Lihat detail
-                                  </Link>
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                </>
-              )}
+              {activePesananMenu === "semuapesanan" &&
+                filteredProduk(
+                  (produk) => produk.buyerId === currentUser.user.id,
+                )}
 
               {/* Belum dibayar pesanan */}
-              {activePesananMenu === "belumdibayarpesanan" && (
-                <>
-                  {" "}
-                  <div className="w-full h-full  ">
-                    {produkBeli
-                      .filter(
-                        (produk) =>
-                          produk.status === "Belum dibayar" &&
-                          produk.buyerId === currentUser.user.id,
-                      )
-                      .map((produk, index) => (
-                        <div
-                          key={index}
-                          className="w-full  bg-blue-200 ml-2 mt-5 rounded-2xl p-4 shadow-2xs"
-                        >
-                          <div className="flex w-full justify-between items-center">
-                            <div className="w-1/2 flex flex-row">
-                              {" "}
-                              <IoBasket size={30} />{" "}
-                              <div className="flex flex-col ml-3">
-                                <h1>ID: {produk.produkId}</h1>
-                                <p className="font-light text-sm">
-                                  {new Date(produk.createdAt).toLocaleString(
-                                    "id-ID",
-                                  )}
-                                </p>
-                              </div>
-                            </div>
-
-                            <p className="border-gray-100 rounded-lg px-2 text-[12px] text-light py-0.5 bg-blue-400 ">
-                              {produk.status}
-                            </p>
-                          </div>
-                          <hr className="mt-5" />
-                          <div className="flex justify-between w-full mt-5 items-center">
-                            <div className="flex items-center">
-                              <Image
-                                src={produk.gambar}
-                                width={100}
-                                height={100}
-                                alt="foto barang"
-                                className="object-cover w-30 h-30 rounded-md"
-                              />
-                              <div className="flex flex-col ml-3">
-                                <h1 className="font-normal text-sm">
-                                  {produk.nama}
-                                </h1>
-                                <div className="flex items-center space-x-3 ">
-                                  <p className="font-normal text-sm">
-                                    Rp.{produk.harga.toLocaleString("id-ID")}
-                                  </p>
-                                  <p className="font-light text-light text-sm">
-                                    {produk.jumlah} x
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex flex-col">
-                              <h1>Total belanja</h1>
-                              <p className="font-light text-sm">
-                                Rp.
-                                {(produk.jumlah * produk.harga).toLocaleString(
-                                  "id-ID",
-                                )}
-                              </p>
-
-                              <div className="flex mt-7">
-                                <button className="border-gray-100 bg-blue-500 rounded-lg p-2">
-                                  <Link href={`/produk/${produk.id}`}>
-                                    {" "}
-                                    Lihat detail
-                                  </Link>
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                </>
-              )}
+              {activePesananMenu === "belumdibayarpesanan" &&
+                filteredProduk(
+                  (produk) =>
+                    produk.status === "Belum dibayar" &&
+                    produk.buyerId === currentUser.user.id,
+                )}
               {/* Dikemas pesanan */}
-              {activePesananMenu === "dikemaspesanan" && (
-                <>
-                  {" "}
-                  <div className="w-full h-full  ">
-                    {produkBeli
-                      .filter(
-                        (produk) =>
-                          produk.status === "Dikemas" &&
-                          produk.buyerId === currentUser.user.id,
-                      )
-                      .map((produk, index) => (
-                        <div
-                          key={index}
-                          className="w-full  bg-blue-200 ml-2 mt-5 rounded-2xl p-4 shadow-2xs"
-                        >
-                          <div className="flex w-full justify-between items-center">
-                            <div className="w-1/2 flex flex-row">
-                              {" "}
-                              <IoBasket size={30} />{" "}
-                              <div className="flex flex-col ml-3">
-                                <h1>ID: {produk.produkId}</h1>
-                                <p className="font-light text-sm">
-                                  {new Date(produk.createdAt).toLocaleString(
-                                    "id-ID",
-                                  )}
-                                </p>
-                              </div>
-                            </div>
-
-                            <p className="border-gray-100 rounded-lg px-2 text-[12px] text-light py-0.5 bg-blue-400 ">
-                              {produk.status}
-                            </p>
-                          </div>
-                          <hr className="mt-5" />
-                          <div className="flex justify-between w-full mt-5 items-center">
-                            <div className="flex items-center">
-                              <Image
-                                src={produk.gambar}
-                                width={100}
-                                height={100}
-                                alt="foto barang"
-                                className="object-cover w-30 h-30 rounded-md"
-                              />
-                              <div className="flex flex-col ml-3">
-                                <h1 className="font-normal text-sm">
-                                  {produk.nama}
-                                </h1>
-                                <div className="flex items-center space-x-3 ">
-                                  <p className="font-normal text-sm">
-                                    Rp.{produk.harga.toLocaleString("id-ID")}
-                                  </p>
-                                  <p className="font-light text-light text-sm">
-                                    {produk.jumlah} x
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex flex-col">
-                              <h1>Total belanja</h1>
-                              <p className="font-light text-sm">
-                                Rp.
-                                {(produk.jumlah * produk.harga).toLocaleString(
-                                  "id-ID",
-                                )}
-                              </p>
-
-                              <div className="flex mt-7">
-                                <button className="border-gray-100 bg-blue-500 rounded-lg p-2">
-                                  <Link href={`/produk/${produk.id}`}>
-                                    {" "}
-                                    Lihat detail
-                                  </Link>
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                </>
-              )}
+              {activePesananMenu === "dikemaspesanan" &&
+                filteredProduk(
+                  (produk) =>
+                    produk.status === "Dikemas" &&
+                    produk.buyerId === currentUser.user.id,
+                )}
               {/* Dikirim pesanan */}
-              {activePesananMenu === "dikirimpesanan" && (
-                <>
-                  {" "}
-                  <div className="w-full h-full  ">
-                    {produkBeli
-                      .filter(
-                        (produk) =>
-                          produk.status === "Dikirim" &&
-                          produk.buyerId === currentUser.user.id,
-                      )
-                      .map((produk, index) => (
-                        <div
-                          key={index}
-                          className="w-full  bg-blue-200 ml-2 mt-5 rounded-2xl p-4 shadow-2xs"
-                        >
-                          <div className="flex w-full justify-between items-center">
-                            <div className="w-1/2 flex flex-row">
-                              {" "}
-                              <IoBasket size={30} />{" "}
-                              <div className="flex flex-col ml-3">
-                                <h1>ID: {produk.produkId}</h1>
-                                <p className="font-light text-sm">
-                                  {new Date(produk.createdAt).toLocaleString(
-                                    "id-ID",
-                                  )}
-                                </p>
-                              </div>
-                            </div>
-
-                            <p className="border-gray-100 rounded-lg px-2 text-[12px] text-light py-0.5 bg-blue-400 ">
-                              {produk.status}
-                            </p>
-                          </div>
-                          <hr className="mt-5" />
-                          <div className="flex justify-between w-full mt-5 items-center">
-                            <div className="flex items-center">
-                              <Image
-                                src={produk.gambar}
-                                width={100}
-                                height={100}
-                                alt="foto barang"
-                                className="object-cover w-30 h-30 rounded-md"
-                              />
-                              <div className="flex flex-col ml-3">
-                                <h1 className="font-normal text-sm">
-                                  {produk.nama}
-                                </h1>
-                                <div className="flex items-center space-x-3 ">
-                                  <p className="font-normal text-sm">
-                                    Rp.{produk.harga.toLocaleString("id-ID")}
-                                  </p>
-                                  <p className="font-light text-light text-sm">
-                                    {produk.jumlah} x
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex flex-col">
-                              <h1>Total belanja</h1>
-                              <p className="font-light text-sm">
-                                Rp.
-                                {(produk.jumlah * produk.harga).toLocaleString(
-                                  "id-ID",
-                                )}
-                              </p>
-
-                              <div className="flex mt-7">
-                                <button className="border-gray-100 bg-blue-500 rounded-lg p-2">
-                                  <Link href={`/produk/${produk.id}`}>
-                                    {" "}
-                                    Lihat detail
-                                  </Link>
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                </>
-              )}
+              {activePesananMenu === "dikirimpesanan" &&
+                filteredProduk(
+                  (produk) =>
+                    produk.status === "Dikirim" &&
+                    produk.buyerId === currentUser.user.id,
+                )}
               {/* Selesai Pesanan */}
-              {activePesananMenu === "selesaipesanan" && (
-                <>
-                  {" "}
-                  <div className="w-full h-full  ">
-                    {produkBeli
-                      .filter(
-                        (produk) =>
-                          produk.status === "Selesai" &&
-                          produk.buyerId === currentUser.user.id,
-                      )
-                      .map((produk, index) => (
-                        <div
-                          key={index}
-                          className="w-full  bg-blue-200 ml-2 mt-5 rounded-2xl p-4 shadow-2xs"
-                        >
-                          <div className="flex w-full justify-between items-center">
-                            <div className="w-1/2 flex flex-row">
-                              {" "}
-                              <IoBasket size={30} />{" "}
-                              <div className="flex flex-col ml-3">
-                                <h1>ID: {produk.produkId}</h1>
-                                <p className="font-light text-sm">
-                                  {new Date(produk.createdAt).toLocaleString(
-                                    "id-ID",
-                                  )}
-                                </p>
-                              </div>
-                            </div>
-
-                            <p className="border-gray-100 rounded-lg px-2 text-[12px] text-light py-0.5 bg-blue-400 ">
-                              {produk.status}
-                            </p>
-                          </div>
-                          <hr className="mt-5" />
-                          <div className="flex justify-between w-full mt-5 items-center">
-                            <div className="flex items-center">
-                              <Image
-                                src={produk.gambar}
-                                width={100}
-                                height={100}
-                                alt="foto barang"
-                                className="object-cover w-30 h-30 rounded-md"
-                              />
-                              <div className="flex flex-col ml-3">
-                                <h1 className="font-normal text-sm">
-                                  {produk.nama}
-                                </h1>
-                                <div className="flex items-center space-x-3 ">
-                                  <p className="font-normal text-sm">
-                                    Rp.{produk.harga.toLocaleString("id-ID")}
-                                  </p>
-                                  <p className="font-light text-light text-sm">
-                                    {produk.jumlah} x
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex flex-col">
-                              <h1>Total belanja</h1>
-                              <p className="font-light text-sm">
-                                Rp.
-                                {(produk.jumlah * produk.harga).toLocaleString(
-                                  "id-ID",
-                                )}
-                              </p>
-
-                              <div className="flex mt-7">
-                                <button className="border-gray-100 bg-blue-500 rounded-lg p-2">
-                                  <Link href={`/produk/${produk.id}`}>
-                                    {" "}
-                                    Lihat detail
-                                  </Link>
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                </>
-              )}
+              {activePesananMenu === "selesaipesanan" &&
+                filteredProduk(
+                  (produk) =>
+                    produk.status === "Selesai" &&
+                    produk.buyerId === currentUser.user.id,
+                )}
             </div>
           </>
         )}
         {activeMenu === "produk" && (
           <>
-            <div className="w-[800px] h-full bg-blue-200 border-gray-100 ml-2 mt-14 rounded-2xl p-4 shadow-2xl">
-              <div className="flex space-x-4 p-2">
+            <div className="w-[800px] h-full bg-blue-200 border-gray-100 ml-2 mt-14 rounded-2xl p-4 shadow-2xl dark:bg-slate-800 dark:border-slate-700 transition-colors duration-300">
+              <div className="flex space-x-4 p-2 dark:border-slate-800">
                 <Image
                   src={user.foto || "/no-image.png"}
                   width={100}
                   height={100}
                   alt="logo"
-                  className="object-cover w-30 h-30 rounded-full"
+                  className="object-cover w-30 h-30 rounded-full dark:border-slate-600"
                 ></Image>
                 <div className="flex flex-col">
-                  <h1 className="text-xl font-bold">Toko kelontong</h1>
-                  <p className="font-light text-sm">{user.username}</p>
-                  <p className="font-light text-sm">{user.email}</p>
-                  <p className="font-light text-sm">{user.alamat}</p>
-                  <p className="font-light text-sm">{user.no_hp}</p>
+                  <h1 className="text-xl font-bold dark:text-white">
+                    Toko kelontong
+                  </h1>
+                  <p className="font-light text-sm dark:text-slate-300">
+                    {user.username}
+                  </p>
+                  <p className="font-light text-sm dark:text-slate-300">
+                    {user.email}
+                  </p>
+                  <p className="font-light text-sm dark:text-slate-300">
+                    {user.alamat}
+                  </p>
+                  <p className="font-light text-sm dark:text-slate-300">
+                    {user.no_hp}
+                  </p>
                   <p className="font-light text-sm text-yellow-300">★★★★★</p>
                 </div>
               </div>
-              <div className="font-bold text-xl p-2">Produk saya</div>
+              <div className="font-bold text-xl p-2 dark:text-white">
+                Produk saya
+              </div>
               <div className="flex flex-start flex-wrap w-full h-full">
                 {/* Card Produk */}
                 {isEdit ? (
@@ -973,8 +640,15 @@ export default function ProfilePage({ userId, currentUser }) {
                   )
                 ) : (
                   <>
-                    <p>Belum ada produk</p>
-                    <h1>Silahakan tambahkan produk anda</h1>
+                    <div className="w-full flex flex-col items-center justify-center py-16 text-center">
+                      {" "}
+                      <p className="text-lg font-semibold text-gray-500 dark:text-slate-400">
+                        Belum ada produk
+                      </p>
+                      <h1 className="text-sm text-gray-400 dark:text-slate-500">
+                        Silahakan tambahkan produk anda
+                      </h1>
+                    </div>
                   </>
                 )}
               </div>
@@ -984,9 +658,9 @@ export default function ProfilePage({ userId, currentUser }) {
         {activeMenu === "favorit" && (
           <>
             {" "}
-            <div className="w-[800px] h-full bg-blue-200 border-gray-100 ml-2 mt-14 rounded-2xl p-4 shadow-2xl">
+            <div className="w-[800px] h-full bg-blue-200 border-gray-100 ml-2 mt-14 rounded-2xl p-4 shadow-2xl dark:bg-slate-800 dark:border-slate-700 transition-colors duration-300">
               <div className="flex space-x-4 p-2">
-                <h1 className="font-bold text-2xl">Favorit</h1>
+                <h1 className="font-bold text-2xl dark:text-white">Favorit</h1>
               </div>
 
               <div className="flex flex-start flex-wrap w-full h-full">
@@ -1013,7 +687,9 @@ export default function ProfilePage({ userId, currentUser }) {
                     />
                   ))
                 ) : (
-                  <p>Belum ada produk favorit</p>
+                  <p className="text-gray-500 dark:text-slate-400 italic">
+                    Belum ada produk favorit
+                  </p>
                 )}
               </div>
             </div>
@@ -1021,13 +697,15 @@ export default function ProfilePage({ userId, currentUser }) {
         )}
         {activeMenu === "alamat" && (
           <>
-            <div className="w-[800px] h-full bg-blue-200 border-gray-100 ml-2 mt-14 rounded-2xl p-4 shadow-2xl">
+            <div className="w-[800px] h-full bg-blue-200 border-gray-100 ml-2 mt-14 rounded-2xl p-4 shadow-2xl dark:bg-slate-800 dark:border-slate-700 transition-colors duration-300">
               <div className="flex justify-between mb-12 pt-2">
-                <h1 className="text-2xl font-semibold">Alamat</h1>
+                <h1 className="text-2xl font-semibold dark:text-white">
+                  Alamat
+                </h1>
                 {currentUser.user.id && (
                   <button
                     onClick={() => setIsAddAddress(!isAddAddress)}
-                    className="border border-blue-500 hover:bg-blue-300 hover:text-amber-950 hover:border-gray-100 p-2 rounded-lg cursor-pointer"
+                    className="border border-blue-500 hover:bg-blue-300 hover:text-amber-950 hover:border-gray-100 p-2 rounded-lg cursor-pointer dark:text-blue-400 dark:border-blue-400  dark:hover:bg-blue-600 dark:hover:text-white  transition-all"
                   >
                     {isAddAddress ? "Batal" : "Tambahkan Alamat"}
                   </button>
@@ -1067,7 +745,7 @@ export default function ProfilePage({ userId, currentUser }) {
                 [...addressList].map((item) => (
                   <div
                     key={item.id}
-                    className="flex flex-col mt-3 w-full hover:border border-gray-400 shadow-lg rounded-md p-6 "
+                    className={`flex flex-col mt-3 w-full hover:border border-gray-400 shadow-lg rounded-md p-6 dark:hover:border-slate-600 transition-all  dark:bg-slate-800/50 ${item.status ? "ring-2 ring-blue-500 dark:ring-blue-600 bg-white dark:bg-slate-800" : ""}`}
                   >
                     <form
                       onSubmit={(e) => handleSubmitAddress(e, item?.id)}
@@ -1084,7 +762,7 @@ export default function ProfilePage({ userId, currentUser }) {
                                   ? editAddress.nama
                                   : item.nama
                               }
-                              className="font-bold text-lg border-b focus:outline-none focus:border-blue-500"
+                              className="font-bold text-lg border-b focus:outline-none focus:border-blue-500 dark:text-white dark:disabled:text-slate-200 transition-colors"
                               placeholder="Nama"
                               disabled={isEditAddress !== item.id}
                               onChange={(e) =>
@@ -1097,10 +775,10 @@ export default function ProfilePage({ userId, currentUser }) {
                             <button
                               type="button"
                               onClick={() => toggleStatusAddress(item.id)}
-                              className={`px-2 py-1 rounded text-xs cursor-pointer ${
+                              className={`px-2 py-1 rounded text-xs cursor-pointer transition-all ${
                                 item.status
                                   ? "bg-green-500 text-white"
-                                  : "bg-gray-200 hover:bg-gray-300"
+                                  : "bg-gray-200 hover:bg-gray-300 dark:bg-slate-700 dark:text-slate-400 dark:hover:bg-slate-600"
                               }`}
                             >
                               {" "}
@@ -1118,7 +796,7 @@ export default function ProfilePage({ userId, currentUser }) {
                                 ? editAddress.telepon
                                 : item.telepon
                             }
-                            className="text-sm border-b focus:outline-none focus:border-blue-500 w-full"
+                            className="text-sm border-b focus:outline-none focus:border-blue-500 w-full dark:text-slate-300"
                             placeholder="Nomor Telepon"
                             disabled={isEditAddress !== item.id}
                             onChange={(e) => {
@@ -1140,7 +818,7 @@ export default function ProfilePage({ userId, currentUser }) {
                                 ? editAddress.alamat
                                 : item.alamat
                             }
-                            className="text-sm border-b focus:outline-none focus:border-blue-500 w-full"
+                            className="text-sm border-b focus:outline-none focus:border-blue-500 w-full dark:text-slate-300"
                             placeholder="Alamat Lengkap"
                             name="alamat"
                             disabled={isEditAddress !== item.id}
@@ -1160,7 +838,7 @@ export default function ProfilePage({ userId, currentUser }) {
                                 ? editAddress.lokasi
                                 : item.lokasi
                             }
-                            className="text-sm border-b focus:outline-none focus:border-blue-500 w-full"
+                            className="text-sm border-b focus:outline-none focus:border-blue-500 w-full dark:text-blue-400"
                             placeholder="Koordinat/Lokasi"
                             name="lokasi"
                             disabled={isEditAddress !== item.id}
@@ -1178,7 +856,7 @@ export default function ProfilePage({ userId, currentUser }) {
                             isEditAddress !== item.id ? "hidden" : ""
                           } text-white hover:bg-blue-600 px-4 py-2 rounded-lg text-sm transition cursor-pointer`}
                         >
-                          Ubah
+                          Simpan
                         </button>
 
                         {/* Tombol Aksi */}
@@ -1194,14 +872,14 @@ export default function ProfilePage({ userId, currentUser }) {
                                 setEditAddress(null);
                               }
                             }}
-                            className="bg-blue-500 text-white hover:bg-blue-600 px-4 py-2 rounded-lg text-sm transition cursor-pointer"
+                            className="bg-blue-500 text-white hover:bg-blue-600 px-4 py-2 rounded-lg text-sm transition cursor-pointer dark:bg-blue-500 dark:hover:bg-blue-600 "
                           >
                             {isEditAddress === item.id ? "Batal" : "Edit"}
                           </button>
                           <button
                             type="button"
                             onClick={() => handleDeleteAddress(item.id)}
-                            className="border border-gray-300 hover:bg-gray-100 px-4 py-2 rounded-lg text-sm cursor-pointer"
+                            className="border border-gray-300 hover:bg-gray-100 px-4 py-2 rounded-lg text-sm cursor-pointer dark:border-slate-600 dark:text-slate-400  dark:hover:bg-red-900/20 transition-all"
                           >
                             Hapus
                           </button>
@@ -1211,48 +889,68 @@ export default function ProfilePage({ userId, currentUser }) {
                   </div>
                 ))
               ) : (
-                <p>Belum ada alamat</p>
+                <div className="flex flex-col items-center justify-center py-20">
+                  <p className="text-gray-500 dark:text-slate-400 italic font-medium">
+                    Belum ada alamat tersimpan
+                  </p>
+                </div>
               )}
             </div>
           </>
         )}
         {activeMenu === "pengaturan" && (
           <>
-            <div className="w-[800px] h-full bg-blue-200 border-gray-100 ml-2 mt-14 rounded-2xl p-4 shadow-2xl">
+            <div className="w-[800px] h-full bg-blue-200 border-gray-100 ml-2 mt-14 rounded-2xl p-4 shadow-2xl dark:bg-slate-800 dark:border-slate-700 transition-colors duration-300">
               <div className="w-full">
                 <h1
-                  className="font-bold text-lg
+                  className="font-bold text-lg dark:text-white
                 "
                 >
                   Pengaturan Akun
                 </h1>
-                <p className="font-bold text-sm mt-7">Keamanan</p>
+                <p className="font-bold text-sm mt-7 dark:text-slate-400">
+                  Keamanan
+                </p>
               </div>
-              <button className="flex flex-row items-center space-x-3 mt-3 w-full hover:border border-gray-400 shadow-lg rounded-md p-6 cursor-pointer">
-                <CiLock />
+              <button className="flex flex-row items-center space-x-3 mt-3 w-full hover:border border-gray-400 shadow-lg rounded-md p-6 cursor-pointer dark:bg-slate-800/50 hover:border-blue-400 dark:hover:border-blue-500 transition-all">
+                <div className="p-2 bg-blue-100 dark:bg-slate-700 rounded-lg text-blue-600 dark:text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                  <CiLock size={24} />
+                </div>
                 <div className="flex flex-col">
-                  <h2>Ubah kata sandi</h2>
-                  <p className="text-xs font-light">
+                  <h2 className="font-semibold text-gray-800 dark:text-slate-200">
+                    Ubah kata sandi
+                  </h2>
+                  <p className="text-xs font-light dark:text-slate-400">
                     Terakhir diubah bulan lalu
                   </p>
                 </div>
               </button>
-              <button className="flex flex-row items-center space-x-3 mt-3 w-full hover:border border-gray-400 shadow-lg rounded-md p-6 cursor-pointer">
-                <MdOutlineVerifiedUser />
+              <button className="flex flex-row items-center space-x-3 mt-3 w-full hover:border border-gray-400 shadow-lg rounded-md p-6 cursor-pointer dark:bg-slate-800/50 hover:border-blue-400 dark:hover:border-blue-500 transition-all">
+                <div className="p-2 bg-blue-100 dark:bg-slate-700 rounded-lg text-blue-600 dark:text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                  <MdOutlineVerifiedUser size={24} />
+                </div>
                 <div className="flex flex-col">
-                  <h2>Verifikasi 2 langkah</h2>
-                  <p className="text-xs font-light">
+                  <h2 className="font-semibold text-gray-800 dark:text-slate-200">
+                    Verifikasi 2 langkah
+                  </h2>
+                  <p className="text-xs font-light dark:text-slate-400">
                     Tingkatkan keamanan akun anda
                   </p>
                 </div>
               </button>
-              <p className="font-bold text-sm mt-7">Notifikasi</p>
+              <p className="font-bold text-sm mt-7 dark:text-slate-400">
+                Notifikasi
+              </p>
               <div className="flex  items-center justify-between mt-3 w-full  border-gray-400 shadow-lg rounded-md p-6 ">
                 <div className="flex flex-row items-center space-x-3">
-                  <IoIosNotificationsOutline />
+                  <div className="p-2 bg-blue-100 dark:bg-slate-700 rounded-lg text-blue-600 dark:text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                    <IoIosNotificationsOutline size={24} />
+                  </div>
                   <div className="flex flex-col">
-                    <h2>Notifikasi</h2>
-                    <p className="text-xs font-light">
+                    <h2 className="font-semibold text-gray-800 dark:text-slate-200">
+                      Notifikasi
+                    </h2>
+                    <p className="text-xs font-light dark:text-slate-400">
                       Terima notifikasi pesanan & promo
                     </p>
                   </div>
@@ -1261,8 +959,8 @@ export default function ProfilePage({ userId, currentUser }) {
                   onClick={() => setNotifEnabled(!notifEnabled)}
                   className={`
         relative flex h-6 w-12 cursor-pointer items-center rounded-full
-        transition-colors duration-300
-        ${notifEnabled ? "bg-blue-600" : "bg-gray-300"}
+        transition-colors duration-300 
+        ${notifEnabled ? "bg-blue-600" : "bg-gray-300 dark:bg-slate-700"}
       `}
                 >
                   <span
@@ -1274,13 +972,17 @@ export default function ProfilePage({ userId, currentUser }) {
                   />
                 </button>
               </div>
-              <div className="flex items-center justify-between  mt-3 w-full  border-gray-400 shadow-lg rounded-md p-6 ">
+              <div className="flex items-center justify-between  mt-3 w-full  border-gray-400 shadow-lg rounded-md p-6 dark:bg-slate-800/50 ">
                 <div className="flex flex-row items-center space-x-3">
                   {" "}
-                  <MdOutlineMail />
+                  <div className="p-2 bg-blue-100 dark:bg-slate-700 rounded-lg text-blue-600 dark:text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                    <MdOutlineMail size={24} />
+                  </div>
                   <div className="flex flex-col">
-                    <h2>Email Newsletter</h2>
-                    <p className="text-xs font-light">
+                    <h2 className="font-semibold text-gray-800 dark:text-slate-200">
+                      Email Newsletter
+                    </h2>
+                    <p className="text-xs font-light text-gray-500 dark:text-slate-400">
                       Dapatkan info promo terbaru
                     </p>
                   </div>
@@ -1290,7 +992,7 @@ export default function ProfilePage({ userId, currentUser }) {
                   className={`
         relative flex h-6 w-12 cursor-pointer items-center rounded-full
         transition-colors duration-300
-        ${mailEnabled ? "bg-blue-600" : "bg-gray-300"}
+        ${mailEnabled ? "bg-blue-600" : "bg-gray-300 dark:bg-slate-700"}
       `}
                 >
                   <span
@@ -1302,18 +1004,32 @@ export default function ProfilePage({ userId, currentUser }) {
                   />
                 </button>
               </div>
-              <p className="font-bold text-sm mt-7">Lainnya</p>
-              <button className="flex items-center space-x-3 mt-3 w-full hover:border border-gray-400 shadow-lg rounded-md p-6 cursor-pointer ">
-                <IoHelpCircleOutline />
-                <h2>Bantuan & dukungan</h2>
+              <p className="font-bold text-sm mt-7 dark:text-slate-400">
+                Lainnya
+              </p>
+              <button className="flex flex-row items-center space-x-3 mt-3 w-full hover:border border-gray-400 shadow-lg rounded-md p-6 cursor-pointer dark:bg-slate-800/50 hover:border-blue-400 dark:hover:border-blue-500 transition-all">
+                <div className="p-2 bg-blue-100 dark:bg-slate-700 rounded-lg text-blue-600 dark:text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-colors ">
+                  <IoHelpCircleOutline size={24} />
+                </div>
+                <h2 className="text-sm font-medium text-gray-800 dark:text-slate-200">
+                  Bantuan & dukungan
+                </h2>
               </button>
-              <button className="flex items-center space-x-3 mt-3 w-full hover:border border-gray-400 shadow-lg rounded-md p-6 cursor-pointer ">
-                <PiNewspaperThin />
-                <h2>Syarat & ketentuan</h2>
+              <button className="flex flex-row items-center space-x-3 mt-3 w-full hover:border border-gray-400 shadow-lg rounded-md p-6 cursor-pointer dark:bg-slate-800/50 hover:border-blue-400 dark:hover:border-blue-500 transition-all">
+                <div className="p-2 bg-blue-100 dark:bg-slate-700 rounded-lg text-blue-600 dark:text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                  <PiNewspaperThin size={24} />
+                </div>
+                <h2 className="text-sm font-medium text-gray-800 dark:text-slate-200">
+                  Syarat & ketentuan
+                </h2>
               </button>
-              <button className="flex items-center space-x-3 mt-3 w-full hover:border border-gray-400 shadow-lg rounded-md p-6 cursor-pointer ">
-                <LiaUserLockSolid />
-                <h2>Kebijakan Privasi</h2>
+              <button className="flex flex-row items-center space-x-3 mt-3 w-full hover:border border-gray-400 shadow-lg rounded-md p-6 cursor-pointer dark:bg-slate-800/50 hover:border-blue-400 dark:hover:border-blue-500 transition-all">
+                <div className="p-2 bg-blue-100 dark:bg-slate-700 rounded-lg text-blue-600 dark:text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                  <LiaUserLockSolid size={24} />
+                </div>
+                <h2 className="text-sm font-medium text-gray-800 dark:text-slate-200">
+                  Kebijakan Privasi
+                </h2>
               </button>
             </div>
           </>
