@@ -264,6 +264,7 @@ export default function DetailPage({ currentUser }) {
           <div className="flex gap-3 mt-7">
             <FilterButton label="Semua" target="semuapesanan" />
             <FilterButton label="Belum Dibayar" target="belumdibayarpesanan" />
+            <FilterButton label="Sudah dibayar" target="dibayarpesanan" />
             <FilterButton label="Dikemas" target="dikemaspesanan" />
             <FilterButton label="Dikirim" target="dikirimpesanan" />
             <FilterButton label="Selesai" target="selesaipesanan" />
@@ -273,6 +274,12 @@ export default function DetailPage({ currentUser }) {
             label="belumdibayarpesanan"
             active={activePesananMenu}
             status="Belum dibayar"
+            statusChange="Sudah dibayar"
+          />
+          <FilteredProduk
+            label="dibayarpesanan"
+            active={activePesananMenu}
+            status="Sudah dibayar"
             statusChange="Dikemas"
           />
           <FilteredProduk

@@ -127,20 +127,14 @@ export default function ProdukDetail({ produkChose }) {
     try {
       // 2. Susun Payload (Gunakan variabel 'payload' secara konsisten)
       const payload = {
-        nama: selectedProduk.nama,
+        name: selectedProduk.nama,
         warna: selectedProduk.warna,
         ukuran: selectedProduk.ukuran,
-        jumlah: Number(selectedProduk.jumlah),
-        harga: Number(selectedProduk.harga),
+        quantity: Number(selectedProduk.jumlah),
+        price: Number(selectedProduk.harga),
         author: selectedProduk.ownerId,
-        totalHarga:
-          Number(selectedProduk.harga) * Number(selectedProduk.jumlah),
         gambar: selectedProduk.gambar,
-        namaPenerima: currentUser.user.name,
-        telepon: String(alamatUtama.telepon || ""),
-        alamat: String(alamatUtama.alamat || ""),
-        produkId: Number(selectedProduk.id),
-        buyerId: currentUser.user.id,
+        variantId: Number(selectedProduk.produkId),
       };
 
       console.log("Data yang akan dikirim:", payload); // Ganti 'update' jadi 'payload'
@@ -150,18 +144,37 @@ export default function ProdukDetail({ produkChose }) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          items: [payload],
+          totalHarga:
+            Number(selectedProduk.harga) * Number(selectedProduk.jumlah),
+          buyerId: currentUser.user.id,
+          customerDetails: {
+            namaPenerima: currentUser.user.name,
+            telepon: alamatUtama.telepon,
+            alamat: alamatUtama.alamat,
+          },
+        }),
       });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("Server Error Response:", errorText);
+        throw new Error("Gagal membuat pesanan");
+      }
 
       const data = await res.json();
 
-      if (!res.ok) {
-        console.error("Detail Error Server:", data.error);
-        alert(data.message || "Gagal membuat order");
-        return;
-      }
-
-      alert("Pembelian berhasil!");
+      window.snap.pay(data.token, {
+        onSuccess: function () {
+          alert("Pembayaran Berhasil!");
+          // Redirect ke halaman pesanan atau bersihkan keranjang
+          window.location.href = `/profile/${currentUser.user.id}`;
+        },
+        onPending: function () {
+          alert("Harap selesaikan pembayaran.");
+        },
+      });
 
       // 3. Reset state setelah berhasil
       setSelectedProduk({

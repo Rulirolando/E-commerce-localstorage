@@ -153,6 +153,7 @@ model Order {
   createdAt   DateTime @default(now())
   jumlah        Int
  totalHarga  Int
+ transactionId String?
 
  author String @default("") // orang yang punya produk
 

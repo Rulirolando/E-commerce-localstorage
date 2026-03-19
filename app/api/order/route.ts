@@ -1,34 +1,92 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import midtransClient from "midtrans-client";
+
+const snap = new midtransClient.Snap({
+  isProduction: false,
+  serverKey: process.env.MIDTRANS_SERVER_KEY,
+  clientKey: process.env.MIDTRANS_CLIENT_KEY,
+});
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    const { items, totalHarga, customerDetails, buyerId } = await req.json();
 
-    const newOrder = await prisma.order.create({
-      data: {
-        nama: body.nama,
-        warna: body.warna,
-        ukuran: body.ukuran,
-        harga: body.harga,
-        author: body.author,
-        totalHarga: body.totalHarga,
-        gambar: body.gambar,
-        namaPenerima: body.namaPenerima,
-        telepon: body.telepon,
-        alamat: body.alamat,
-        jumlah: body.jumlah,
-        buyerId: body.buyerId,
+    const transactionId = `TRX-${Date.now()}`;
 
-        produkId: body.produkId || null,
-      },
+    await prisma.order.createMany({
+      data: items.map(
+        (item: {
+          name: string;
+          warna: string;
+          ukuran: string;
+          price: number;
+          quantity: number;
+          gambar: string;
+          variantId: number;
+          author: string;
+          transactionId: string;
+        }) => ({
+          nama: item.name,
+          warna: item.warna,
+          ukuran: item.ukuran,
+          harga: item.price,
+          jumlah: item.quantity,
+          totalHarga: item.price * item.quantity,
+          gambar: item.gambar,
+          namaPenerima: customerDetails.namaPenerima,
+          telepon: customerDetails.telepon,
+          alamat: customerDetails.alamat,
+          author: item.author,
+          buyerId: buyerId,
+          produkId: item.variantId,
+          status: "Belum dibayar", // Default dari skema Anda
+          transactionId: transactionId, // Simpan transactionId untuk referensi di webhook
+        }),
+      ),
     });
 
-    return NextResponse.json(newOrder, { status: 201 });
-  } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error("PRISMA ERROR:", errorMessage);
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    // 3. Konfigurasi Parameter Midtrans
+    const parameter = {
+      transaction_details: {
+        order_id: transactionId, // ID ini yang akan dikirim ke Webhook nanti
+        gross_amount: totalHarga,
+      },
+      custom_field1: buyerId,
+      item_details: items.map(
+        (item: {
+          variantId: number;
+          price: number;
+          quantity: number;
+          name: string;
+        }) => ({
+          id: String(item.variantId),
+          price: item.price,
+          quantity: item.quantity,
+          name: item.name,
+        }),
+      ),
+      customer_details: {
+        first_name: customerDetails.namaPenerima,
+        phone: customerDetails.telepon,
+        billing_address: {
+          address: customerDetails.alamat,
+        },
+      },
+    };
+
+    const transaction = await snap.createTransaction(parameter);
+    console.log("Midtrans Transaction Response:", transaction);
+    return NextResponse.json(
+      {
+        token: transaction.token,
+        transactionId: transactionId,
+      },
+      { status: 201 },
+    );
+  } catch (error) {
+    console.error("PRISMA/MIDTRANS ERROR:", error);
+    return NextResponse.json({ error: error }, { status: 500 });
   }
 }
 

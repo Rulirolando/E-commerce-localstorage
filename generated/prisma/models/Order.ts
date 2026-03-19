@@ -56,6 +56,7 @@ export type OrderMinAggregateOutputType = {
   createdAt: Date | null
   jumlah: number | null
   totalHarga: number | null
+  transactionId: string | null
   author: string | null
   buyerId: string | null
   produkId: number | null
@@ -75,6 +76,7 @@ export type OrderMaxAggregateOutputType = {
   createdAt: Date | null
   jumlah: number | null
   totalHarga: number | null
+  transactionId: string | null
   author: string | null
   buyerId: string | null
   produkId: number | null
@@ -94,6 +96,7 @@ export type OrderCountAggregateOutputType = {
   createdAt: number
   jumlah: number
   totalHarga: number
+  transactionId: number
   author: number
   buyerId: number
   produkId: number
@@ -131,6 +134,7 @@ export type OrderMinAggregateInputType = {
   createdAt?: true
   jumlah?: true
   totalHarga?: true
+  transactionId?: true
   author?: true
   buyerId?: true
   produkId?: true
@@ -150,6 +154,7 @@ export type OrderMaxAggregateInputType = {
   createdAt?: true
   jumlah?: true
   totalHarga?: true
+  transactionId?: true
   author?: true
   buyerId?: true
   produkId?: true
@@ -169,6 +174,7 @@ export type OrderCountAggregateInputType = {
   createdAt?: true
   jumlah?: true
   totalHarga?: true
+  transactionId?: true
   author?: true
   buyerId?: true
   produkId?: true
@@ -275,6 +281,7 @@ export type OrderGroupByOutputType = {
   createdAt: Date
   jumlah: number
   totalHarga: number
+  transactionId: string | null
   author: string
   buyerId: string
   produkId: number | null
@@ -317,6 +324,7 @@ export type OrderWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   jumlah?: Prisma.IntFilter<"Order"> | number
   totalHarga?: Prisma.IntFilter<"Order"> | number
+  transactionId?: Prisma.StringNullableFilter<"Order"> | string | null
   author?: Prisma.StringFilter<"Order"> | string
   buyerId?: Prisma.StringFilter<"Order"> | string
   produkId?: Prisma.IntNullableFilter<"Order"> | number | null
@@ -338,6 +346,7 @@ export type OrderOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   jumlah?: Prisma.SortOrder
   totalHarga?: Prisma.SortOrder
+  transactionId?: Prisma.SortOrderInput | Prisma.SortOrder
   author?: Prisma.SortOrder
   buyerId?: Prisma.SortOrder
   produkId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -362,6 +371,7 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   jumlah?: Prisma.IntFilter<"Order"> | number
   totalHarga?: Prisma.IntFilter<"Order"> | number
+  transactionId?: Prisma.StringNullableFilter<"Order"> | string | null
   author?: Prisma.StringFilter<"Order"> | string
   buyerId?: Prisma.StringFilter<"Order"> | string
   produkId?: Prisma.IntNullableFilter<"Order"> | number | null
@@ -383,6 +393,7 @@ export type OrderOrderByWithAggregationInput = {
   createdAt?: Prisma.SortOrder
   jumlah?: Prisma.SortOrder
   totalHarga?: Prisma.SortOrder
+  transactionId?: Prisma.SortOrderInput | Prisma.SortOrder
   author?: Prisma.SortOrder
   buyerId?: Prisma.SortOrder
   produkId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -410,6 +421,7 @@ export type OrderScalarWhereWithAggregatesInput = {
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Order"> | Date | string
   jumlah?: Prisma.IntWithAggregatesFilter<"Order"> | number
   totalHarga?: Prisma.IntWithAggregatesFilter<"Order"> | number
+  transactionId?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
   author?: Prisma.StringWithAggregatesFilter<"Order"> | string
   buyerId?: Prisma.StringWithAggregatesFilter<"Order"> | string
   produkId?: Prisma.IntNullableWithAggregatesFilter<"Order"> | number | null
@@ -428,6 +440,7 @@ export type OrderCreateInput = {
   createdAt?: Date | string
   jumlah: number
   totalHarga: number
+  transactionId?: string | null
   author?: string
   buyer: Prisma.UserCreateNestedOneWithoutOrdersInput
   produk?: Prisma.VariationCreateNestedOneWithoutOrdersInput
@@ -447,6 +460,7 @@ export type OrderUncheckedCreateInput = {
   createdAt?: Date | string
   jumlah: number
   totalHarga: number
+  transactionId?: string | null
   author?: string
   buyerId: string
   produkId?: number | null
@@ -465,6 +479,7 @@ export type OrderUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   jumlah?: Prisma.IntFieldUpdateOperationsInput | number
   totalHarga?: Prisma.IntFieldUpdateOperationsInput | number
+  transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   author?: Prisma.StringFieldUpdateOperationsInput | string
   buyer?: Prisma.UserUpdateOneRequiredWithoutOrdersNestedInput
   produk?: Prisma.VariationUpdateOneWithoutOrdersNestedInput
@@ -484,6 +499,7 @@ export type OrderUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   jumlah?: Prisma.IntFieldUpdateOperationsInput | number
   totalHarga?: Prisma.IntFieldUpdateOperationsInput | number
+  transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   author?: Prisma.StringFieldUpdateOperationsInput | string
   buyerId?: Prisma.StringFieldUpdateOperationsInput | string
   produkId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -503,6 +519,7 @@ export type OrderCreateManyInput = {
   createdAt?: Date | string
   jumlah: number
   totalHarga: number
+  transactionId?: string | null
   author?: string
   buyerId: string
   produkId?: number | null
@@ -521,6 +538,7 @@ export type OrderUpdateManyMutationInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   jumlah?: Prisma.IntFieldUpdateOperationsInput | number
   totalHarga?: Prisma.IntFieldUpdateOperationsInput | number
+  transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   author?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
@@ -538,6 +556,7 @@ export type OrderUncheckedUpdateManyInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   jumlah?: Prisma.IntFieldUpdateOperationsInput | number
   totalHarga?: Prisma.IntFieldUpdateOperationsInput | number
+  transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   author?: Prisma.StringFieldUpdateOperationsInput | string
   buyerId?: Prisma.StringFieldUpdateOperationsInput | string
   produkId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -567,6 +586,7 @@ export type OrderCountOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   jumlah?: Prisma.SortOrder
   totalHarga?: Prisma.SortOrder
+  transactionId?: Prisma.SortOrder
   author?: Prisma.SortOrder
   buyerId?: Prisma.SortOrder
   produkId?: Prisma.SortOrder
@@ -594,6 +614,7 @@ export type OrderMaxOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   jumlah?: Prisma.SortOrder
   totalHarga?: Prisma.SortOrder
+  transactionId?: Prisma.SortOrder
   author?: Prisma.SortOrder
   buyerId?: Prisma.SortOrder
   produkId?: Prisma.SortOrder
@@ -613,6 +634,7 @@ export type OrderMinOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   jumlah?: Prisma.SortOrder
   totalHarga?: Prisma.SortOrder
+  transactionId?: Prisma.SortOrder
   author?: Prisma.SortOrder
   buyerId?: Prisma.SortOrder
   produkId?: Prisma.SortOrder
@@ -723,6 +745,7 @@ export type OrderCreateWithoutBuyerInput = {
   createdAt?: Date | string
   jumlah: number
   totalHarga: number
+  transactionId?: string | null
   author?: string
   produk?: Prisma.VariationCreateNestedOneWithoutOrdersInput
 }
@@ -741,6 +764,7 @@ export type OrderUncheckedCreateWithoutBuyerInput = {
   createdAt?: Date | string
   jumlah: number
   totalHarga: number
+  transactionId?: string | null
   author?: string
   produkId?: number | null
 }
@@ -788,6 +812,7 @@ export type OrderScalarWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   jumlah?: Prisma.IntFilter<"Order"> | number
   totalHarga?: Prisma.IntFilter<"Order"> | number
+  transactionId?: Prisma.StringNullableFilter<"Order"> | string | null
   author?: Prisma.StringFilter<"Order"> | string
   buyerId?: Prisma.StringFilter<"Order"> | string
   produkId?: Prisma.IntNullableFilter<"Order"> | number | null
@@ -806,6 +831,7 @@ export type OrderCreateWithoutProdukInput = {
   createdAt?: Date | string
   jumlah: number
   totalHarga: number
+  transactionId?: string | null
   author?: string
   buyer: Prisma.UserCreateNestedOneWithoutOrdersInput
 }
@@ -824,6 +850,7 @@ export type OrderUncheckedCreateWithoutProdukInput = {
   createdAt?: Date | string
   jumlah: number
   totalHarga: number
+  transactionId?: string | null
   author?: string
   buyerId: string
 }
@@ -868,6 +895,7 @@ export type OrderCreateManyBuyerInput = {
   createdAt?: Date | string
   jumlah: number
   totalHarga: number
+  transactionId?: string | null
   author?: string
   produkId?: number | null
 }
@@ -885,6 +913,7 @@ export type OrderUpdateWithoutBuyerInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   jumlah?: Prisma.IntFieldUpdateOperationsInput | number
   totalHarga?: Prisma.IntFieldUpdateOperationsInput | number
+  transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   author?: Prisma.StringFieldUpdateOperationsInput | string
   produk?: Prisma.VariationUpdateOneWithoutOrdersNestedInput
 }
@@ -903,6 +932,7 @@ export type OrderUncheckedUpdateWithoutBuyerInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   jumlah?: Prisma.IntFieldUpdateOperationsInput | number
   totalHarga?: Prisma.IntFieldUpdateOperationsInput | number
+  transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   author?: Prisma.StringFieldUpdateOperationsInput | string
   produkId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
@@ -921,6 +951,7 @@ export type OrderUncheckedUpdateManyWithoutBuyerInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   jumlah?: Prisma.IntFieldUpdateOperationsInput | number
   totalHarga?: Prisma.IntFieldUpdateOperationsInput | number
+  transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   author?: Prisma.StringFieldUpdateOperationsInput | string
   produkId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
@@ -939,6 +970,7 @@ export type OrderCreateManyProdukInput = {
   createdAt?: Date | string
   jumlah: number
   totalHarga: number
+  transactionId?: string | null
   author?: string
   buyerId: string
 }
@@ -956,6 +988,7 @@ export type OrderUpdateWithoutProdukInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   jumlah?: Prisma.IntFieldUpdateOperationsInput | number
   totalHarga?: Prisma.IntFieldUpdateOperationsInput | number
+  transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   author?: Prisma.StringFieldUpdateOperationsInput | string
   buyer?: Prisma.UserUpdateOneRequiredWithoutOrdersNestedInput
 }
@@ -974,6 +1007,7 @@ export type OrderUncheckedUpdateWithoutProdukInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   jumlah?: Prisma.IntFieldUpdateOperationsInput | number
   totalHarga?: Prisma.IntFieldUpdateOperationsInput | number
+  transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   author?: Prisma.StringFieldUpdateOperationsInput | string
   buyerId?: Prisma.StringFieldUpdateOperationsInput | string
 }
@@ -992,6 +1026,7 @@ export type OrderUncheckedUpdateManyWithoutProdukInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   jumlah?: Prisma.IntFieldUpdateOperationsInput | number
   totalHarga?: Prisma.IntFieldUpdateOperationsInput | number
+  transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   author?: Prisma.StringFieldUpdateOperationsInput | string
   buyerId?: Prisma.StringFieldUpdateOperationsInput | string
 }
@@ -1012,6 +1047,7 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   createdAt?: boolean
   jumlah?: boolean
   totalHarga?: boolean
+  transactionId?: boolean
   author?: boolean
   buyerId?: boolean
   produkId?: boolean
@@ -1033,6 +1069,7 @@ export type OrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   createdAt?: boolean
   jumlah?: boolean
   totalHarga?: boolean
+  transactionId?: boolean
   author?: boolean
   buyerId?: boolean
   produkId?: boolean
@@ -1054,6 +1091,7 @@ export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   createdAt?: boolean
   jumlah?: boolean
   totalHarga?: boolean
+  transactionId?: boolean
   author?: boolean
   buyerId?: boolean
   produkId?: boolean
@@ -1075,12 +1113,13 @@ export type OrderSelectScalar = {
   createdAt?: boolean
   jumlah?: boolean
   totalHarga?: boolean
+  transactionId?: boolean
   author?: boolean
   buyerId?: boolean
   produkId?: boolean
 }
 
-export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "warna" | "nama" | "ukuran" | "harga" | "gambar" | "namaPenerima" | "telepon" | "alamat" | "status" | "createdAt" | "jumlah" | "totalHarga" | "author" | "buyerId" | "produkId", ExtArgs["result"]["order"]>
+export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "warna" | "nama" | "ukuran" | "harga" | "gambar" | "namaPenerima" | "telepon" | "alamat" | "status" | "createdAt" | "jumlah" | "totalHarga" | "transactionId" | "author" | "buyerId" | "produkId", ExtArgs["result"]["order"]>
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   buyer?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   produk?: boolean | Prisma.Order$produkArgs<ExtArgs>
@@ -1114,6 +1153,7 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     createdAt: Date
     jumlah: number
     totalHarga: number
+    transactionId: string | null
     author: string
     buyerId: string
     produkId: number | null
@@ -1555,6 +1595,7 @@ export interface OrderFieldRefs {
   readonly createdAt: Prisma.FieldRef<"Order", 'DateTime'>
   readonly jumlah: Prisma.FieldRef<"Order", 'Int'>
   readonly totalHarga: Prisma.FieldRef<"Order", 'Int'>
+  readonly transactionId: Prisma.FieldRef<"Order", 'String'>
   readonly author: Prisma.FieldRef<"Order", 'String'>
   readonly buyerId: Prisma.FieldRef<"Order", 'String'>
   readonly produkId: Prisma.FieldRef<"Order", 'Int'>

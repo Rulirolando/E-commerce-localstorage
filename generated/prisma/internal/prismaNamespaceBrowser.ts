@@ -221,6 +221,7 @@ export const OrderScalarFieldEnum = {
   createdAt: 'createdAt',
   jumlah: 'jumlah',
   totalHarga: 'totalHarga',
+  transactionId: 'transactionId',
   author: 'author',
   buyerId: 'buyerId',
   produkId: 'produkId'

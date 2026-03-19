@@ -88,45 +88,53 @@ export default function KeranjangPage() {
     if (!alamat) return;
 
     try {
-      for (const item of selectProduk) {
-        // 1. Ambil gambar pertama dengan aman
-        const fotoProduk = item.variant?.images?.[0]?.img || "";
+      const itemsForDb = selectProduk.map((item) => ({
+        variantId: item.variant.id,
+        name: item.variant.product.nama,
+        warna: item.variant.warna,
+        ukuran: item.ukuran,
+        price: item.variant.harga,
+        quantity: item.jumlah,
+        gambar: item.variant.images[0]?.img || "",
+        author: item.variant.product.ownerId,
+      }));
 
-        // 2. Susun payload dengan hati-hati (Jangan ada yang undefined)
-        const payload = {
-          nama: item.variant?.product?.nama || "Produk",
-          warna: item.variant?.warna || "Default",
-          ukuran: item.ukuran || "All Size",
-          jumlah: Number(item.jumlah) || 1,
-          harga: Number(item.variant?.harga) || 0,
-          totalHarga: Number((item.variant?.harga || 0) * (item.jumlah || 1)),
-          gambar: fotoProduk,
-          author: item.variant?.product?.ownerId,
-          produkId: item.variant?.id ? Number(item.variant.id) : null,
+      console.log("Payload yang dikirim ke API:", itemsForDb); // CEK INI DI CONSOLE BROWSER
+
+      const response = await fetch("/api/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: itemsForDb,
+          totalHarga: totalHarga,
           buyerId: currentUser.user.id,
-          namaPenerima: currentUser.user.name || "Pembeli",
-          telepon: String(alamatUtama.telepon || ""),
-          alamat: String(alamatUtama.alamat || ""),
-        };
+          customerDetails: {
+            namaPenerima: currentUser.user.name,
+            telepon: alamatUtama.telepon,
+            alamat: alamatUtama.alamat,
+          },
+        }),
+      });
 
-        console.log("Payload yang dikirim ke API:", payload); // CEK INI DI CONSOLE BROWSER
-
-        const response = await fetch("/api/order", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error("Server Error Response:", errorText);
-          throw new Error("Gagal membuat pesanan");
-        }
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Server Error Response:", errorText);
+        throw new Error("Gagal membuat pesanan");
       }
+      const data = await response.json();
 
-      alert("Checkout berhasil!");
+      window.snap.pay(data.token, {
+        onSuccess: function () {
+          alert("Pembayaran Berhasil!");
+          // Redirect ke halaman pesanan atau bersihkan keranjang
+          window.location.href = `/profile/${currentUser.user.id}`;
+        },
+        onPending: function () {
+          alert("Harap selesaikan pembayaran.");
+        },
+      });
+
       setSelectProduk([]);
-      if (typeof fetchData === "function") fetchData();
     } catch (error) {
       console.error("Checkout Error:", error);
       alert(

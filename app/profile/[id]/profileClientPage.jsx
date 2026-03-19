@@ -525,6 +525,10 @@ export default function ProfilePage({ userId, currentUser }) {
                       target="belumdibayarpesanan"
                       label="Belum dibayar"
                     />
+                    <ButtonPesanan
+                      target="dibayarpesanan"
+                      label="Sudah dibayar"
+                    />
                     <ButtonPesanan target="dikemaspesanan" label="Dikemas" />
                     <ButtonPesanan target="dikirimpesanan" label="Dikirim" />
                     <ButtonPesanan target="selesaipesanan" label="Selesai" />
@@ -536,7 +540,6 @@ export default function ProfilePage({ userId, currentUser }) {
                 filteredProduk(
                   (produk) => produk.buyerId === currentUser.user.id,
                 )}
-
               {/* Belum dibayar pesanan */}
               {activePesananMenu === "belumdibayarpesanan" &&
                 filteredProduk(
@@ -544,7 +547,14 @@ export default function ProfilePage({ userId, currentUser }) {
                     produk.status === "Belum dibayar" &&
                     produk.buyerId === currentUser.user.id,
                 )}
-              {/* Dikemas pesanan */}
+              {/* Dibayar pesanan */}
+              {activePesananMenu === "dibayarpesanan" &&
+                filteredProduk(
+                  (produk) =>
+                    produk.status === "Sudah dibayar" &&
+                    produk.buyerId === currentUser.user.id,
+                )}
+              ){/* Dikemas pesanan */}
               {activePesananMenu === "dikemaspesanan" &&
                 filteredProduk(
                   (produk) =>
