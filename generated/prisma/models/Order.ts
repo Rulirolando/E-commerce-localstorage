@@ -48,6 +48,7 @@ export type OrderMinAggregateOutputType = {
   nama: string | null
   ukuran: string | null
   harga: number | null
+  estimasiTiba: string | null
   gambar: string | null
   namaPenerima: string | null
   telepon: string | null
@@ -68,6 +69,7 @@ export type OrderMaxAggregateOutputType = {
   nama: string | null
   ukuran: string | null
   harga: number | null
+  estimasiTiba: string | null
   gambar: string | null
   namaPenerima: string | null
   telepon: string | null
@@ -88,6 +90,7 @@ export type OrderCountAggregateOutputType = {
   nama: number
   ukuran: number
   harga: number
+  estimasiTiba: number
   gambar: number
   namaPenerima: number
   telepon: number
@@ -126,6 +129,7 @@ export type OrderMinAggregateInputType = {
   nama?: true
   ukuran?: true
   harga?: true
+  estimasiTiba?: true
   gambar?: true
   namaPenerima?: true
   telepon?: true
@@ -146,6 +150,7 @@ export type OrderMaxAggregateInputType = {
   nama?: true
   ukuran?: true
   harga?: true
+  estimasiTiba?: true
   gambar?: true
   namaPenerima?: true
   telepon?: true
@@ -166,6 +171,7 @@ export type OrderCountAggregateInputType = {
   nama?: true
   ukuran?: true
   harga?: true
+  estimasiTiba?: true
   gambar?: true
   namaPenerima?: true
   telepon?: true
@@ -273,6 +279,7 @@ export type OrderGroupByOutputType = {
   nama: string
   ukuran: string
   harga: number
+  estimasiTiba: string | null
   gambar: string
   namaPenerima: string
   telepon: string
@@ -316,6 +323,7 @@ export type OrderWhereInput = {
   nama?: Prisma.StringFilter<"Order"> | string
   ukuran?: Prisma.StringFilter<"Order"> | string
   harga?: Prisma.IntFilter<"Order"> | number
+  estimasiTiba?: Prisma.StringNullableFilter<"Order"> | string | null
   gambar?: Prisma.StringFilter<"Order"> | string
   namaPenerima?: Prisma.StringFilter<"Order"> | string
   telepon?: Prisma.StringFilter<"Order"> | string
@@ -338,6 +346,7 @@ export type OrderOrderByWithRelationInput = {
   nama?: Prisma.SortOrder
   ukuran?: Prisma.SortOrder
   harga?: Prisma.SortOrder
+  estimasiTiba?: Prisma.SortOrderInput | Prisma.SortOrder
   gambar?: Prisma.SortOrder
   namaPenerima?: Prisma.SortOrder
   telepon?: Prisma.SortOrder
@@ -363,6 +372,7 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   nama?: Prisma.StringFilter<"Order"> | string
   ukuran?: Prisma.StringFilter<"Order"> | string
   harga?: Prisma.IntFilter<"Order"> | number
+  estimasiTiba?: Prisma.StringNullableFilter<"Order"> | string | null
   gambar?: Prisma.StringFilter<"Order"> | string
   namaPenerima?: Prisma.StringFilter<"Order"> | string
   telepon?: Prisma.StringFilter<"Order"> | string
@@ -385,6 +395,7 @@ export type OrderOrderByWithAggregationInput = {
   nama?: Prisma.SortOrder
   ukuran?: Prisma.SortOrder
   harga?: Prisma.SortOrder
+  estimasiTiba?: Prisma.SortOrderInput | Prisma.SortOrder
   gambar?: Prisma.SortOrder
   namaPenerima?: Prisma.SortOrder
   telepon?: Prisma.SortOrder
@@ -413,6 +424,7 @@ export type OrderScalarWhereWithAggregatesInput = {
   nama?: Prisma.StringWithAggregatesFilter<"Order"> | string
   ukuran?: Prisma.StringWithAggregatesFilter<"Order"> | string
   harga?: Prisma.IntWithAggregatesFilter<"Order"> | number
+  estimasiTiba?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
   gambar?: Prisma.StringWithAggregatesFilter<"Order"> | string
   namaPenerima?: Prisma.StringWithAggregatesFilter<"Order"> | string
   telepon?: Prisma.StringWithAggregatesFilter<"Order"> | string
@@ -432,6 +444,7 @@ export type OrderCreateInput = {
   nama: string
   ukuran: string
   harga: number
+  estimasiTiba?: string | null
   gambar: string
   namaPenerima?: string
   telepon?: string
@@ -452,6 +465,7 @@ export type OrderUncheckedCreateInput = {
   nama: string
   ukuran: string
   harga: number
+  estimasiTiba?: string | null
   gambar: string
   namaPenerima?: string
   telepon?: string
@@ -471,6 +485,7 @@ export type OrderUpdateInput = {
   nama?: Prisma.StringFieldUpdateOperationsInput | string
   ukuran?: Prisma.StringFieldUpdateOperationsInput | string
   harga?: Prisma.IntFieldUpdateOperationsInput | number
+  estimasiTiba?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gambar?: Prisma.StringFieldUpdateOperationsInput | string
   namaPenerima?: Prisma.StringFieldUpdateOperationsInput | string
   telepon?: Prisma.StringFieldUpdateOperationsInput | string
@@ -491,6 +506,7 @@ export type OrderUncheckedUpdateInput = {
   nama?: Prisma.StringFieldUpdateOperationsInput | string
   ukuran?: Prisma.StringFieldUpdateOperationsInput | string
   harga?: Prisma.IntFieldUpdateOperationsInput | number
+  estimasiTiba?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gambar?: Prisma.StringFieldUpdateOperationsInput | string
   namaPenerima?: Prisma.StringFieldUpdateOperationsInput | string
   telepon?: Prisma.StringFieldUpdateOperationsInput | string
@@ -511,6 +527,7 @@ export type OrderCreateManyInput = {
   nama: string
   ukuran: string
   harga: number
+  estimasiTiba?: string | null
   gambar: string
   namaPenerima?: string
   telepon?: string
@@ -530,6 +547,7 @@ export type OrderUpdateManyMutationInput = {
   nama?: Prisma.StringFieldUpdateOperationsInput | string
   ukuran?: Prisma.StringFieldUpdateOperationsInput | string
   harga?: Prisma.IntFieldUpdateOperationsInput | number
+  estimasiTiba?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gambar?: Prisma.StringFieldUpdateOperationsInput | string
   namaPenerima?: Prisma.StringFieldUpdateOperationsInput | string
   telepon?: Prisma.StringFieldUpdateOperationsInput | string
@@ -548,6 +566,7 @@ export type OrderUncheckedUpdateManyInput = {
   nama?: Prisma.StringFieldUpdateOperationsInput | string
   ukuran?: Prisma.StringFieldUpdateOperationsInput | string
   harga?: Prisma.IntFieldUpdateOperationsInput | number
+  estimasiTiba?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gambar?: Prisma.StringFieldUpdateOperationsInput | string
   namaPenerima?: Prisma.StringFieldUpdateOperationsInput | string
   telepon?: Prisma.StringFieldUpdateOperationsInput | string
@@ -578,6 +597,7 @@ export type OrderCountOrderByAggregateInput = {
   nama?: Prisma.SortOrder
   ukuran?: Prisma.SortOrder
   harga?: Prisma.SortOrder
+  estimasiTiba?: Prisma.SortOrder
   gambar?: Prisma.SortOrder
   namaPenerima?: Prisma.SortOrder
   telepon?: Prisma.SortOrder
@@ -606,6 +626,7 @@ export type OrderMaxOrderByAggregateInput = {
   nama?: Prisma.SortOrder
   ukuran?: Prisma.SortOrder
   harga?: Prisma.SortOrder
+  estimasiTiba?: Prisma.SortOrder
   gambar?: Prisma.SortOrder
   namaPenerima?: Prisma.SortOrder
   telepon?: Prisma.SortOrder
@@ -626,6 +647,7 @@ export type OrderMinOrderByAggregateInput = {
   nama?: Prisma.SortOrder
   ukuran?: Prisma.SortOrder
   harga?: Prisma.SortOrder
+  estimasiTiba?: Prisma.SortOrder
   gambar?: Prisma.SortOrder
   namaPenerima?: Prisma.SortOrder
   telepon?: Prisma.SortOrder
@@ -737,6 +759,7 @@ export type OrderCreateWithoutBuyerInput = {
   nama: string
   ukuran: string
   harga: number
+  estimasiTiba?: string | null
   gambar: string
   namaPenerima?: string
   telepon?: string
@@ -756,6 +779,7 @@ export type OrderUncheckedCreateWithoutBuyerInput = {
   nama: string
   ukuran: string
   harga: number
+  estimasiTiba?: string | null
   gambar: string
   namaPenerima?: string
   telepon?: string
@@ -804,6 +828,7 @@ export type OrderScalarWhereInput = {
   nama?: Prisma.StringFilter<"Order"> | string
   ukuran?: Prisma.StringFilter<"Order"> | string
   harga?: Prisma.IntFilter<"Order"> | number
+  estimasiTiba?: Prisma.StringNullableFilter<"Order"> | string | null
   gambar?: Prisma.StringFilter<"Order"> | string
   namaPenerima?: Prisma.StringFilter<"Order"> | string
   telepon?: Prisma.StringFilter<"Order"> | string
@@ -823,6 +848,7 @@ export type OrderCreateWithoutProdukInput = {
   nama: string
   ukuran: string
   harga: number
+  estimasiTiba?: string | null
   gambar: string
   namaPenerima?: string
   telepon?: string
@@ -842,6 +868,7 @@ export type OrderUncheckedCreateWithoutProdukInput = {
   nama: string
   ukuran: string
   harga: number
+  estimasiTiba?: string | null
   gambar: string
   namaPenerima?: string
   telepon?: string
@@ -887,6 +914,7 @@ export type OrderCreateManyBuyerInput = {
   nama: string
   ukuran: string
   harga: number
+  estimasiTiba?: string | null
   gambar: string
   namaPenerima?: string
   telepon?: string
@@ -905,6 +933,7 @@ export type OrderUpdateWithoutBuyerInput = {
   nama?: Prisma.StringFieldUpdateOperationsInput | string
   ukuran?: Prisma.StringFieldUpdateOperationsInput | string
   harga?: Prisma.IntFieldUpdateOperationsInput | number
+  estimasiTiba?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gambar?: Prisma.StringFieldUpdateOperationsInput | string
   namaPenerima?: Prisma.StringFieldUpdateOperationsInput | string
   telepon?: Prisma.StringFieldUpdateOperationsInput | string
@@ -924,6 +953,7 @@ export type OrderUncheckedUpdateWithoutBuyerInput = {
   nama?: Prisma.StringFieldUpdateOperationsInput | string
   ukuran?: Prisma.StringFieldUpdateOperationsInput | string
   harga?: Prisma.IntFieldUpdateOperationsInput | number
+  estimasiTiba?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gambar?: Prisma.StringFieldUpdateOperationsInput | string
   namaPenerima?: Prisma.StringFieldUpdateOperationsInput | string
   telepon?: Prisma.StringFieldUpdateOperationsInput | string
@@ -943,6 +973,7 @@ export type OrderUncheckedUpdateManyWithoutBuyerInput = {
   nama?: Prisma.StringFieldUpdateOperationsInput | string
   ukuran?: Prisma.StringFieldUpdateOperationsInput | string
   harga?: Prisma.IntFieldUpdateOperationsInput | number
+  estimasiTiba?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gambar?: Prisma.StringFieldUpdateOperationsInput | string
   namaPenerima?: Prisma.StringFieldUpdateOperationsInput | string
   telepon?: Prisma.StringFieldUpdateOperationsInput | string
@@ -962,6 +993,7 @@ export type OrderCreateManyProdukInput = {
   nama: string
   ukuran: string
   harga: number
+  estimasiTiba?: string | null
   gambar: string
   namaPenerima?: string
   telepon?: string
@@ -980,6 +1012,7 @@ export type OrderUpdateWithoutProdukInput = {
   nama?: Prisma.StringFieldUpdateOperationsInput | string
   ukuran?: Prisma.StringFieldUpdateOperationsInput | string
   harga?: Prisma.IntFieldUpdateOperationsInput | number
+  estimasiTiba?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gambar?: Prisma.StringFieldUpdateOperationsInput | string
   namaPenerima?: Prisma.StringFieldUpdateOperationsInput | string
   telepon?: Prisma.StringFieldUpdateOperationsInput | string
@@ -999,6 +1032,7 @@ export type OrderUncheckedUpdateWithoutProdukInput = {
   nama?: Prisma.StringFieldUpdateOperationsInput | string
   ukuran?: Prisma.StringFieldUpdateOperationsInput | string
   harga?: Prisma.IntFieldUpdateOperationsInput | number
+  estimasiTiba?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gambar?: Prisma.StringFieldUpdateOperationsInput | string
   namaPenerima?: Prisma.StringFieldUpdateOperationsInput | string
   telepon?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1018,6 +1052,7 @@ export type OrderUncheckedUpdateManyWithoutProdukInput = {
   nama?: Prisma.StringFieldUpdateOperationsInput | string
   ukuran?: Prisma.StringFieldUpdateOperationsInput | string
   harga?: Prisma.IntFieldUpdateOperationsInput | number
+  estimasiTiba?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gambar?: Prisma.StringFieldUpdateOperationsInput | string
   namaPenerima?: Prisma.StringFieldUpdateOperationsInput | string
   telepon?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1039,6 +1074,7 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   nama?: boolean
   ukuran?: boolean
   harga?: boolean
+  estimasiTiba?: boolean
   gambar?: boolean
   namaPenerima?: boolean
   telepon?: boolean
@@ -1061,6 +1097,7 @@ export type OrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   nama?: boolean
   ukuran?: boolean
   harga?: boolean
+  estimasiTiba?: boolean
   gambar?: boolean
   namaPenerima?: boolean
   telepon?: boolean
@@ -1083,6 +1120,7 @@ export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   nama?: boolean
   ukuran?: boolean
   harga?: boolean
+  estimasiTiba?: boolean
   gambar?: boolean
   namaPenerima?: boolean
   telepon?: boolean
@@ -1105,6 +1143,7 @@ export type OrderSelectScalar = {
   nama?: boolean
   ukuran?: boolean
   harga?: boolean
+  estimasiTiba?: boolean
   gambar?: boolean
   namaPenerima?: boolean
   telepon?: boolean
@@ -1119,7 +1158,7 @@ export type OrderSelectScalar = {
   produkId?: boolean
 }
 
-export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "warna" | "nama" | "ukuran" | "harga" | "gambar" | "namaPenerima" | "telepon" | "alamat" | "status" | "createdAt" | "jumlah" | "totalHarga" | "transactionId" | "author" | "buyerId" | "produkId", ExtArgs["result"]["order"]>
+export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "warna" | "nama" | "ukuran" | "harga" | "estimasiTiba" | "gambar" | "namaPenerima" | "telepon" | "alamat" | "status" | "createdAt" | "jumlah" | "totalHarga" | "transactionId" | "author" | "buyerId" | "produkId", ExtArgs["result"]["order"]>
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   buyer?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   produk?: boolean | Prisma.Order$produkArgs<ExtArgs>
@@ -1145,6 +1184,7 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     nama: string
     ukuran: string
     harga: number
+    estimasiTiba: string | null
     gambar: string
     namaPenerima: string
     telepon: string
@@ -1587,6 +1627,7 @@ export interface OrderFieldRefs {
   readonly nama: Prisma.FieldRef<"Order", 'String'>
   readonly ukuran: Prisma.FieldRef<"Order", 'String'>
   readonly harga: Prisma.FieldRef<"Order", 'Int'>
+  readonly estimasiTiba: Prisma.FieldRef<"Order", 'String'>
   readonly gambar: Prisma.FieldRef<"Order", 'String'>
   readonly namaPenerima: Prisma.FieldRef<"Order", 'String'>
   readonly telepon: Prisma.FieldRef<"Order", 'String'>

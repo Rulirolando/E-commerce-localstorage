@@ -92,15 +92,30 @@ export async function POST(req: Request) {
 
 export async function PATCH(request: Request) {
   try {
-    const { id, status } = await request.json();
+    const { id, status, estimasiTiba } = await request.json();
 
     const result = await prisma.$transaction(async (tx) => {
-      const updatedOrder = await tx.order.update({
+      const updatedOrder = await prisma.order.update({
         where: { id: Number(id) },
-        data: { status: status },
+        data: {
+          status: status,
+          ...(estimasiTiba && { estimasiTiba }), // Update estimasi jika ada
+        },
       });
 
-      if (status === "Selesai" && updatedOrder.produkId) {
+      // Kirim notifikasi ke pembeli jika status berubah jadi 'Dikirim'
+      if (status === "Dikirim") {
+        await prisma.notification.create({
+          data: {
+            userId: updatedOrder.buyerId,
+            orderId: updatedOrder.id,
+            title: "📦 Pesanan Sedang Dikirim",
+            message: `Penjual telah mengirimkan ${updatedOrder.nama}. Cek secara berkala ya!`,
+          },
+        });
+      }
+
+      if (status === "Sudah dibayar" && updatedOrder.produkId) {
         await tx.variation.update({
           where: { id: updatedOrder.produkId },
           data: {
@@ -109,6 +124,27 @@ export async function PATCH(request: Request) {
             },
           },
         });
+      }
+      if (status === "Selesai") {
+        // 1. Cek apakah notifikasi selesai sudah pernah ada untuk order ini
+        const existingNotif = await tx.notification.findFirst({
+          where: {
+            orderId: updatedOrder.id,
+            title: { contains: "Selesai" },
+          },
+        });
+
+        // 2. Hanya buat jika belum ada
+        if (!existingNotif) {
+          await tx.notification.create({
+            data: {
+              userId: updatedOrder.buyerId,
+              orderId: updatedOrder.id,
+              title: "✅ Pesanan Telah Selesai",
+              message: `Terima kasih! Pesanan ${updatedOrder.nama} telah dinyatakan selesai. Selamat berbelanja kembali!`,
+            },
+          });
+        }
       }
 
       return updatedOrder;

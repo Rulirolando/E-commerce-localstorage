@@ -16,9 +16,26 @@ export default function NotificationPage() {
   const currentUser = session;
   const { decreaseCount } = useNotificationStore();
 
-  /* =====================
-      Fetch Notifikasi
-  ====================== */
+  const handleSelesaikanPesanan = async (orderId) => {
+    const confirm = window.confirm("Apakah Anda yakin barang sudah diterima?");
+    if (!confirm) return;
+
+    try {
+      const res = await fetch("/api/order", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: orderId, status: "Selesai" }),
+      });
+
+      if (res.ok) {
+        alert("Pesanan selesai! Terima kasih telah berbelanja.");
+        window.location.reload(); // Refresh untuk update status
+      }
+    } catch {
+      alert("Gagal memperbarui status pesanan");
+    }
+  };
+
   useEffect(() => {
     if (!currentUser?.user.id) return;
 
@@ -40,9 +57,6 @@ export default function NotificationPage() {
     fetchNotifications();
   }, [currentUser]);
 
-  /* =====================
-      Tandai Semua Dibaca
-  ====================== */
   const markAllAsRead = async () => {
     if (!currentUser?.user.id) return;
 
@@ -62,9 +76,6 @@ export default function NotificationPage() {
     }
   };
 
-  /* =====================
-      Render Loading State
-  ====================== */
   if (status === "loading" || loading) {
     return (
       <div className="min-h-screen bg-white dark:bg-slate-950 transition-colors duration-300">
@@ -83,7 +94,6 @@ export default function NotificationPage() {
     <>
       <Navbar currentUser={currentUser} />
       <div className="min-h-screen p-6 dark:bg-slate-950 transition-colors duration-300">
-        {/* Header Section */}
         <div className="flex justify-between items-end mb-6">
           <div>
             <h1 className="text-2xl font-bold dark:text-white">
@@ -104,7 +114,6 @@ export default function NotificationPage() {
           )}
         </div>
 
-        {/* List Section */}
         <div className="max-w-4xl">
           {!notifications || notifications.length === 0 ? (
             <div className="text-center py-20 border-2 border-dashed rounded-xl dark:border-slate-800">
@@ -112,51 +121,100 @@ export default function NotificationPage() {
             </div>
           ) : (
             <div className="space-y-3">
-              {notifications.map((n) => (
-                <div
-                  key={n.id}
-                  className={`flex gap-4 border p-4 rounded-xl items-start transition-all duration-300 ${
-                    !n.isRead
-                      ? "bg-white border-blue-200 shadow-sm dark:bg-slate-900 dark:border-blue-900 dark:text-white"
-                      : "bg-gray-50 border-gray-100 opacity-70 dark:bg-slate-900/40 dark:border-slate-800 dark:text-gray-400"
-                  }`}
-                >
-                  {/* Icon Status */}
+              {notifications.map((n) => {
+                // LOGIKA SINKRONISASI: Cek apakah ada notifikasi lain dengan orderId sama yang sudah "Selesai"
+                const isOrderSelesai = notifications.some(
+                  (notif) =>
+                    notif.orderId === n.orderId &&
+                    notif.orderId !== null &&
+                    notif.title.toLowerCase().includes("selesai"),
+                );
+
+                // Tampilkan tombol jika judul mengandung kata kunci pengiriman/tiba/selesai
+                const showActionButton =
+                  (n.title.toLowerCase().includes("dikirim") ||
+                    n.title.toLowerCase().includes("tiba") ||
+                    n.title.toLowerCase().includes("selesai")) &&
+                  n.orderId;
+
+                return (
                   <div
-                    className={`mt-1 p-2 rounded-lg ${!n.isRead ? "bg-blue-100 text-blue-600 dark:bg-blue-900/50" : "bg-gray-200 text-gray-400 dark:bg-slate-800"}`}
+                    key={n.id}
+                    className={`flex gap-4 border p-4 rounded-xl items-start transition-all duration-300 ${
+                      !n.isRead
+                        ? "bg-white border-blue-200 shadow-sm dark:bg-slate-900 dark:border-blue-900 dark:text-white"
+                        : "bg-gray-50 border-gray-100 opacity-70 dark:bg-slate-900/40 dark:border-slate-800 dark:text-gray-400"
+                    }`}
                   >
-                    {!n.isRead ? (
-                      <FaRegEnvelope size={20} />
-                    ) : (
-                      <FaRegEnvelopeOpen size={20} />
-                    )}
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1">
-                    <div className="flex justify-between items-center">
-                      <h3
-                        className={`font-bold ${!n.isRead ? "text-slate-900 dark:text-white" : "text-slate-600 dark:text-slate-400"}`}
-                      >
-                        {n.title}
-                      </h3>
-                      <span className="text-[10px] text-gray-400">
-                        {new Date(n.createdAt).toLocaleString("id-ID", {
-                          dateStyle: "medium",
-                          timeStyle: "short",
-                        })}
-                      </span>
+                    <div
+                      className={`mt-1 p-2 rounded-lg ${!n.isRead ? "bg-blue-100 text-blue-600 dark:bg-blue-900/50" : "bg-gray-200 text-gray-400 dark:bg-slate-800"}`}
+                    >
+                      {!n.isRead ? (
+                        <FaRegEnvelope size={20} />
+                      ) : (
+                        <FaRegEnvelopeOpen size={20} />
+                      )}
                     </div>
-                    <p className="text-sm mt-1 leading-relaxed">{n.message}</p>
 
-                    {!n.isRead && (
-                      <span className="inline-block px-2 py-0.5 mt-2 text-[9px] font-bold uppercase tracking-wider bg-blue-600 text-white rounded">
-                        Baru
-                      </span>
-                    )}
+                    <div className="flex-1">
+                      <div className="flex justify-between items-center">
+                        <h3
+                          className={`font-bold ${!n.isRead ? "text-slate-900 dark:text-white" : "text-slate-600 dark:text-slate-400"}`}
+                        >
+                          {n.title}
+                        </h3>
+                        <span className="text-[10px] text-gray-400">
+                          {new Date(n.createdAt).toLocaleString("id-ID", {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                          })}
+                        </span>
+                      </div>
+                      <p className="text-sm mt-1 leading-relaxed">
+                        {n.message}
+                      </p>
+
+                      {showActionButton && (
+                        <div
+                          className={`mt-3 p-3 rounded-lg border transition-colors ${
+                            isOrderSelesai
+                              ? "bg-green-50 border-green-100 dark:bg-green-900/10 dark:border-green-900/30"
+                              : "bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800"
+                          }`}
+                        >
+                          <p
+                            className={`text-xs mb-2 font-medium italic ${isOrderSelesai ? "text-green-700 dark:text-green-400" : "text-blue-800 dark:text-blue-300"}`}
+                          >
+                            {isOrderSelesai
+                              ? "✅ Pesanan ini telah dinyatakan selesai:"
+                              : "Klik tombol di bawah jika paket sudah sampai:"}
+                          </p>
+                          <button
+                            type="button"
+                            disabled={isOrderSelesai}
+                            onClick={() => handleSelesaikanPesanan(n.orderId)}
+                            className={`text-xs px-4 py-2 rounded-lg transition-all font-bold shadow-sm ${
+                              isOrderSelesai
+                                ? "bg-green-500 text-white cursor-default opacity-90"
+                                : "bg-blue-600 text-white hover:bg-blue-700 active:scale-95 cursor-pointer"
+                            }`}
+                          >
+                            {isOrderSelesai
+                              ? "✅ Pesanan Selesai"
+                              : "Barang Sudah Saya Terima"}
+                          </button>
+                        </div>
+                      )}
+
+                      {!n.isRead && (
+                        <span className="inline-block px-2 py-0.5 mt-2 text-[9px] font-bold uppercase tracking-wider bg-blue-600 text-white rounded">
+                          Baru
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

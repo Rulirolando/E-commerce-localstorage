@@ -133,6 +133,7 @@ export type OtpScalarFieldEnum = (typeof OtpScalarFieldEnum)[keyof typeof OtpSca
 export const NotificationScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
+  orderId: 'orderId',
   title: 'title',
   message: 'message',
   isRead: 'isRead',
@@ -226,6 +227,7 @@ export const OrderScalarFieldEnum = {
   nama: 'nama',
   ukuran: 'ukuran',
   harga: 'harga',
+  estimasiTiba: 'estimasiTiba',
   gambar: 'gambar',
   namaPenerima: 'namaPenerima',
   telepon: 'telepon',

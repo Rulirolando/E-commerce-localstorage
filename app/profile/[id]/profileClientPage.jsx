@@ -12,7 +12,7 @@ import { FaLocationDot } from "react-icons/fa6";
 import { IoIosSettings } from "react-icons/io";
 import { CiLock } from "react-icons/ci";
 import { RiLogoutBoxRLine } from "react-icons/ri";
-import { MdOutlineVerifiedUser } from "react-icons/md";
+import { MdOutlineVerifiedUser, MdAccessTime } from "react-icons/md";
 import { IoIosNotificationsOutline } from "react-icons/io";
 import { MdOutlineMail } from "react-icons/md";
 import { IoHelpCircleOutline } from "react-icons/io5";
@@ -23,6 +23,8 @@ import AddAdressModal from "../../components/AddressAddModal";
 import Link from "next/link";
 import EditProdukModal from "../../components/EditProduk";
 import { signOut } from "next-auth/react";
+import { format, formatDistanceToNow, isValid } from "date-fns";
+import { id } from "date-fns/locale"; // Untuk bahasa Indonesia
 
 export default function ProfilePage({ userId, currentUser }) {
   const [user, setUser] = useState({});
@@ -184,6 +186,30 @@ export default function ProfilePage({ userId, currentUser }) {
       console.error("Error fetching address list:", error);
     }
   }, [currentUser?.user?.id]);
+
+  const formatHumanDate = (dateInput) => {
+    if (!dateInput) return null;
+
+    // 1. Konversi ke objek Date yang valid
+    // Jika input adalah string ISO "2026-03-25", gunakan parseISO
+    let date = new Date(dateInput);
+
+    // 2. Validasi apakah tanggalnya benar (mencegah RangeError)
+    if (!isValid(date)) {
+      return "Tanggal tidak valid";
+    }
+
+    // 3. Format Relatif (Contoh: "2 hari lagi")
+    const relative = formatDistanceToNow(date, {
+      addSuffix: true,
+      locale: id,
+    });
+
+    // 4. Format Absolut (Contoh: "25 Mar 2026")
+    const absolute = format(date, "d MMM yyyy", { locale: id });
+
+    return `${absolute} (${relative})`;
+  };
 
   useEffect(() => {
     if (currentUser?.user?.id) {
@@ -368,6 +394,14 @@ export default function ProfilePage({ userId, currentUser }) {
                         {produk.jumlah} x
                       </p>
                     </div>
+                    {produk.estimasiTiba && (
+                      <div className="flex items-center gap-1 mt-2 text-[11px] bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2 py-1 rounded-md w-fit italic">
+                        <MdAccessTime size={14} />
+                        <span>
+                          Estimasi tiba: {formatHumanDate(produk.estimasiTiba)}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="flex flex-col">

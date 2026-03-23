@@ -6,19 +6,27 @@ import Image from "next/image";
 import { IoBasket } from "react-icons/io5";
 import Link from "next/link";
 import { GoPerson } from "react-icons/go";
-import { MdOutlinePhone } from "react-icons/md";
+import { MdOutlinePhone, MdAccessTime } from "react-icons/md";
 
 export default function DetailPage({ currentUser }) {
   const [activePesananMenu, setActivePesananMenu] = useState("semuapesanan");
   const [produkBeli, setProdukBeli] = useState([]);
   console.log("produkBeli", produkBeli);
+  const [estimasiWaktu, setEstimasiWaktu] = useState({});
 
   async function handleStatusChange(id, ket) {
     try {
+      const waktuSampai = estimasiWaktu[id]; // Ini adalah nilai dari <input type="date" />
+
+      if (ket === "Dikirim" && !waktuSampai) {
+        alert("Harap masukkan estimasi tanggal tiba terlebih dahulu!");
+        return;
+      }
+
       const response = await fetch("/api/order", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, status: ket }),
+        body: JSON.stringify({ id, status: ket, estimasiTiba: waktuSampai }),
       });
 
       if (response.ok) {
@@ -212,6 +220,29 @@ export default function DetailPage({ currentUser }) {
                         Rp.
                         {(produk.jumlah * produk.harga).toLocaleString("id-ID")}
                       </p>
+
+                      {status !== "Selesai" && label !== "semuapesanan" && (
+                        <div className="mt-5 pt-4 border-t dark:border-slate-800 border-slate-100 flex flex-wrap items-end justify-end gap-4">
+                          {/* Input Estimasi Waktu */}
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] font-bold uppercase text-slate-500 flex items-center gap-1">
+                              <MdAccessTime /> Estimasi Sampai
+                            </label>
+                            <input
+                              type="date"
+                              placeholder="Contoh: 2-3 Hari atau 24 Maret"
+                              className="p-2 text-xs rounded-md border border-slate-300 dark:bg-slate-800 dark:border-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none w-48"
+                              value={estimasiWaktu[produk.id] || ""}
+                              onChange={(e) =>
+                                setEstimasiWaktu({
+                                  ...estimasiWaktu,
+                                  [produk.id]: e.target.value,
+                                })
+                              }
+                            />
+                          </div>
+                        </div>
+                      )}
 
                       {status === "Selesai" ? (
                         <div className="flex mt-7">
