@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getOrCreateRoom } from "@/lib/getOrCreateRoom";
 import { prisma } from "@/lib/prisma";
+import redis from "@/lib/redis";
 
 export async function POST(req: Request) {
   const { user1Id, user2Id } = await req.json();
@@ -17,7 +18,15 @@ export async function GET(req: Request) {
   if (!userId)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const cacheKey = `chat_history:${userId}`;
+
   try {
+    const cachedData = await redis.get(cacheKey);
+    if (cachedData) {
+      console.log("Mengambil history dari Redis...");
+      return NextResponse.json(JSON.parse(cachedData));
+    }
+
     const rooms = await prisma.chatRoom.findMany({
       where: {
         OR: [{ user1Id: userId }, { user2Id: userId }],
@@ -37,12 +46,15 @@ export async function GET(req: Request) {
       const otherUser = room.user1Id === userId ? room.user2 : room.user1;
       return {
         roomId: room.id,
+        otherUserId: otherUser.id,
         otherUser: otherUser.username,
         otherUserImg: otherUser.imgProfile,
         lastMessage: room.messages[0]?.content || "Belum ada pesan",
         updatedAt: room.messages[0]?.createdAt || room.createdAt,
       };
     });
+
+    await redis.set(cacheKey, JSON.stringify(history), "EX", 600);
 
     return NextResponse.json(history);
   } catch (error) {

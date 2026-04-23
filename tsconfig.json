@@ -32,6 +32,6 @@
     ".next\\dev/types/**/*.ts",
     ".next\\dev/types/**/*.ts",
     "app/auth/verify/page.jsx"
-  ],
+, "worker/notif-worker.js"  ],
   "exclude": ["node_modules"]
 }

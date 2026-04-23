@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import redis from "@/lib/redis";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -28,18 +29,24 @@ export async function POST(req: Request) {
           },
         },
       });
-      return NextResponse.json({
-        message: "Love dihapus",
-        loves: false,
+    } else {
+      await prisma.love.create({
+        data: {
+          userId,
+          productId,
+          status: true,
+        },
       });
     }
-    await prisma.love.create({
-      data: {
-        userId,
-        productId,
-        status: true,
-      },
-    });
+
+    const keys = await redis.keys("ecom:search:*");
+    if (keys.length > 0) {
+      await redis.del(...keys);
+      console.log(`Cache dibersihkan: ${keys.length} key dihapus`);
+    }
+
+    await redis.del(`ecom:fav:${userId}`);
+
     return NextResponse.json({
       message: "Love ditambahkan",
       loves: true,

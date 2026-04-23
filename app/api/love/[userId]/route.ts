@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import redis from "@/lib/redis";
 
 export async function GET(
   req: Request,
@@ -14,6 +15,14 @@ export async function GET(
         { message: "userId tidak valid" },
         { status: 400 },
       );
+    }
+
+    const redisKey = `ecom:fav:${userId}`;
+    const cachedData = await redis.get(redisKey);
+
+    if (cachedData) {
+      console.log("Redis Hit: Mengambil data favorit dari cache");
+      return NextResponse.json(JSON.parse(cachedData));
     }
 
     const favorites = await prisma.love.findMany({
@@ -50,6 +59,8 @@ export async function GET(
         },
       };
     });
+
+    await redis.set(redisKey, JSON.stringify(processedFavorites), "EX", 3600);
 
     return NextResponse.json(processedFavorites);
   } catch (error) {

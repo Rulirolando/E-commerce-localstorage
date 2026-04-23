@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
+import { useCallback, Suspense, useEffect, useRef, useState } from "react";
 import { socket } from "../../lib/socket";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -18,12 +18,14 @@ function ChatContent() {
   const [showUserList, setShowUserList] = useState(false);
   const [chatHistory, setChatHistory] = useState([]);
   const bottomRef = useRef(null);
+  const isInitialLoad = useRef(true);
+  const chatContainerRef = useRef(null);
 
   const searchParams = useSearchParams();
   let roomId = searchParams.get("roomId") || "";
   console.log("Current roomId:", roomId);
 
-  async function fetchHistory() {
+  const fetchHistory = useCallback(async () => {
     if (!userId) return;
     try {
       const res = await fetch(`/api/chat?userId=${userId}`);
@@ -33,7 +35,39 @@ function ChatContent() {
     } catch (err) {
       console.error(err);
     }
-  }
+  }, [userId]);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    socket.emit("join-personal-room", userId);
+
+    socket.on("update-chat-list", (data) => {
+      setChatHistory((prev) => {
+        const existingIndex = prev.findIndex((c) => c.roomId === data.roomId);
+
+        let updatedList = [...prev];
+
+        if (existingIndex !== -1) {
+          updatedList[existingIndex] = {
+            ...updatedList[existingIndex],
+            lastMessage: data.lastMessage,
+            updatedAt: data.updatedAt,
+          };
+        } else {
+          fetchHistory();
+          return prev;
+        }
+
+        return updatedList.sort(
+          (a, b) =>
+            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+        );
+      });
+    });
+
+    return () => socket.off("update-chat-list");
+  }, [userId, fetchHistory]);
 
   useEffect(() => {
     if (!userId) return;
@@ -50,6 +84,7 @@ function ChatContent() {
           console.error(err);
         }
       };
+
       history();
     } else {
       socket.emit("join-room", roomId);
@@ -77,13 +112,29 @@ function ChatContent() {
   }, [roomId]);
 
   useEffect(() => {
-    if (roomId && !showUserList && bottomRef.current) {
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (roomId && bottomRef.current) {
+      const scrollToBottom = () => {
+        bottomRef.current.scrollIntoView({
+          behavior: isInitialLoad.current ? "auto" : "smooth",
+        });
+        isInitialLoad.current = false;
+      };
+
+      const timeoutId = setTimeout(scrollToBottom, 1);
+      return () => clearTimeout(timeoutId);
     }
-  }, [messages, showUserList, roomId]);
+  }, [messages, roomId]);
+
+  useEffect(() => {
+    isInitialLoad.current = true;
+  }, [roomId]);
 
   const sendMessage = async () => {
     if (!input.trim() || !roomId) return;
+
+    const currentChat = chatHistory.find((c) => c.roomId === roomId);
+    const receiverId = currentChat?.otherUserId;
+
     const res = await fetch("/api/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -92,7 +143,21 @@ function ChatContent() {
     if (res.ok) {
       const data = await res.json();
       setInput("");
-      socket.emit("sendMessage", { room: roomId, message: data });
+      socket.emit("sendMessage", {
+        room: roomId,
+        message: data,
+        receiverId: receiverId,
+      });
+      setChatHistory((prev) => {
+        const updated = prev.map((chat) =>
+          chat.roomId === roomId
+            ? { ...chat, lastMessage: data.content, updatedAt: data.createdAt }
+            : chat,
+        );
+        return updated.sort(
+          (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt),
+        );
+      });
     }
   };
 
@@ -117,7 +182,10 @@ function ChatContent() {
             </span>
           </div>
 
-          <div className="min-h-screen flex-1 relative bg-blue-600 dark:bg-blue-950 transition-colors ">
+          <div
+            ref={chatContainerRef}
+            className="min-h-screen flex-1 relative bg-blue-600 dark:bg-blue-950 transition-colors "
+          >
             {showUserList ? (
               <div className="absolute inset-0 bg-blue-200 dark:bg-blue-950 z-10  ">
                 {chatHistory.length > 0 ? (
@@ -125,6 +193,7 @@ function ChatContent() {
                     <div
                       key={chat.roomId}
                       onClick={() => {
+                        isInitialLoad.current = true;
                         router.push(
                           `/chat?roomId=${encodeURIComponent(chat.roomId)}`,
                         );

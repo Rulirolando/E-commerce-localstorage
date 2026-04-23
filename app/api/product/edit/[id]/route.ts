@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import redis from "@/lib/redis";
 
 export async function PATCH(
   req: Request,
@@ -54,6 +55,13 @@ export async function PATCH(
         });
       }
     });
+
+    const keys = await redis.keys("ecom:search:*");
+    if (keys.length > 0) {
+      await redis.del(...keys);
+      console.log(`Redis: Berhasil menghapus ${keys.length} cache search.`);
+    }
+
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("EDIT PRODUCT ERROR:", err);

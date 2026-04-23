@@ -21,7 +21,7 @@ export default function KeranjangPage() {
       console.log("data keranjang:", data);
       return data;
     },
-    enabled: !!currentUser?.user?.id, // Hanya jalan jika user login
+    enabled: !!currentUser?.user?.id,
   });
 
   const deleteMutation = useMutation({
@@ -33,7 +33,7 @@ export default function KeranjangPage() {
       queryClient.invalidateQueries({
         queryKey: ["cart", currentUser?.user?.id],
       });
-      // Juga bersihkan pilihan produk yang mungkin baru saja dihapus
+
       setSelectProduk([]);
     },
   });
@@ -97,8 +97,7 @@ export default function KeranjangPage() {
         author: item.variant.product.ownerId,
       }));
 
-      console.log("Payload yang dikirim ke API:", itemsForDb); // CEK INI DI CONSOLE BROWSER
-
+      console.log("Payload yang dikirim ke API:", itemsForDb);
       const response = await fetch("/api/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -124,7 +123,7 @@ export default function KeranjangPage() {
       window.snap.pay(data.token, {
         onSuccess: function () {
           alert("Pembayaran Berhasil!");
-          // Redirect ke halaman pesanan atau bersihkan keranjang
+
           window.location.href = `/profile/${currentUser.user.id}`;
         },
         onPending: function () {

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import redis from "@/lib/redis";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -42,6 +43,14 @@ export async function POST(req: Request) {
       content: content,
     },
   });
+  const room = await prisma.chatRoom.findUnique({
+    where: { id: roomId },
+  });
+  if (room) {
+    await redis.del(`chat_history:${room.user1Id}`);
+    await redis.del(`chat_history:${room.user2Id}`);
+    console.log("Cache dihapus karena ada pesan baru");
+  }
 
   return NextResponse.json(message);
 }

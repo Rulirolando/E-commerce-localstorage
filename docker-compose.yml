@@ -3,22 +3,22 @@ version: "3.8"
 services:
   app:
     build: .
-    image: my-commerce
+    container_name: my-commerce
     ports:
       - "3000:3000"
     env_file:
       - .env
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    command: npm start
+    restart: always
 
-  ngrok:
-    image: ngrok/ngrok:latest
-    command:
-      - "http"
-      - "app:3000"
-    environment:
-      - NGROK_AUTHTOKEN=${NGROK_AUTH}
-    ports:
-      - "4040:4040"
+  # Service Worker (Memproses Antrian CloudAMQP)
+  worker:
+    build: .
+    container_name: my-worker
+    env_file:
+      - .env
+    # Menjalankan script worker kamu
+    command: npx tsx worker/notif-worker.js
+    restart: always
     depends_on:
       - app

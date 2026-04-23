@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
+import { sendToRabbitMQ } from "@/lib/rabbitmq";
 
 export async function POST(req: Request) {
   try {
@@ -45,8 +46,6 @@ export async function POST(req: Request) {
 
       if (existingOrders.length === 0) return;
 
-      // CEK: Jika status lama belum "Sudah dibayar" DAN status baru adalah "Sudah dibayar"
-      // Ini mencegah stok berkurang berkali-kali jika Midtrans kirim webhook ulang
       const isFirstTimePaid =
         existingOrders[0].status !== "Sudah dibayar" &&
         newStatus === "Sudah dibayar";
@@ -64,13 +63,12 @@ export async function POST(req: Request) {
             });
           }
         }
-        // 2. BUAT NOTIFIKASI (Hanya saat pertama kali bayar berhasil)
-        await tx.notification.create({
-          data: {
-            userId: existingOrders[0].buyerId,
-            title: "Pembayaran Berhasil!",
-            message: `Pembayaran pesanan ${orderId} telah kami terima. Barang akan segera diproses.`,
-          },
+
+        await sendToRabbitMQ("app_notification_queue", {
+          userId: existingOrders[0].buyerId,
+          title: "Pembayaran Berhasil!",
+          message: `Pesanan ${orderId} telah kami terima dan sedang diproses.`,
+          type: "PAYMENT",
         });
       }
 
